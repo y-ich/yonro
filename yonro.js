@@ -693,7 +693,6 @@
     console.log(key, value);
     if (!value) {
       alert('四路の碁ゲームを動かすにはブラウザの機能が足らないようです。ChromeかSafariの最新版を使ってみてください。');
-      break;
     }
   }
 

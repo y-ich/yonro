@@ -1,8 +1,10 @@
 @import "lib/prefixer";
 
-@title-font-size: 50px;
+@width: 640px;
 
-@manual-font-size: 40px;
+@title-font-size: 30px;
+
+@manual-font-size: 20px;
 
 .shake() {
 	0% { left: 0px; }
@@ -30,10 +32,10 @@
 
 html, body {
 	width: 100%;
-	margin: 0px;
 }
 
 body {
+	padding: 0px;
 	.user-select(none);
 }
 
@@ -54,23 +56,24 @@ h1 {
 
 .board {
 	background-image: url('images/ban.png');
-	width: 980px;
-	height: 980px;
-	margin-top: 20px;
+	background-size: contain;
+	width: @width;
+	height: @width;
+	margin-top: 10px;
 }
 
 .intersection {
 	position: relative;
 	float: left;
-	width: 245px;
-	height: 245px;
+	width: @width / 4;
+	height: @width / 4;
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: contain;
     .animation-duration(0.5s);
     .animation-iteration-count(1);
     .animation-timing-function(linear);
-	.transition(bottom 0.3s linear);
+	.transition(bottom 1s linear);
 }
 
 .intersection.shake {
@@ -78,7 +81,7 @@ h1 {
 }
 
 .intersection.rise {
-	bottom: 1200px;
+	bottom: @width / 9 * 16 + @width / 4;
 }
 
 .half-opacity {
@@ -95,8 +98,9 @@ h1 {
 
 #manual {
 	position: absolute;
+	margin: 0px;
 	bottom: 0px;
-	right: 10px;
+	right: 20px;
 	font-size: @manual-font-size;
 }
 

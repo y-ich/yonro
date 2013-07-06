@@ -7,7 +7,6 @@ for key, value of Modernizr
     console.log key, value
     if not value
         alert '四路の碁ゲームを動かすにはブラウザの機能が足らないようです。ChromeかSafariの最新版を使ってみてください。'
-        break
 
 
 userStone = BLACK
