@@ -77,6 +77,7 @@ computerPlay = (board) ->
     behaveNext = ->
         end = ->
             $('#bgm')[0].pause()
+            bgmPause = true
             score = expected.value - expected.history[0].score()
             alert if score == 0
                     '引き分け'
@@ -132,6 +133,7 @@ computerPlay = (board) ->
         else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE)
             setTimeout (->
                 $('#bgm')[0].pause()
+                bgmPause = true
                 alert '負けました…'
                 $('#start-stop').removeAttr 'disabled'
             ), 1000
@@ -292,6 +294,7 @@ $('#play-white, #play-black').on 'click', ->
         console.log e
     finally
         bgm.play()
+        bgmPause = false
 
 $('#pass').on 'click', ->
     cancelWaiting()
@@ -300,6 +303,7 @@ $('#pass').on 'click', ->
 $('#resign').on 'click', ->
     cancelWaiting()
     $('#bgm')[0].pause()
+    bgmPause = true
     $('#end-modal').modal 'show'
     setTimeout (->
         $('#end-modal').modal 'hide'
@@ -313,10 +317,11 @@ $('.intersection').on $s.vendor.transitionend, -> $(this).removeClass 'black whi
 
 $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
-bgmPause = false
+bgmPause = true
 window.onpagehide = ->
-    $('#bgm')[0].pause()
-    bgmPause = true
+    if not bgmPause
+        $('#bgm')[0].pause()
+        bgmPause = true
 window.onpageshow = ->
     if bgmPause
         $('#bgm')[0].play()
