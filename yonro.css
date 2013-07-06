@@ -1,0 +1,171 @@
+@-webkit-keyframes shake {
+  0% {
+    left: 0px;
+  }
+  10% {
+    left: 10px;
+  }
+  20% {
+    left: -10px;
+  }
+  30% {
+    left: 5px;
+  }
+  40% {
+    left: 5px;
+  }
+  50% {
+    left: 3px;
+  }
+  60% {
+    left: -3px;
+  }
+  70% {
+    left: 2px;
+  }
+  80% {
+    left: -2px;
+  }
+  90% {
+    left: 1px;
+  }
+  100% {
+    left: 1px;
+  }
+}
+@keyframes shake {
+  0% {
+    left: 0px;
+  }
+  10% {
+    left: 10px;
+  }
+  20% {
+    left: -10px;
+  }
+  30% {
+    left: 5px;
+  }
+  40% {
+    left: 5px;
+  }
+  50% {
+    left: 3px;
+  }
+  60% {
+    left: -3px;
+  }
+  70% {
+    left: 2px;
+  }
+  80% {
+    left: -2px;
+  }
+  90% {
+    left: 1px;
+  }
+  100% {
+    left: 1px;
+  }
+}
+@-webkit-keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+html,
+body {
+  width: 100%;
+  margin: 0px;
+}
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+div.title {
+  position: relative;
+}
+h1 {
+  font-size: 50px;
+  line-height: 50px;
+  text-align: center;
+}
+.btn-large {
+  font-size: 50px;
+  line-height: 50px;
+}
+.board {
+  background-image: url('images/ban.png');
+  width: 980px;
+  height: 980px;
+  margin-top: 20px;
+}
+.intersection {
+  position: relative;
+  float: left;
+  width: 245px;
+  height: 245px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  -webkit-animation-duration: 0.5s;
+  -moz-animation-duration: 0.5s;
+  -ms-animation-duration: 0.5s;
+  -o-animation-duration: 0.5s;
+  -webkit-animation-iteration-count: 1;
+  -moz-animation-iteration-count: 1;
+  -ms-animation-iteration-count: 1;
+  -o-animation-iteration-count: 1;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-timing-function: linear;
+  -ms-animation-timing-function: linear;
+  -o-animation-timing-function: linear;
+  -webkit-transition: bottom 0.3s linear;
+  -moz-transition: bottom 0.3s linear;
+  -o-transition: bottom 0.3s linear;
+  transition: bottom 0.3s linear;
+}
+.intersection.shake {
+  -webkit-animation-name: shake;
+  -moz-animation-name: shake;
+  -ms-animation-name: shake;
+  -o-animation-name: shake;
+}
+.intersection.rise {
+  bottom: 1200px;
+}
+.half-opacity {
+  opacity: 0.5;
+}
+.intersection.black {
+  background-image: url('images/black.png');
+}
+.intersection.white {
+  background-image: url('images/white.png');
+}
+#manual {
+  position: absolute;
+  bottom: 0px;
+  right: 10px;
+  font-size: 40px;
+}
+#evaluating {
+  display: none;
+  position: relative;
+  top: 10px;
+  left: 100px;
+  font-size: 50px;
+  -webkit-animation: blink 0.5s ease-in-out infinite alternate;
+  -moz-animation: blink 0.5s ease-in-out infinite alternate;
+  -ms-animation: blink 0.5s ease-in-out infinite alternate;
+  -o-animation: blink 0.5s ease-in-out infinite alternate;
+}

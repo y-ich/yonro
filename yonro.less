@@ -1,0 +1,110 @@
+@import "lib/prefixer";
+
+@title-font-size: 50px;
+
+@manual-font-size: 40px;
+
+.shake() {
+	0% { left: 0px; }
+	10% { left: 10px; }
+	20% { left: -10px; }
+	30% { left: 5px; }
+	40% { left: 5px; }
+	50% { left: 3px; }
+	60% { left: -3px; }
+	70% { left: 2px; }
+	80% { left: -2px; }
+	90% { left: 1px; }
+	100% { left: 1px; }
+}
+
+@-webkit-keyframes shake { .shake() }
+@keyframes shake { .shake() }
+
+.blink() {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 1; }
+}
+@-webkit-keyframes blink { .blink() }
+
+html, body {
+	width: 100%;
+	margin: 0px;
+}
+
+body {
+	.user-select(none);
+}
+
+div.title {
+	position: relative;
+}
+
+h1 {
+	font-size: @title-font-size;
+	line-height: @title-font-size;
+	text-align: center;
+}
+
+.btn-large {
+	font-size: @title-font-size;
+	line-height: @title-font-size;
+}
+
+.board {
+	background-image: url('images/ban.png');
+	width: 980px;
+	height: 980px;
+	margin-top: 20px;
+}
+
+.intersection {
+	position: relative;
+	float: left;
+	width: 245px;
+	height: 245px;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: contain;
+    .animation-duration(0.5s);
+    .animation-iteration-count(1);
+    .animation-timing-function(linear);
+	.transition(bottom 0.3s linear);
+}
+
+.intersection.shake {
+    .animation-name(shake);
+}
+
+.intersection.rise {
+	bottom: 1200px;
+}
+
+.half-opacity {
+	opacity: 0.5
+}
+
+.intersection.black {
+	background-image: url('images/black.png');
+}
+
+.intersection.white {
+	background-image: url('images/white.png');
+}
+
+#manual {
+	position: absolute;
+	bottom: 0px;
+	right: 10px;
+	font-size: @manual-font-size;
+}
+
+#evaluating {
+	display: none;
+	position: relative;
+	top: 10px;
+	left: 100px;
+	font-size: @title-font-size;
+	.animation(blink 0.5s ease-in-out infinite alternate);
+}

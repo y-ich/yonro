@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="user-scalable=no">
+    <title>四路の純碁ゲーム</title>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="yonro.css" />
+</head>
+<body>
+    <audio id="bgm" src="audio/tw029.mp3" loop></audio>
+    <div class="title">
+        <h1>四路の純碁ゲーム(α)</h1>
+        <p id="manual"><a href="manual.html" target="_blank">遊び方</a></p>
+    </div>
+    <button type="button" id="start-stop" class="btn btn-large">スタート</button>
+    <button type="button" id="pass" class="btn btn-large" disabled>パス</button>
+    <button type="button" id="resign" class="btn btn-large" disabled>投了</button>
+    <span id="evaluating">考え中</span>
+    <div id="board" class="board">
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+    </div>
+    <div id="select-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>スタート！</h3>
+      </div>
+      <div class="modal-body">
+        <p>白黒どちらを持ちますか？</p>
+      </div>
+      <div class="modal-footer">
+        <button id="play-white" class="btn btn-large" data-dismiss="modal">白</button>
+        <button id="play-black" class="btn btn-large btn-inverse"data-dismiss="modal">黒</button>
+      </div>
+    </div>
+    <div id="start-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>お願いします!</h3>
+      </div>
+    </div>
+    <div id="end-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>ありがとうございました</h3>
+      </div>
+    </div>
+    <div id="expect-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>読み筋！</h3>
+      </div>
+    </div>
+    <div id="pessimistic-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>やばいか〜</h3>
+      </div>
+    </div>
+    <div id="unexpect-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>むむむっ</h3>
+      </div>
+    </div>
+    <div id="upset-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>えいっ</h3>
+      </div>
+    </div>
+    <script src="js/support-util.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.2.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+    <script type='application/javascript' src='js/noClickDelay.js'></script>
+    <script type="text/javascript">
+    $('button, a').each(function() {
+        new NoClickDelay(this);
+    });
+    </script>
+    <script src="yonro.js"></script>
+</body>
+</html>
