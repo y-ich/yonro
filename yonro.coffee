@@ -95,6 +95,10 @@ showOnBoard = (board, effect = false) ->
                 else
                     $intersection.removeClass 'white black half-opacity'
 
+$('.intersection').on $s.vendor.animationend, -> $(this).removeClass 'shake'
+
+$('.intersection').on $s.vendor.transitionend, -> $(this).removeClass 'black white rise'
+
 
 computerPlay = (board) ->
     behaveNext = ->
@@ -228,6 +232,7 @@ userPlayAndResponse = (position) ->
         showOnBoard expected.history[currentIndex]
         waitForUserPlay()
 
+
 $board = $('#board')
 if window.Touch
     waitForUserPlay = ->
@@ -326,8 +331,3 @@ $('#resign').on 'click', ->
         $('#start-stop').removeAttr 'disabled'
         $('#pass, #resign').attr 'disabled', 'disabled'
     ), modalTime
-
-$('.intersection').on $s.vendor.animationend, -> $(this).removeClass 'shake'
-
-$('.intersection').on $s.vendor.transitionend, -> $(this).removeClass 'black white rise'
-

@@ -822,6 +822,14 @@
     return _results;
   };
 
+  $('.intersection').on($s.vendor.animationend, function() {
+    return $(this).removeClass('shake');
+  });
+
+  $('.intersection').on($s.vendor.transitionend, function() {
+    return $(this).removeClass('black white rise');
+  });
+
   computerPlay = function(board) {
     var behaveNext, score, _ref, _ref1;
     behaveNext = function() {
@@ -1111,14 +1119,6 @@
       $('#start-stop').removeAttr('disabled');
       return $('#pass, #resign').attr('disabled', 'disabled');
     }), modalTime);
-  });
-
-  $('.intersection').on($s.vendor.animationend, function() {
-    return $(this).removeClass('shake');
-  });
-
-  $('.intersection').on($s.vendor.transitionend, function() {
-    return $(this).removeClass('black white rise');
   });
 
 }).call(this);
