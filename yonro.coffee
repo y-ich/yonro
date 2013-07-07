@@ -3,12 +3,6 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 ###
 
-for key, value of Modernizr
-    console.log key, value
-    if not value
-        alert '四路の碁ゲームを動かすにはブラウザの機能が足らないようです。ChromeかSafariの最新版を使ってみてください。'
-
-
 userStone = BLACK
 expected = null
 currentIndex = 0
