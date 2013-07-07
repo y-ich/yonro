@@ -15,6 +15,28 @@ window.printExpected = ->
     console.log expected.value
 
 
+bgm =
+    element: $('#bgm')[0]
+    state: 'stop'
+    play: ->
+        bgm.element.play()
+        bgm.state = 'play'
+    pause: ->
+        bgm.element.pause()
+        bgm.state = 'pause'
+    stop: ->
+        bgm.element.pause()
+        bgm.state = 'stop'
+        try
+            bgm.element.currentTime = 0 # iOS Safariでは再生前のavのcurrentTimeに代入しようとすると例外が発生する。
+        catch e
+            console.log e
+
+window.onpagehide = -> bgm.pause() if bgm.state is 'play'
+
+window.onpageshow = -> bgm.play() if bgm.state is 'pause'
+
+
 evaluate = (history, next, success, error, timeout = 10000) ->
     # (web workerを使って)局面を評価する。
     # success, errorはコールバック関数。
@@ -43,6 +65,7 @@ evaluate = (history, next, success, error, timeout = 10000) ->
                 message: 'timeout'
         ), timeout
 
+
 showOnBoard = (board, effect = false) ->
     # boardの状態を描画する。
     # boardがnullなら空の盤。
@@ -57,27 +80,26 @@ showOnBoard = (board, effect = false) ->
             p = [x, y]
             $intersection = $(".intersection:nth-child(#{1 + p[0] + p[1] * BOARD_SIZE})")
             if blacks.some((e) -> e.isEqualTo p)
-                if effect and ((not $intersection.hasClass 'black') or $intersection.hasClass('half-opacity'))
-                    $intersection.removeClass('half-opacity').addClass('black shake')
+                if effect and ((not $intersection.hasClass 'black') or ($intersection.hasClass 'half-opacity'))
+                    $intersection.removeClass('half-opacity').addClass 'black shake'
                 else
-                    $intersection.addClass('black').removeClass('white half-opacity')
+                    $intersection.removeClass('white half-opacity').addClass 'black'
             else if whites.some((e) -> e.isEqualTo p)
                 if effect and ((not $intersection.hasClass 'white') or $intersection.hasClass('half-opacity'))
-                    $intersection.removeClass('half-opacity').addClass('white shake')
+                    $intersection.removeClass('half-opacity').addClass 'white shake'
                 else
-                    $intersection.addClass('white').removeClass('black half-opacity')
+                    $intersection.removeClass('black half-opacity').addClass 'white'
             else
-                if effect and ($intersection.hasClass('black') or $intersection.hasClass('white'))
+                if effect and ($intersection.hasClass('black') or ($intersection.hasClass 'white'))
                     $intersection.addClass 'rise'
                 else
-                    $intersection.removeClass('white black half-opacity')
+                    $intersection.removeClass 'white black half-opacity'
 
 
 computerPlay = (board) ->
     behaveNext = ->
         end = ->
-            $('#bgm')[0].pause()
-            bgmPause = true
+            bgm.stop()
             score = expected.value - expected.history[0].score()
             alert if score == 0
                     '引き分け'
@@ -132,8 +154,7 @@ computerPlay = (board) ->
                 ), 2000
         else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE)
             setTimeout (->
-                $('#bgm')[0].pause()
-                bgmPause = true
+                bgm.stop()
                 alert '負けました…'
                 $('#start-stop').removeAttr 'disabled'
             ), 1000
@@ -287,14 +308,7 @@ $('#play-white, #play-black').on 'click', ->
         else
             computerPlay expected.history[currentIndex]
     ), modalTime
-    bgm = $('#bgm')[0]
-    try
-        bgm.currentTime = 0 # iOS Safariでは再生前のavのcurrentTimeに代入しようとすると例外が発生する。
-    catch e
-        console.log e
-    finally
-        bgm.play()
-        bgmPause = false
+    bgm.play()
 
 $('#pass').on 'click', ->
     cancelWaiting()
@@ -302,8 +316,7 @@ $('#pass').on 'click', ->
 
 $('#resign').on 'click', ->
     cancelWaiting()
-    $('#bgm')[0].pause()
-    bgmPause = true
+    bgm.stop()
     $('#end-modal').modal 'show'
     setTimeout (->
         $('#end-modal').modal 'hide'
@@ -317,12 +330,3 @@ $('.intersection').on $s.vendor.transitionend, -> $(this).removeClass 'black whi
 
 $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
-bgmPause = true
-window.onpagehide = ->
-    if not bgmPause
-        $('#bgm')[0].pause()
-        bgmPause = true
-window.onpageshow = ->
-    if bgmPause
-        $('#bgm')[0].play()
-        bgmPause = false
