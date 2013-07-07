@@ -284,6 +284,9 @@ else
         $board.off 'mouseenter', '.intersection:not(.black):not(.white)'
         $board.off 'mouseup', '.intersection.half-opacity'
 
+
+$(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
+
 $('#start-stop').on 'click', ->
     showOnBoard null
     board = new OnBoard.random()
@@ -312,7 +315,7 @@ $('#play-white, #play-black').on 'click', ->
 
 $('#pass').on 'click', ->
     cancelWaiting()
-    userPlayAndResponse(null) # パス
+    userPlayAndResponse null # パス
 
 $('#resign').on 'click', ->
     cancelWaiting()
@@ -327,6 +330,4 @@ $('#resign').on 'click', ->
 $('.intersection').on $s.vendor.animationend, -> $(this).removeClass 'shake'
 
 $('.intersection').on $s.vendor.transitionend, -> $(this).removeClass 'black white rise'
-
-$(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 

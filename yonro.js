@@ -1054,6 +1054,12 @@
     };
   }
 
+  $(document.body).on('touchmove', function(e) {
+    if (window.Touch) {
+      return e.preventDefault();
+    }
+  });
+
   $('#start-stop').on('click', function() {
     var board;
     showOnBoard(null);
@@ -1113,12 +1119,6 @@
 
   $('.intersection').on($s.vendor.transitionend, function() {
     return $(this).removeClass('black white rise');
-  });
-
-  $(document.body).on('touchmove', function(e) {
-    if (window.Touch) {
-      return e.preventDefault();
-    }
   });
 
 }).call(this);
