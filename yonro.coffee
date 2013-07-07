@@ -285,7 +285,6 @@ else
         $board.off 'mouseup', '.intersection.half-opacity'
 
 $('#start-stop').on 'click', ->
-    @disabled = 'disabled'
     showOnBoard null
     board = new OnBoard.random()
     expected =
@@ -296,6 +295,7 @@ $('#start-stop').on 'click', ->
     $('#select-modal').modal 'show'
 
 $('#play-white, #play-black').on 'click', ->
+    $('#start-stop').attr 'disabled', 'disabled'
     userStone = switch @id
         when 'play-white' then WHITE
         when 'play-black' then BLACK
