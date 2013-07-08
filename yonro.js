@@ -775,7 +775,7 @@
   };
 
   showOnBoard = function(board, effect, callback) {
-    var $intersection, $this, blacks, deferred, deferredes, p, place, whites, x, y, _i, _j, _ref;
+    var $intersection, blacks, deferred, deferredes, p, place, whites, x, y, _i, _j, _ref;
     if (effect == null) {
       effect = false;
     }
@@ -783,7 +783,6 @@
       $('.intersection').removeClass('black white half-opacity');
       return;
     }
-    $this = $(this);
     _ref = board.deployment(), blacks = _ref[0], whites = _ref[1];
     deferredes = [];
     for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
@@ -796,7 +795,7 @@
             deferred = $.Deferred();
             deferredes.push(deferred);
             $intersection.one($s.vendor.animationend, function() {
-              $this.removeClass('shake');
+              $(this).removeClass('shake');
               return deferred.resolve();
             });
             return $intersection.removeClass('half-opacity').addClass("" + blackOrWhite + " shake");
@@ -818,7 +817,7 @@
             deferredes.push(deferred);
             $intersection.one($s.vendor.transitionend, (function(deferred) {
               return function() {
-                $this.removeClass('black white rise');
+                $(this).removeClass('black white rise');
                 return deferred.resolve();
               };
             })(deferred));
@@ -829,6 +828,7 @@
         }
       }
     }
+    console.log(deferredes);
     if (effect) {
       return $.when.apply(window, deferredes).done(callback);
     }

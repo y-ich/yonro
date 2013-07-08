@@ -74,7 +74,6 @@ showOnBoard = (board, effect = false, callback) ->
         $('.intersection').removeClass 'black white half-opacity'
         return
 
-    $this = $(this)
     [blacks, whites] = board.deployment()
     deferredes = []
     for x in [0...BOARD_SIZE]
@@ -86,7 +85,7 @@ showOnBoard = (board, effect = false, callback) ->
                     deferred = $.Deferred()
                     deferredes.push deferred
                     $intersection.one $s.vendor.animationend, ->
-                        $this.removeClass 'shake'
+                        $(this).removeClass 'shake'
                         deferred.resolve()
                     $intersection.removeClass('half-opacity').addClass "#{blackOrWhite} shake"
                 else
@@ -101,12 +100,13 @@ showOnBoard = (board, effect = false, callback) ->
                     deferredes.push deferred
                     $intersection.one $s.vendor.transitionend, ((deferred) ->
                         ->
-                            $this.removeClass 'black white rise'
+                            $(this).removeClass 'black white rise'
                             deferred.resolve()
                     )(deferred)
                     $intersection.addClass 'rise'
                 else
                     $intersection.removeClass 'white black half-opacity'
+    console.log deferredes
     $.when.apply(window, deferredes).done callback if effect
 
 
