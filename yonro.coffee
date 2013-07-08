@@ -66,7 +66,7 @@ evaluate = (history, next, success, error, timeout = 10000) ->
         ), timeout
 
 
-showOnBoard = (board, effect = false) ->
+showOnBoard = (board, effect = false, callback) ->
     # boardの状態を描画する。
     # boardがnullなら空の盤。
     # effectをtrueにすると、今の状態からエフェクト入りで盤を変更
@@ -75,6 +75,7 @@ showOnBoard = (board, effect = false) ->
         return
 
     [blacks, whites] = board.deployment()
+    deferredes = []
     for x in [0...BOARD_SIZE]
         for y in [0...BOARD_SIZE]
             p = [x, y]
@@ -86,18 +87,28 @@ showOnBoard = (board, effect = false) ->
                     $intersection.removeClass('white half-opacity').addClass 'black'
             else if whites.some((e) -> e.isEqualTo p)
                 if effect and ((not $intersection.hasClass 'white') or $intersection.hasClass('half-opacity'))
+                    deferred = $.Deferred()
+                    deferredes.push deferred
+                    $intersection.one $s.vendor.animationend, ((deferred) ->
+                        $(this).removeClass 'shake'
+                        deferred.resolve()
+                    )(deferred)
                     $intersection.removeClass('half-opacity').addClass 'white shake'
                 else
                     $intersection.removeClass('black half-opacity').addClass 'white'
             else
                 if effect and ($intersection.hasClass('black') or ($intersection.hasClass 'white'))
+                    deferred = $.Deferred()
+                    deferredes.push deferred
+                    $intersection.one $s.vendor.transitionend, ((deferred) ->
+                        $(this).removeClass 'black white rise'
+                        deferred.resolve()
+                    )(deferred)
                     $intersection.addClass 'rise'
                 else
                     $intersection.removeClass 'white black half-opacity'
-
-$('.intersection').on $s.vendor.animationend, -> $(this).removeClass 'shake'
-
-$('.intersection').on $s.vendor.transitionend, -> $(this).removeClass 'black white rise'
+    console.log deferredes
+    $.when.apply(window, deferredes).done callback if effect
 
 
 endGame = ->
@@ -117,6 +128,7 @@ computerPlay = (board) ->
         currentIndex += 1 # コンピュータの手
         if currentIndex < expected.history.length
             if board.isEqualTo expected.history[currentIndex]
+                console.log 'pass'
                 setTimeout (->
                     alert 'パスします'
                     if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
@@ -126,8 +138,7 @@ computerPlay = (board) ->
                         waitForUserPlay()
                 ), 500
             else
-                showOnBoard expected.history[currentIndex], true
-                setTimeout waitForUserPlay, 500
+                showOnBoard expected.history[currentIndex], true, waitForUserPlay
         else
             endGame()
 
@@ -191,7 +202,6 @@ computerPlay = (board) ->
                 ), modalTime
             )
     else
-        console.log '読み直し'
         evaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
             expected = result
             behaveNext()
@@ -225,9 +235,9 @@ userPlayAndResponse = (position) ->
             showOnBoard expected.history[currentIndex]
             waitForUserPlay()
         else
-            showOnBoard board, true
-            currentIndex += 1
-            computerPlay board
+            showOnBoard board, true, ->
+                currentIndex += 1
+                computerPlay board
     else
         alert 'そこは打てないよ〜'
         showOnBoard expected.history[currentIndex]
@@ -295,7 +305,13 @@ $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#start-stop').on 'click', ->
     showOnBoard null
-    board = new OnBoard.random()
+    # board = new OnBoard.random()
+    board = new OnBoard.fromString '''
+         OX 
+        OO O
+        XOXX
+         X O
+        '''
     expected =
         value: NaN
         history: [board]

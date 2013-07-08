@@ -774,8 +774,8 @@
     }), timeout);
   };
 
-  showOnBoard = function(board, effect) {
-    var $intersection, blacks, p, whites, x, y, _i, _ref, _results;
+  showOnBoard = function(board, effect, callback) {
+    var $intersection, blacks, deferred, deferredes, p, whites, x, y, _i, _j, _ref;
     if (effect == null) {
       effect = false;
     }
@@ -784,51 +784,53 @@
       return;
     }
     _ref = board.deployment(), blacks = _ref[0], whites = _ref[1];
-    _results = [];
+    deferredes = [];
     for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-      _results.push((function() {
-        var _j, _results1;
-        _results1 = [];
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
-          p = [x, y];
-          $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * BOARD_SIZE) + ")");
-          if (blacks.some(function(e) {
-            return e.isEqualTo(p);
-          })) {
-            if (effect && ((!$intersection.hasClass('black')) || ($intersection.hasClass('half-opacity')))) {
-              _results1.push($intersection.removeClass('half-opacity').addClass('black shake'));
-            } else {
-              _results1.push($intersection.removeClass('white half-opacity').addClass('black'));
-            }
-          } else if (whites.some(function(e) {
-            return e.isEqualTo(p);
-          })) {
-            if (effect && ((!$intersection.hasClass('white')) || $intersection.hasClass('half-opacity'))) {
-              _results1.push($intersection.removeClass('half-opacity').addClass('white shake'));
-            } else {
-              _results1.push($intersection.removeClass('black half-opacity').addClass('white'));
-            }
+      for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+        p = [x, y];
+        $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * BOARD_SIZE) + ")");
+        if (blacks.some(function(e) {
+          return e.isEqualTo(p);
+        })) {
+          if (effect && ((!$intersection.hasClass('black')) || ($intersection.hasClass('half-opacity')))) {
+            $intersection.removeClass('half-opacity').addClass('black shake');
           } else {
-            if (effect && ($intersection.hasClass('black') || ($intersection.hasClass('white')))) {
-              _results1.push($intersection.addClass('rise'));
-            } else {
-              _results1.push($intersection.removeClass('white black half-opacity'));
-            }
+            $intersection.removeClass('white half-opacity').addClass('black');
+          }
+        } else if (whites.some(function(e) {
+          return e.isEqualTo(p);
+        })) {
+          if (effect && ((!$intersection.hasClass('white')) || $intersection.hasClass('half-opacity'))) {
+            deferred = $.Deferred();
+            deferredes.push(deferred);
+            $intersection.one($s.vendor.animationend, (function(deferred) {
+              $(this).removeClass('shake');
+              return deferred.resolve();
+            })(deferred));
+            $intersection.removeClass('half-opacity').addClass('white shake');
+          } else {
+            $intersection.removeClass('black half-opacity').addClass('white');
+          }
+        } else {
+          if (effect && ($intersection.hasClass('black') || ($intersection.hasClass('white')))) {
+            deferred = $.Deferred();
+            deferredes.push(deferred);
+            $intersection.one($s.vendor.transitionend, (function(deferred) {
+              $(this).removeClass('black white rise');
+              return deferred.resolve();
+            })(deferred));
+            $intersection.addClass('rise');
+          } else {
+            $intersection.removeClass('white black half-opacity');
           }
         }
-        return _results1;
-      })());
+      }
     }
-    return _results;
+    console.log(deferredes);
+    if (effect) {
+      return $.when.apply(window, deferredes).done(callback);
+    }
   };
-
-  $('.intersection').on($s.vendor.animationend, function() {
-    return $(this).removeClass('shake');
-  });
-
-  $('.intersection').on($s.vendor.transitionend, function() {
-    return $(this).removeClass('black white rise');
-  });
 
   endGame = function() {
     var score;
@@ -844,6 +846,7 @@
       currentIndex += 1;
       if (currentIndex < expected.history.length) {
         if (board.isEqualTo(expected.history[currentIndex])) {
+          console.log('pass');
           return setTimeout((function() {
             var _ref, _ref1;
             alert('パスします');
@@ -854,8 +857,7 @@
             }
           }), 500);
         } else {
-          showOnBoard(expected.history[currentIndex], true);
-          return setTimeout(waitForUserPlay, 500);
+          return showOnBoard(expected.history[currentIndex], true, waitForUserPlay);
         }
       } else {
         return endGame();
@@ -935,7 +937,6 @@
         }));
       }
     } else {
-      console.log('読み直し');
       return evaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
         expected = result;
         return behaveNext();
@@ -985,9 +986,10 @@
         showOnBoard(expected.history[currentIndex]);
         return waitForUserPlay();
       } else {
-        showOnBoard(board, true);
-        currentIndex += 1;
-        return computerPlay(board);
+        return showOnBoard(board, true, function() {
+          currentIndex += 1;
+          return computerPlay(board);
+        });
       }
     } else {
       alert('そこは打てないよ〜');
@@ -1071,7 +1073,7 @@
   $('#start-stop').on('click', function() {
     var board;
     showOnBoard(null);
-    board = new OnBoard.random();
+    board = new OnBoard.fromString(' OX \nOO O\nXOXX\n X O');
     expected = {
       value: NaN,
       history: [board]
