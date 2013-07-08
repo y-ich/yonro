@@ -36,16 +36,16 @@ class OnBoard
         blacks = []
         whites = []
         lines = str.replace(/(\r?\n)*$/, '').split /\r?\n/
-        return null if lines.length isnt BOARD_SIZE
+        throw 'bad format' if lines.length isnt BOARD_SIZE
 
         for line, y in lines
-            return null if line.length isnt BOARD_SIZE
+            throw 'bad format' if line.length isnt BOARD_SIZE
             for x in [0...BOARD_SIZE]
                 switch line.charAt x
                     when 'X' then blacks.push [x, y]
                     when 'O' then whites.push [x, y]
                     when ' ' then null ## pass
-                    else return null
+                    else throw 'bad format'
 
         new OnBoard blacks, whites
 

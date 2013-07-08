@@ -74,36 +74,34 @@ showOnBoard = (board, effect = false, callback) ->
         $('.intersection').removeClass 'black white half-opacity'
         return
 
+    $this = $(this)
     [blacks, whites] = board.deployment()
     deferredes = []
     for x in [0...BOARD_SIZE]
         for y in [0...BOARD_SIZE]
             p = [x, y]
             $intersection = $(".intersection:nth-child(#{1 + p[0] + p[1] * BOARD_SIZE})")
-            if blacks.some((e) -> e.isEqualTo p)
-                if effect and ((not $intersection.hasClass 'black') or ($intersection.hasClass 'half-opacity'))
-                    $intersection.removeClass('half-opacity').addClass 'black shake'
-                else
-                    $intersection.removeClass('white half-opacity').addClass 'black'
-            else if whites.some((e) -> e.isEqualTo p)
-                if effect and ((not $intersection.hasClass 'white') or $intersection.hasClass('half-opacity'))
+            place = (blackOrWhite) ->
+                if effect and ((not $intersection.hasClass blackOrWhite) or ($intersection.hasClass 'half-opacity'))
                     deferred = $.Deferred()
                     deferredes.push deferred
-                    $intersection.one $s.vendor.animationend, ((deferred) ->
-                        ->
-                            $(this).removeClass 'shake'
-                            deferred.resolve()
-                    )(deferred)
-                    $intersection.removeClass('half-opacity').addClass 'white shake'
+                    $intersection.one $s.vendor.animationend, ->
+                        $this.removeClass 'shake'
+                        deferred.resolve()
+                    $intersection.removeClass('half-opacity').addClass "#{blackOrWhite} shake"
                 else
-                    $intersection.removeClass('black half-opacity').addClass 'white'
+                    $intersection.removeClass('white half-opacity').addClass blackOrWhite
+            if blacks.some((e) -> e.isEqualTo p)
+                place 'black'
+            else if whites.some((e) -> e.isEqualTo p)
+                place 'white'
             else
                 if effect and ($intersection.hasClass('black') or ($intersection.hasClass 'white'))
                     deferred = $.Deferred()
                     deferredes.push deferred
                     $intersection.one $s.vendor.transitionend, ((deferred) ->
                         ->
-                            $(this).removeClass 'black white rise'
+                            $this.removeClass 'black white rise'
                             deferred.resolve()
                     )(deferred)
                     $intersection.addClass 'rise'
@@ -145,14 +143,15 @@ computerPlay = (board) ->
             if not expected.history[currentIndex - 1]?.isEqualTo board # パスでない
                 score = expected.value - expected.history[0].score()
                 score = if userStone is BLACK then -score else score
-                console.log 'よみすじ', score, expected.value
                 if score > 0
+                    console.log '強気', score, expected.value
                     $('#expect-modal').modal 'show'
                     setTimeout (->
                         $('#expect-modal').modal 'hide'
                         behaveNext()
                     ), modalTime
                 else if (if userStone is BLACK then -expected.value else expected.value) == -MAX_SCORE
+                    console.log '弱気', score, expected.value
                     $('#pessimistic-modal').modal 'show'
                     setTimeout (->
                         $('#pessimistic-modal').modal 'hide'
@@ -303,7 +302,13 @@ $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#start-stop').on 'click', ->
     showOnBoard null
-    board = new OnBoard.random()
+    #board = new OnBoard.random()
+    board = OnBoard.fromString '''
+                             XXO
+                            XO O
+                            XOO 
+                             X O
+                            '''
     expected =
         value: NaN
         history: [board]

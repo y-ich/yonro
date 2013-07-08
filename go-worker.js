@@ -55,12 +55,12 @@
       whites = [];
       lines = str.replace(/(\r?\n)*$/, '').split(/\r?\n/);
       if (lines.length !== BOARD_SIZE) {
-        return null;
+        throw 'bad format';
       }
       for (y = _i = 0, _len = lines.length; _i < _len; y = ++_i) {
         line = lines[y];
         if (line.length !== BOARD_SIZE) {
-          return null;
+          throw 'bad format';
         }
         for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
           switch (line.charAt(x)) {
@@ -74,7 +74,7 @@
               null;
               break;
             default:
-              return null;
+              throw 'bad format';
           }
         }
       }

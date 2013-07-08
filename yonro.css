@@ -183,6 +183,9 @@ h1 {
   -ms-animation: blink 0.5s ease-in-out infinite alternate;
   -o-animation: blink 0.5s ease-in-out infinite alternate;
 }
+.modal h3 {
+  text-align: center;
+}
 audio {
   /* iOSだとdisplay: noneでも大きさを持ちレイアウトに影響する */
 

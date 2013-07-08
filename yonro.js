@@ -55,12 +55,12 @@
       whites = [];
       lines = str.replace(/(\r?\n)*$/, '').split(/\r?\n/);
       if (lines.length !== BOARD_SIZE) {
-        return null;
+        throw 'bad format';
       }
       for (y = _i = 0, _len = lines.length; _i < _len; y = ++_i) {
         line = lines[y];
         if (line.length !== BOARD_SIZE) {
-          return null;
+          throw 'bad format';
         }
         for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
           switch (line.charAt(x)) {
@@ -74,7 +74,7 @@
               null;
               break;
             default:
-              return null;
+              throw 'bad format';
           }
         }
       }
@@ -775,7 +775,7 @@
   };
 
   showOnBoard = function(board, effect, callback) {
-    var $intersection, blacks, deferred, deferredes, p, whites, x, y, _i, _j, _ref;
+    var $intersection, $this, blacks, deferred, deferredes, p, place, whites, x, y, _i, _j, _ref;
     if (effect == null) {
       effect = false;
     }
@@ -783,43 +783,42 @@
       $('.intersection').removeClass('black white half-opacity');
       return;
     }
+    $this = $(this);
     _ref = board.deployment(), blacks = _ref[0], whites = _ref[1];
     deferredes = [];
     for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
       for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
         p = [x, y];
         $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * BOARD_SIZE) + ")");
+        place = function(blackOrWhite) {
+          var deferred;
+          if (effect && ((!$intersection.hasClass(blackOrWhite)) || ($intersection.hasClass('half-opacity')))) {
+            deferred = $.Deferred();
+            deferredes.push(deferred);
+            $intersection.one($s.vendor.animationend, function() {
+              $this.removeClass('shake');
+              return deferred.resolve();
+            });
+            return $intersection.removeClass('half-opacity').addClass("" + blackOrWhite + " shake");
+          } else {
+            return $intersection.removeClass('white half-opacity').addClass(blackOrWhite);
+          }
+        };
         if (blacks.some(function(e) {
           return e.isEqualTo(p);
         })) {
-          if (effect && ((!$intersection.hasClass('black')) || ($intersection.hasClass('half-opacity')))) {
-            $intersection.removeClass('half-opacity').addClass('black shake');
-          } else {
-            $intersection.removeClass('white half-opacity').addClass('black');
-          }
+          place('black');
         } else if (whites.some(function(e) {
           return e.isEqualTo(p);
         })) {
-          if (effect && ((!$intersection.hasClass('white')) || $intersection.hasClass('half-opacity'))) {
-            deferred = $.Deferred();
-            deferredes.push(deferred);
-            $intersection.one($s.vendor.animationend, (function(deferred) {
-              return function() {
-                $(this).removeClass('shake');
-                return deferred.resolve();
-              };
-            })(deferred));
-            $intersection.removeClass('half-opacity').addClass('white shake');
-          } else {
-            $intersection.removeClass('black half-opacity').addClass('white');
-          }
+          place('white');
         } else {
           if (effect && ($intersection.hasClass('black') || ($intersection.hasClass('white')))) {
             deferred = $.Deferred();
             deferredes.push(deferred);
             $intersection.one($s.vendor.transitionend, (function(deferred) {
               return function() {
-                $(this).removeClass('black white rise');
+                $this.removeClass('black white rise');
                 return deferred.resolve();
               };
             })(deferred));
@@ -868,14 +867,15 @@
         if (!((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
           score = expected.value - expected.history[0].score();
           score = userStone === BLACK ? -score : score;
-          console.log('よみすじ', score, expected.value);
           if (score > 0) {
+            console.log('強気', score, expected.value);
             $('#expect-modal').modal('show');
             return setTimeout((function() {
               $('#expect-modal').modal('hide');
               return behaveNext();
             }), modalTime);
           } else if ((userStone === BLACK ? -expected.value : expected.value) === -MAX_SCORE) {
+            console.log('弱気', score, expected.value);
             $('#pessimistic-modal').modal('show');
             return setTimeout((function() {
               $('#pessimistic-modal').modal('hide');
@@ -1073,7 +1073,7 @@
   $('#start-stop').on('click', function() {
     var board;
     showOnBoard(null);
-    board = new OnBoard.random();
+    board = OnBoard.fromString(' XXO\nXO O\nXOO \n X O');
     expected = {
       value: NaN,
       history: [board]
