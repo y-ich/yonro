@@ -694,7 +694,7 @@
 
   currentIndex = 0;
 
-  modalTime = 3000;
+  modalTime = 2000;
 
   window.printExpected = function() {
     console.log(expected.history.map(function(e) {
@@ -804,8 +804,10 @@
             deferred = $.Deferred();
             deferredes.push(deferred);
             $intersection.one($s.vendor.animationend, (function(deferred) {
-              $(this).removeClass('shake');
-              return deferred.resolve();
+              return function() {
+                $(this).removeClass('shake');
+                return deferred.resolve();
+              };
             })(deferred));
             $intersection.removeClass('half-opacity').addClass('white shake');
           } else {
@@ -816,8 +818,10 @@
             deferred = $.Deferred();
             deferredes.push(deferred);
             $intersection.one($s.vendor.transitionend, (function(deferred) {
-              $(this).removeClass('black white rise');
-              return deferred.resolve();
+              return function() {
+                $(this).removeClass('black white rise');
+                return deferred.resolve();
+              };
             })(deferred));
             $intersection.addClass('rise');
           } else {
@@ -826,7 +830,6 @@
         }
       }
     }
-    console.log(deferredes);
     if (effect) {
       return $.when.apply(window, deferredes).done(callback);
     }

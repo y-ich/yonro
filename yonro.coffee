@@ -6,7 +6,7 @@
 userStone = BLACK
 expected = null
 currentIndex = 0
-modalTime = 3000
+modalTime = 2000
 
 window.printExpected = ->
     # 最初からの手順と読み筋を表示する
@@ -90,8 +90,9 @@ showOnBoard = (board, effect = false, callback) ->
                     deferred = $.Deferred()
                     deferredes.push deferred
                     $intersection.one $s.vendor.animationend, ((deferred) ->
-                        $(this).removeClass 'shake'
-                        deferred.resolve()
+                        ->
+                            $(this).removeClass 'shake'
+                            deferred.resolve()
                     )(deferred)
                     $intersection.removeClass('half-opacity').addClass 'white shake'
                 else
@@ -101,13 +102,13 @@ showOnBoard = (board, effect = false, callback) ->
                     deferred = $.Deferred()
                     deferredes.push deferred
                     $intersection.one $s.vendor.transitionend, ((deferred) ->
-                        $(this).removeClass 'black white rise'
-                        deferred.resolve()
+                        ->
+                            $(this).removeClass 'black white rise'
+                            deferred.resolve()
                     )(deferred)
                     $intersection.addClass 'rise'
                 else
                     $intersection.removeClass 'white black half-opacity'
-    console.log deferredes
     $.when.apply(window, deferredes).done callback if effect
 
 
