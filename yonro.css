@@ -90,6 +90,7 @@ body {
   -o-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  background-color: black;
 }
 #header {
   width: 640px;
