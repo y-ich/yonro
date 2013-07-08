@@ -188,6 +188,9 @@ h1 {
 .modal h3 {
   text-align: center;
 }
+.modal-body p {
+  font-size: 25px;
+}
 audio {
   /* iOSだとdisplay: noneでも大きさを持ちレイアウトに影響する */
 
