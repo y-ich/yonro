@@ -129,15 +129,12 @@ computerPlay = (board) ->
         currentIndex += 1 # コンピュータの手
         if currentIndex < expected.history.length
             if board.isEqualTo expected.history[currentIndex]
-                console.log 'pass'
-                setTimeout (->
-                    alert 'パスします'
-                    if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
-                        # 相手もパスだったら
-                        endGame()
-                    else
-                        waitForUserPlay()
-                ), 500
+                alert 'パスします'
+                if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
+                    # 相手もパスだったら
+                    endGame()
+                else
+                    waitForUserPlay()
             else
                 showOnBoard expected.history[currentIndex], true, waitForUserPlay
         else
@@ -164,17 +161,17 @@ computerPlay = (board) ->
                 else
                     setTimeout (->
                         behaveNext()
-                    ), 2000
+                    ), modalTime
             else
                 setTimeout (->
                     behaveNext()
-                ), 2000
+                ), modalTime
         else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE)
             setTimeout (->
                 bgm.stop()
                 alert '負けました…'
                 $('#start-stop').removeAttr 'disabled'
-            ), 1000
+            ), modalTime
         else
             $('#unexpected-modal').modal 'show'
             evaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
@@ -306,13 +303,7 @@ $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#start-stop').on 'click', ->
     showOnBoard null
-    # board = new OnBoard.random()
-    board = new OnBoard.fromString '''
-         OX 
-        OO O
-        XOXX
-         X O
-        '''
+    board = new OnBoard.random()
     expected =
         value: NaN
         history: [board]

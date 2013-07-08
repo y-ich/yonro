@@ -846,19 +846,16 @@
   computerPlay = function(board) {
     var behaveNext, score, _ref, _ref1;
     behaveNext = function() {
+      var _ref, _ref1;
       currentIndex += 1;
       if (currentIndex < expected.history.length) {
         if (board.isEqualTo(expected.history[currentIndex])) {
-          console.log('pass');
-          return setTimeout((function() {
-            var _ref, _ref1;
-            alert('パスします');
-            if (((_ref = expected.history[currentIndex - 2]) != null ? _ref.isEqualTo(board) : void 0) && ((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
-              return endGame();
-            } else {
-              return waitForUserPlay();
-            }
-          }), 500);
+          alert('パスします');
+          if (((_ref = expected.history[currentIndex - 2]) != null ? _ref.isEqualTo(board) : void 0) && ((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
+            return endGame();
+          } else {
+            return waitForUserPlay();
+          }
         } else {
           return showOnBoard(expected.history[currentIndex], true, waitForUserPlay);
         }
@@ -887,19 +884,19 @@
           } else {
             return setTimeout((function() {
               return behaveNext();
-            }), 2000);
+            }), modalTime);
           }
         } else {
           return setTimeout((function() {
             return behaveNext();
-          }), 2000);
+          }), modalTime);
         }
       } else if (expected.value === (userStone === BLACK ? MAX_SCORE : -MAX_SCORE)) {
         return setTimeout((function() {
           bgm.stop();
           alert('負けました…');
           return $('#start-stop').removeAttr('disabled');
-        }), 1000);
+        }), modalTime);
       } else {
         $('#unexpected-modal').modal('show');
         return evaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
@@ -1076,7 +1073,7 @@
   $('#start-stop').on('click', function() {
     var board;
     showOnBoard(null);
-    board = new OnBoard.fromString(' OX \nOO O\nXOXX\n X O');
+    board = new OnBoard.random();
     expected = {
       value: NaN,
       history: [board]
