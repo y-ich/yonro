@@ -3,7 +3,6 @@ comparePosition = (a, b) ->
     if dx != 0 then dx else a[1] - b[1]
 
 describe "OnBoard", ->
-    ###
     describe "constructors", ->
         it "should return OnBoard instance", ->
             board = OnBoard.random()
@@ -62,7 +61,6 @@ describe "OnBoard", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
             console.log board.toString()
             expect(board.eyes()[0].length).toEqual 1
-    ###
     describe "evaluate", ->
         it "両方活きの終局。0を返す", ->
             board = new OnBoard [[0,0],[1,0],[1,1],[1,2],[0,2],[1,3]], [[3,0],[2,0],[2,1],[2,2],[3,2],[2,3]]
@@ -192,7 +190,7 @@ describe "OnBoard", ->
             result = evaluate [board], BLACK
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value).toBe 1
-        it "should returns ", ->
+        it "メモ化の際のバグ確認", ->
             board0 = new OnBoard [[1,0],[0,1],[1,1],[1,2]], [[2,0],[2,1],[2,2],[1,3],[3,3]]
             board1 = new OnBoard [[1,0],[0,1],[1,1],[1,2],[3,1]], [[2,0],[2,1],[2,2],[1,3],[2,3],[3,3]]
             result = evaluate [board0], BLACK
@@ -201,6 +199,17 @@ describe "OnBoard", ->
             expect(result.history[2].isEqualTo board1).toBe true
         ###
         # 長手数問題
+        it "should returns ", ->
+            board = OnBoard.fromString '''
+                 XOX
+                XO X
+                X  O
+                  OO
+                '''
+            console.log board.toString()
+            result = evaluate [board], BLACK
+            console.log result.history.map((e) -> e.toString()).join('\n')
+            expect(result.value).toBe 3
         it "should returns ", ->
             board = new OnBoard [[2,0],[1,1],[1,2],[3,1]], [[2,1],[0,2],[2,2],[1,3]]
             console.log board.toString()

@@ -6,7 +6,7 @@
 userStone = BLACK
 expected = null
 currentIndex = 0
-modalTime = 2000
+responseInterval = 2000
 
 window.printExpected = ->
     # 最初からの手順と読み筋を表示する
@@ -122,6 +122,14 @@ endGame = ->
     $('#start-stop').removeAttr 'disabled'
 
 
+openAndCloseModal = (id, callback) ->
+    $("##{id}").modal 'show'
+    setTimeout (->
+        $("##{id}").modal 'hide'
+        callback()
+    ), responseInterval
+
+
 computerPlay = (board) ->
     behaveNext = ->
         currentIndex += 1 # コンピュータの手
@@ -144,33 +152,23 @@ computerPlay = (board) ->
                 score = expected.value - expected.history[0].score()
                 score = if userStone is BLACK then -score else score
                 if score > 0
-                    console.log '強気', score, expected.value
-                    $('#expect-modal').modal 'show'
-                    setTimeout (->
-                        $('#expect-modal').modal 'hide'
-                        behaveNext()
-                    ), modalTime
+                    openAndCloseModal 'expect-modal', behaveNext
                 else if (if userStone is BLACK then -expected.value else expected.value) == -MAX_SCORE
-                    console.log '弱気', score, expected.value
-                    $('#pessimistic-modal').modal 'show'
-                    setTimeout (->
-                        $('#pessimistic-modal').modal 'hide'
-                        behaveNext()
-                    ), modalTime
+                    openAndCloseModal 'pessimistic-modal', behaveNext
                 else
                     setTimeout (->
                         behaveNext()
-                    ), modalTime
+                    ), responseInterval
             else
                 setTimeout (->
                     behaveNext()
-                ), modalTime
+                ), responseInterval
         else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE)
+            bgm.stop()
             setTimeout (->
-                bgm.stop()
                 alert '負けました…'
                 $('#start-stop').removeAttr 'disabled'
-            ), modalTime
+            ), responseInterval
         else
             $('#unexpected-modal').modal 'show'
             evaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
@@ -179,7 +177,6 @@ computerPlay = (board) ->
             ),
             ((error) ->
                 $('#evaluate-modal').modal 'hide'
-                $('#upset-modal').modal 'show'
                 expected =
                     value: NaN
                     history: expected.history[0...currentIndex].concat(board)
@@ -193,10 +190,7 @@ computerPlay = (board) ->
                     nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
                 nodes.sort (a, b) -> - OnBoard.compare a, b, computerStone
                 expected.history.push nodes[0]
-                setTimeout (->
-                    $('#upset-modal').modal 'hide'
-                    behaveNext()
-                ), modalTime
+                openAndCloseModal 'upset-modal', behaveNext
             )
     else
         evaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
@@ -316,15 +310,12 @@ $('#play-white, #play-black').on 'click', ->
         when 'play-white' then WHITE
         when 'play-black' then BLACK
         else null
-    $('#start-modal').modal 'show'
-    setTimeout (->
-        $('#start-modal').modal 'hide'
+    bgm.play()
+    openAndCloseModal 'start-modal', ->
         if userStone is BLACK
             waitForUserPlay()
         else
             computerPlay expected.history[currentIndex]
-    ), modalTime
-    bgm.play()
 
 $('#pass').on 'click', ->
     cancelWaiting()
@@ -333,9 +324,6 @@ $('#pass').on 'click', ->
 $('#resign').on 'click', ->
     cancelWaiting()
     bgm.stop()
-    $('#end-modal').modal 'show'
-    setTimeout (->
-        $('#end-modal').modal 'hide'
+    openAndCloseModal 'end-modal', ->
         $('#start-stop').removeAttr 'disabled'
         $('#pass, #resign').attr 'disabled', 'disabled'
-    ), modalTime
