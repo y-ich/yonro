@@ -1073,7 +1073,7 @@
   $('#start-stop').on('click', function() {
     var board;
     showOnBoard(null);
-    board = OnBoard.fromString(' XXO\nXO O\nXOO \n X O');
+    board = new OnBoard.random();
     expected = {
       value: NaN,
       history: [board]

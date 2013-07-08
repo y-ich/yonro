@@ -302,13 +302,7 @@ $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#start-stop').on 'click', ->
     showOnBoard null
-    #board = new OnBoard.random()
-    board = OnBoard.fromString '''
-                             XXO
-                            XO O
-                            XOO 
-                             X O
-                            '''
+    board = new OnBoard.random()
     expected =
         value: NaN
         history: [board]
