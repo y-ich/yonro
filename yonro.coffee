@@ -100,19 +100,20 @@ $('.intersection').on $s.vendor.animationend, -> $(this).removeClass 'shake'
 $('.intersection').on $s.vendor.transitionend, -> $(this).removeClass 'black white rise'
 
 
+endGame = ->
+    bgm.stop()
+    score = expected.value - expected.history[0].score()
+    alert if score == 0
+            '引き分け'
+        else if score > 0
+            "黒#{score}目勝ち"
+        else
+            "白#{-score}目勝ち"
+    $('#start-stop').removeAttr 'disabled'
+
+
 computerPlay = (board) ->
     behaveNext = ->
-        end = ->
-            bgm.stop()
-            score = expected.value - expected.history[0].score()
-            alert if score == 0
-                    '引き分け'
-                else if score > 0
-                    "黒#{score}目勝ち"
-                else
-                    "白#{-score}目勝ち"
-            $('#start-stop').removeAttr 'disabled'
-
         currentIndex += 1 # コンピュータの手
         if currentIndex < expected.history.length
             if board.isEqualTo expected.history[currentIndex]
@@ -120,7 +121,7 @@ computerPlay = (board) ->
                     alert 'パスします'
                     if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
                         # 相手もパスだったら
-                        end()
+                        endGame()
                     else
                         waitForUserPlay()
                 ), 500
@@ -128,7 +129,7 @@ computerPlay = (board) ->
                 showOnBoard expected.history[currentIndex], true
                 setTimeout waitForUserPlay, 500
         else
-            end()
+            endGame()
 
     if expected.history[currentIndex]?.isEqualTo board # 読み筋通りなら
         if expected.history.length - 1 > currentIndex # 続きがあれば

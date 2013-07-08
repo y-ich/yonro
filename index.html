@@ -11,14 +11,16 @@
 </head>
 <body>
     <audio id="bgm" src="audio/tw029.mp3" loop></audio>
-    <div class="title">
-        <h1>四路の純碁ゲーム(α)</h1>
-        <p id="manual"><a href="manual.html" target="_blank">遊び方</a></p>
+    <div id="header">
+        <div class="title">
+            <h1>四路の純碁ゲーム(α)</h1>
+            <p id="manual"><a href="manual.html" target="_blank">遊び方</a></p>
+        </div>
+        <button type="button" id="start-stop" class="btn btn-large">スタート</button>
+        <button type="button" id="pass" class="btn btn-large" disabled>パス</button>
+        <button type="button" id="resign" class="btn btn-large" disabled>投了</button>
+        <span id="evaluating">考え中</span>
     </div>
-    <button type="button" id="start-stop" class="btn btn-large">スタート</button>
-    <button type="button" id="pass" class="btn btn-large" disabled>パス</button>
-    <button type="button" id="resign" class="btn btn-large" disabled>投了</button>
-    <span id="evaluating">考え中</span>
     <div id="board" class="board">
         <div class="intersection"></div>
         <div class="intersection"></div>

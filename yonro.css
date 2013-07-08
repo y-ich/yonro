@@ -91,10 +91,22 @@ body {
   -ms-user-select: none;
   user-select: none;
 }
+#header {
+  width: 640px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-image: url(images/dragon.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top;
+}
 div.title {
+  margin: 15px;
   position: relative;
+  color: white;
 }
 h1 {
+  margin: 0px;
   font-size: 30px;
   line-height: 30px;
   text-align: center;
@@ -108,7 +120,6 @@ h1 {
   background-size: contain;
   width: 640px;
   height: 640px;
-  margin-top: 10px;
 }
 .intersection {
   position: relative;
@@ -170,4 +181,10 @@ h1 {
   -moz-animation: blink 0.5s ease-in-out infinite alternate;
   -ms-animation: blink 0.5s ease-in-out infinite alternate;
   -o-animation: blink 0.5s ease-in-out infinite alternate;
+}
+audio {
+  /* iOSだとdisplay: noneでも大きさを持ちレイアウトに影響する */
+
+  width: 0px;
+  height: 0px;
 }
