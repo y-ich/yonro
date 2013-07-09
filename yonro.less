@@ -86,7 +86,11 @@ h1 {
     .animation-duration(0.5s);
     .animation-iteration-count(1);
     .animation-timing-function(linear);
-	.transition(bottom 1s linear);
+	.transform(translateY(0%));
+    -webkit-transition: -webkit-transform 1s linear;
+    -moz-transition: -moz-transform 1s linear;
+    -o-transition: -o-transform 1s linear;
+    transition: transform 1s linear;
 }
 
 .intersection.shake {
@@ -94,7 +98,7 @@ h1 {
 }
 
 .intersection.rise {
-	bottom: @width / 9 * 16 + @width / 4;
+	.transform(translateY(-(@width / 9 * 16 + @width / 4)));
 }
 
 .half-opacity {
