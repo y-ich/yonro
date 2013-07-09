@@ -147,10 +147,6 @@ h1 {
   -ms-transform: translateY(0%);
   -o-transform: translateY(0%);
   transform: translateY(0%);
-  -webkit-transition: -webkit-transform 1s linear;
-  -moz-transition: -moz-transform 1s linear;
-  -o-transition: -o-transform 1s linear;
-  transition: transform 1s linear;
 }
 .intersection.shake {
   -webkit-animation-name: shake;
@@ -159,6 +155,10 @@ h1 {
   -o-animation-name: shake;
 }
 .intersection.rise {
+  -webkit-transition: -webkit-transform 1s linear;
+  -moz-transition: -moz-transform 1s linear;
+  -o-transition: -o-transform 1s linear;
+  transition: transform 1s linear;
   -webkit-transform: translateY(-1297.7777777777778px);
   -moz-transform: translateY(-1297.7777777777778px);
   -ms-transform: translateY(-1297.7777777777778px);
