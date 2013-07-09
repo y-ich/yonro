@@ -300,14 +300,7 @@ $('#start-stop').on 'click', ->
     console.log 'click'
     showOnBoard null
 
-    #board = new OnBoard.random()
-    board = OnBoard.fromString '''
-        XO X
-         XOX
-         OXO
-        O X 
-        '''
-
+    board = new OnBoard.random()
     expected =
         value: NaN
         history: [board]

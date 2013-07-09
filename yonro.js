@@ -1070,7 +1070,7 @@
     var board;
     console.log('click');
     showOnBoard(null);
-    board = OnBoard.fromString('XO X\n XOX\n OXO\nO X ');
+    board = new OnBoard.random();
     expected = {
       value: NaN,
       history: [board]
