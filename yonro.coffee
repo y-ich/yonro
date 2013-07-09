@@ -135,12 +135,14 @@ computerPlay = (board) ->
         currentIndex += 1 # コンピュータの手
         if currentIndex < expected.history.length
             if board.isEqualTo expected.history[currentIndex]
-                alert 'パスします'
-                if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
-                    # 相手もパスだったら
-                    endGame()
-                else
-                    waitForUserPlay()
+                setTimeout (-> # behaveNextはevaluateのコールバックなのですぐに終了するようにタイマー処理。
+                    alert 'パスします'
+                    if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
+                        # 相手もパスだったら
+                        endGame()
+                    else
+                        waitForUserPlay()
+                ), 0
             else
                 showOnBoard expected.history[currentIndex], true, waitForUserPlay
         else
@@ -295,8 +297,17 @@ else
 $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#start-stop').on 'click', ->
+    console.log 'click'
     showOnBoard null
-    board = new OnBoard.random()
+
+    #board = new OnBoard.random()
+    board = OnBoard.fromString '''
+        XO X
+         XOX
+         OXO
+        O X 
+        '''
+
     expected =
         value: NaN
         history: [board]

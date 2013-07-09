@@ -853,16 +853,18 @@
   computerPlay = function(board) {
     var behaveNext, score, _ref, _ref1;
     behaveNext = function() {
-      var _ref, _ref1;
       currentIndex += 1;
       if (currentIndex < expected.history.length) {
         if (board.isEqualTo(expected.history[currentIndex])) {
-          alert('パスします');
-          if (((_ref = expected.history[currentIndex - 2]) != null ? _ref.isEqualTo(board) : void 0) && ((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
-            return endGame();
-          } else {
-            return waitForUserPlay();
-          }
+          return setTimeout((function() {
+            var _ref, _ref1;
+            alert('パスします');
+            if (((_ref = expected.history[currentIndex - 2]) != null ? _ref.isEqualTo(board) : void 0) && ((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
+              return endGame();
+            } else {
+              return waitForUserPlay();
+            }
+          }), 0);
         } else {
           return showOnBoard(expected.history[currentIndex], true, waitForUserPlay);
         }
@@ -1066,8 +1068,9 @@
 
   $('#start-stop').on('click', function() {
     var board;
+    console.log('click');
     showOnBoard(null);
-    board = new OnBoard.random();
+    board = OnBoard.fromString('XO X\n XOX\n OXO\nO X ');
     expected = {
       value: NaN,
       history: [board]
