@@ -60,8 +60,8 @@ var $s = {
 				vendor.name = "Microsoft";
 				vendor.browser = "ie";
 				vendor.prefix = "-ms-";
-				vendor.transitionend = "MSTransitionEnd";
-				vendor.animationend = "MSAnimationEnd";
+				vendor.transitionend = "transitionend";
+				vendor.animationend = "animationend";
 				break;
 			case "mozilla":
 				vendor.name = "Mozilla";

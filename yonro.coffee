@@ -106,7 +106,6 @@ showOnBoard = (board, effect = false, callback) ->
                     $intersection.addClass 'rise'
                 else
                     $intersection.removeClass 'white black half-opacity'
-    console.log deferredes
     $.when.apply(window, deferredes).done callback if effect
 
 
@@ -297,7 +296,6 @@ else
 $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#start-stop').on 'click', ->
-    console.log 'click'
     showOnBoard null
 
     board = new OnBoard.random()

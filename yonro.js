@@ -828,7 +828,6 @@
         }
       }
     }
-    console.log(deferredes);
     if (effect) {
       return $.when.apply(window, deferredes).done(callback);
     }
@@ -1068,7 +1067,6 @@
 
   $('#start-stop').on('click', function() {
     var board;
-    console.log('click');
     showOnBoard(null);
     board = new OnBoard.random();
     expected = {
