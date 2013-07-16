@@ -270,21 +270,24 @@
       }
       stone = this.stateAt(position);
       aux = function(unchecked, string, liberty) {
-        var adjacencies, adjacency, checking, _i, _len;
+        var adjacencies, adjacency, checking, equalPositions, _i, _len;
         if (unchecked.length === 0) {
           return [string, liberty];
         }
         checking = unchecked.pop();
         adjacencies = adjacenciesAt(checking);
+        equalPositions = function(a, b) {
+          return (a[0] === b[0]) && (a[1] === b[1]);
+        };
         for (_i = 0, _len = adjacencies.length; _i < _len; _i++) {
           adjacency = adjacencies[_i];
           if ((_this.stateAt(adjacency) === stone) && (string.every(function(e) {
-            return !e.isEqualTo(adjacency);
+            return !equalPositions(e, adjacency);
           }))) {
             string.push(adjacency);
             unchecked.push(adjacency);
           } else if (_this.isEmptyAt(adjacency) && (liberty.every(function(e) {
-            return !e.isEqualTo(adjacency);
+            return !equalPositions(e, adjacency);
           }))) {
             liberty.push(adjacency);
           }

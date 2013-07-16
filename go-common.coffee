@@ -196,11 +196,12 @@ class OnBoard
             return [string, liberty] if unchecked.length == 0
             checking = unchecked.pop()
             adjacencies = adjacenciesAt checking
+            equalPositions = (a, b) -> (a[0] == b[0]) and (a[1] == b[1])
             for adjacency in adjacencies
-                if (@stateAt(adjacency) is stone) and (string.every (e) -> not e.isEqualTo adjacency)
+                if (@stateAt(adjacency) is stone) and (string.every (e) -> not equalPositions e, adjacency)
                     string.push adjacency
                     unchecked.push adjacency
-                else if @isEmptyAt(adjacency) and (liberty.every (e) -> not e.isEqualTo adjacency)
+                else if @isEmptyAt(adjacency) and (liberty.every (e) -> not equalPositions e, adjacency)
                     liberty.push adjacency
             aux unchecked, string, liberty
 
