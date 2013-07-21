@@ -137,8 +137,7 @@ describe "OnBoard", ->
             result = evaluate [board], WHITE
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value - (blacks.length - whites.length)).toBeGreaterThan 0
-        # 黒猫のヨンロ
-        it "should returns ", ->
+        it "黒猫のヨンロ", ->
             blacks = [[1,2],[2,2],[2,3]]
             whites = [[1,0],[3,0],[1,1],[3,1],[0,2],[3,2],[3,3]]
             board = new OnBoard blacks, whites
@@ -146,7 +145,7 @@ describe "OnBoard", ->
             result = evaluate [board], BLACK
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value - (blacks.length - whites.length)).toBeGreaterThan 0
-        it "should returns ", ->
+        it "黒猫のヨンロ", ->
             blacks = [[0,0],[1,0],[2,0],[3,0],[1,2]]
             whites = [[0,2],[3,2],[0,3],[1,3],[2,3],[3,3]]
             board = new OnBoard blacks, whites
@@ -154,7 +153,7 @@ describe "OnBoard", ->
             result = evaluate [board], BLACK
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value - (blacks.length - whites.length)).toBeGreaterThan 0
-        it "should returns ", ->
+        it "黒猫のヨンロ", ->
             blacks = [[2,2]]
             whites = [[1,0],[3,0],[0,1],[1,1],[0,2],[0,3],[1,3],[3,3]]
             board = new OnBoard blacks, whites
@@ -162,7 +161,7 @@ describe "OnBoard", ->
             result = evaluate [board], BLACK
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value - (blacks.length - whites.length)).toBeGreaterThan 0
-        it "should returns ", ->
+        it "黒猫のヨンロ", ->
             blacks = [[1,0],[2,0],[2,1]]
             whites = [[3,0],[0,1],[1,1],[3,2],[0,3],[1,3],[3,3]]
             board = new OnBoard blacks, whites
@@ -170,7 +169,7 @@ describe "OnBoard", ->
             result = evaluate [board], BLACK
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value - (blacks.length - whites.length)).toBeGreaterThan 0
-        it "should returns ", ->
+        it "黒猫のヨンロ", ->
             blacks = [[0,0],[2,0],[1,1],[2,2]]
             whites = [[3,0],[0,1],[3,1],[0,2],[1,2],[3,2],[2,3],[3,3]]
             board = new OnBoard blacks, whites
@@ -178,7 +177,7 @@ describe "OnBoard", ->
             result = evaluate [board], BLACK
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value - (blacks.length - whites.length)).toBeGreaterThan 0
-        it "should returns ", ->
+        it "黒猫のヨンロ", ->
             blacks = [[1,0],[0,2],[1,2]]
             whites = [[2,0],[3,0],[1,1],[3,1],[2,2],[3,2],[3,3]]
             board = new OnBoard blacks, whites
@@ -186,7 +185,7 @@ describe "OnBoard", ->
             result = evaluate [board], BLACK
             console.log result.history.map((e) -> e.toString()).join('\n')
             expect(result.value - (blacks.length - whites.length)).toBeGreaterThan 0
-        it "should returns ", ->
+        it "黒猫のヨンロ", ->
             board = new OnBoard [[1,0],[2,0],[1,1],[1,2]], [[2,1],[2,2],[1,3],[2,3]]
             console.log board.toString()
             result = evaluate [board], BLACK

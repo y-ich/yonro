@@ -177,8 +177,14 @@ cancelMessage = -> clearTimeout scheduleMessage.id
 playSequence = (history) ->
     aux = (index) ->
         setTimeout (->
-            showOnBoard history[index], true
-            aux index + 1 if index < history.length - 1
+            if history[index].isEqualTo history[index - 1]
+                openAndCloseModal if index % 2 then 'black-pass' else 'white-pass'
+            else
+                showOnBoard history[index], true
+            if index < history.length - 1
+                aux index + 1
+            else
+                $('#sequence').removeAttr 'disabled'
         ), 2000
     showOnBoard history[0]
     aux 1
@@ -202,6 +208,14 @@ $('#solve').on 'click', ->
         ), 120000
         scheduleMessage()
 
-$('#sequence').on 'click', -> playSequence evaluatedResult.history
+$('#sequence').on 'click', ->
+    $(this).attr 'disabled', 'disabled'
+    playSequence evaluatedResult.history
 
+showOnBoard OnBoard.fromString '''
+     XOO
+     O O
+    XXOO
+       O
+    '''
 editBoard()

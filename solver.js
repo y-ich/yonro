@@ -927,9 +927,15 @@
     var aux;
     aux = function(index) {
       return setTimeout((function() {
-        showOnBoard(history[index], true);
+        if (history[index].isEqualTo(history[index - 1])) {
+          openAndCloseModal(index % 2 ? 'black-pass' : 'white-pass');
+        } else {
+          showOnBoard(history[index], true);
+        }
         if (index < history.length - 1) {
           return aux(index + 1);
+        } else {
+          return $('#sequence').removeAttr('disabled');
         }
       }), 2000);
     };
@@ -964,8 +970,11 @@
   });
 
   $('#sequence').on('click', function() {
+    $(this).attr('disabled', 'disabled');
     return playSequence(evaluatedResult.history);
   });
+
+  showOnBoard(OnBoard.fromString(' XOO\n O O\nXXOO\n   O'));
 
   editBoard();
 
