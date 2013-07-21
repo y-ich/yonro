@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=640, user-scalable=no">
+    <!-- <meta name="viewport" content="width=640"> <!-- for iOS and Android -->
+    <title>四路の純碁ソルバ</title>
+    <script src="js/modernizr.js"></script>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="yonro.css" />
+</head>
+<body>
+    <audio id="bgm" src="audio/tw029.mp3" loop></audio>
+    <div id="header">
+        <div class="title">
+            <h1>四路の純碁ソルバ(α)</h1>
+            <p id="manual"><a href="manual.html" target="_blank">遊び方</a></p>
+        </div>
+        <div id="black-white" class="btn-group pull-left" data-toggle="buttons-radio">
+            <button type="button" id="black" class="btn btn-large active">黒</button>
+            <button type="button" id="white" class="btn btn-large">白</button>
+        </div>
+        <button type="button" id="solve" class="btn btn-large">解かせる</button>
+        <button type="button" id="sequence" class="btn btn-large" disabled>手順</button>
+        <span id="evaluating">考え中</span>
+    </div>
+    <div id="board" class="board">
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+        <div class="intersection"></div>
+    </div>
+    <div id="start-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>どれどれ？</h3>
+      </div>
+    </div>
+    <div id="babble-modal1" class="modal hide fade">
+      <div class="modal-header">
+        <h3>むむっ</h3>
+      </div>
+    </div>
+    <div id="babble-modal2" class="modal hide fade">
+      <div class="modal-header">
+        <h3>ちょっと考えさせてね…</h3>
+      </div>
+    </div>
+    <div id="babble-modal3" class="modal hide fade">
+      <div class="modal-header">
+        <h3>あれ、あれれ</h3>
+      </div>
+    </div>
+    <div id="babble-modal4" class="modal hide fade">
+      <div class="modal-header">
+        <h3>わからん…</h3>
+      </div>
+    </div>
+    <script type="text/javascript">
+    for (key in Modernizr) {
+        if (!Modernizr[key]) {
+            alert('四路の碁ゲームを動かすにはブラウザの機能が足らないようです。ChromeかSafariの最新版を使ってみてください。');
+            break;
+        }
+    }
+    </script>
+    <script src="js/support-util.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+    <script type='application/javascript' src='js/noClickDelay.js'></script>
+    <script type="text/javascript">
+    $('button, a').each(function() {
+        new NoClickDelay(this);
+    });
+    </script>
+    <script src="solver.js"></script>
+    <script type="text/javascript"><!--
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-510249-13']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    --></script>
+</body>
+</html>

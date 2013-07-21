@@ -3,6 +3,7 @@ comparePosition = (a, b) ->
     if dx != 0 then dx else a[1] - b[1]
 
 describe "OnBoard", ->
+    ###
     describe "constructors", ->
         it "should return OnBoard instance", ->
             board = OnBoard.random()
@@ -61,6 +62,7 @@ describe "OnBoard", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
             console.log board.toString()
             expect(board.eyes()[0].length).toEqual 1
+    ###
     describe "evaluate", ->
         it "両方活きの終局。0を返す", ->
             board = new OnBoard [[0,0],[1,0],[1,1],[1,2],[0,2],[1,3]], [[3,0],[2,0],[2,1],[2,2],[3,2],[2,3]]
