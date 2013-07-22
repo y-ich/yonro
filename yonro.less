@@ -60,6 +60,7 @@ body {
 }
 
 #header {
+	position: relative;
 	width: @width;
 	padding-top: 10px;
 	padding-bottom: 10px;
@@ -145,9 +146,7 @@ h1 {
 #evaluating {
 	color: white;
 	display: none;
-	position: relative;
-	top: 10px;
-	left: 100px;
+	float: right;
 	font-size: @title-font-size;
 	.animation(blink 0.5s ease-in-out infinite alternate);
 }

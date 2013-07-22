@@ -111,6 +111,7 @@ body {
   background-color: black;
 }
 #header {
+  position: relative;
   width: 640px;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -204,9 +205,7 @@ h1 {
 #evaluating {
   color: white;
   display: none;
-  position: relative;
-  top: 10px;
-  left: 100px;
+  float: right;
   font-size: 30px;
   -webkit-animation: blink 0.5s ease-in-out infinite alternate;
   -moz-animation: blink 0.5s ease-in-out infinite alternate;
