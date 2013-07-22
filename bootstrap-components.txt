@@ -1,11 +1,10 @@
 Normalize and reset
 Body type and links
 Buttons
-Icons
+Button groups and dropdowns
 Modals
 Utilities
 Component animations
 
 Transitions
 Modals
-Alert messages
