@@ -30,6 +30,25 @@
 }
 @-webkit-keyframes blink { .blink() }
 
+/* modifying bootstrap */
+.modal.fade {
+  -webkit-transition: opacity .3s linear, -webkit-transform .3s ease-out;
+  -moz-transition: opacity .3s linear, -moz-transform .3s ease-out;
+  -o-transition: opacity .3s linear, -o-transform .3s ease-out;
+  transition: opacity .3s linear, transform .3s ease-out;
+  top: 10%;
+  -webkit-transform: translateY(-25%);
+  -moz-transform: translateY(-25%);
+  -o-transform: translateY(-25%);
+  transform: translateY(0%);
+}
+.modal.fade.in {
+  -webkit-transform: translateY(0%);
+  -moz-transform: translateY(0%);
+  transform: translateY(0%);
+}
+/* end of modifying bootstrap */
+
 html, body {
 	width: 100%;
 }
