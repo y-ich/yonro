@@ -4,10 +4,10 @@ task 'app', 'build app', ->
     worker = spawn 'coffee', ['-wcj', 'go-worker.js', 'go-common.coffee', 'go-evaluate.coffee', 'go-worker.coffee']
     worker.stdout.on 'data', (data) -> console.log data.toString().trim()
 
-    app = spawn 'coffee', ['-wcj', 'yonro.js', 'go-common.coffee', 'go-evaluate.coffee', 'yonro.coffee']
+    app = spawn 'coffee', ['-wcj', 'yonro.js', 'go-common.coffee', 'go-evaluate.coffee', 'common.coffee', 'yonro.coffee']
     app.stdout.on 'data', (data) -> console.log data.toString().trim()
 
-    app2 = spawn 'coffee', ['-wcj', 'solver.js', 'go-common.coffee', 'go-evaluate.coffee', 'solver.coffee']
+    app2 = spawn 'coffee', ['-wcj', 'solver.js', 'go-common.coffee', 'go-evaluate.coffee', 'common.coffee', 'solver.coffee']
     app2.stdout.on 'data', (data) -> console.log data.toString().trim()
 
 task 'test', 'build test', ->

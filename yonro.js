@@ -685,60 +685,7 @@
     }
   };
 
-  /*
-  # 四路の碁(仮名)
-  # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
-  */
-
-
-  userStone = BLACK;
-
-  expected = null;
-
-  currentIndex = 0;
-
   responseInterval = 2000;
-
-  window.printExpected = function() {
-    console.log(expected.history.map(function(e) {
-      return e.toString();
-    }).join('\n'));
-    return console.log(expected.value);
-  };
-
-  bgm = {
-    element: $('#bgm')[0],
-    state: 'stop',
-    play: function() {
-      bgm.element.play();
-      return bgm.state = 'play';
-    },
-    pause: function() {
-      bgm.element.pause();
-      return bgm.state = 'pause';
-    },
-    stop: function() {
-      bgm.element.pause();
-      bgm.state = 'stop';
-      try {
-        return bgm.element.currentTime = 0;
-      } catch (e) {
-        return console.log(e);
-      }
-    }
-  };
-
-  window.onpagehide = function() {
-    if (bgm.state === 'play') {
-      return bgm.pause();
-    }
-  };
-
-  window.onpageshow = function() {
-    if (bgm.state === 'pause') {
-      return bgm.play();
-    }
-  };
 
   evaluate = function(history, next, success, error, timeout) {
     var timeid, worker;
@@ -781,6 +728,9 @@
     var $intersection, blacks, deferred, deferredes, p, place, whites, x, y, _i, _j, _ref;
     if (effect == null) {
       effect = false;
+    }
+    if (callback == null) {
+      callback = function() {};
     }
     if (board == null) {
       $('.intersection').removeClass('black white half-opacity');
@@ -836,20 +786,76 @@
     }
   };
 
+  openAndCloseModal = function(id, callback) {
+    if (callback == null) {
+      callback = function() {};
+    }
+    $("#" + id).modal('show');
+    return setTimeout((function() {
+      $("#" + id).modal('hide');
+      return callback();
+    }), responseInterval);
+  };
+
+  /*
+  # 四路の碁(仮名)
+  # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
+  */
+
+
+  userStone = BLACK;
+
+  expected = null;
+
+  currentIndex = 0;
+
+  window.printExpected = function() {
+    console.log(expected.history.map(function(e) {
+      return e.toString();
+    }).join('\n'));
+    return console.log(expected.value);
+  };
+
+  bgm = {
+    element: $('#bgm')[0],
+    state: 'stop',
+    play: function() {
+      bgm.element.play();
+      return bgm.state = 'play';
+    },
+    pause: function() {
+      bgm.element.pause();
+      return bgm.state = 'pause';
+    },
+    stop: function() {
+      bgm.element.pause();
+      bgm.state = 'stop';
+      try {
+        return bgm.element.currentTime = 0;
+      } catch (e) {
+        return console.log(e);
+      }
+    }
+  };
+
+  window.onpagehide = function() {
+    if (bgm.state === 'play') {
+      return bgm.pause();
+    }
+  };
+
+  window.onpageshow = function() {
+    if (bgm.state === 'pause') {
+      return bgm.play();
+    }
+  };
+
   endGame = function() {
     var score;
     bgm.stop();
     score = expected.value - expected.history[0].score();
     alert(score === 0 ? '引き分け' : score > 0 ? "黒" + score + "目勝ち" : "白" + (-score) + "目勝ち");
     return $('#start-stop').removeAttr('disabled');
-  };
-
-  openAndCloseModal = function(id, callback) {
-    $("#" + id).modal('show');
-    return setTimeout((function() {
-      $("#" + id).modal('hide');
-      return callback();
-    }), responseInterval);
   };
 
   computerPlay = function(board) {
