@@ -80,6 +80,16 @@
   }
 }
 /* modifying bootstrap */
+.modal {
+  width: 270px;
+  margin-left: -135px;
+}
+.modal h3 {
+  text-align: center;
+}
+.modal-body p {
+  font-size: 12px;
+}
 .modal.fade {
   -webkit-transition: opacity 0.3s linear, -webkit-transform 0.3s ease-out;
   -moz-transition: opacity 0.3s linear, -moz-transform 0.3s ease-out;
@@ -210,12 +220,6 @@ h1 {
   -moz-animation: blink 0.5s ease-in-out infinite alternate;
   -ms-animation: blink 0.5s ease-in-out infinite alternate;
   -o-animation: blink 0.5s ease-in-out infinite alternate;
-}
-.modal h3 {
-  text-align: center;
-}
-.modal-body p {
-  font-size: 12px;
 }
 audio {
   /* iOSだとdisplay: noneでも大きさを持ちレイアウトに影響する */

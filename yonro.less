@@ -31,6 +31,19 @@
 @-webkit-keyframes blink { .blink() }
 
 /* modifying bootstrap */
+.modal {
+	width: @width * 540 / 640;
+	margin-left: -@width * 540 / 640 / 2;
+}
+
+.modal h3 {
+	text-align: center;
+}
+
+.modal-body p {
+	font-size: 12px;
+}
+
 .modal.fade {
   -webkit-transition: opacity .3s linear, -webkit-transform .3s ease-out;
   -moz-transition: opacity .3s linear, -moz-transform .3s ease-out;
@@ -148,14 +161,6 @@ h1 {
 	float: right;
 	font-size: @title-font-size;
 	.animation(blink 0.5s ease-in-out infinite alternate);
-}
-
-.modal h3 {
-	text-align: center;
-}
-
-.modal-body p {
-	font-size: 12px;
 }
 
 audio {
