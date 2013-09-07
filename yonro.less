@@ -1,10 +1,10 @@
 @import "lib/prefixer";
 
-@width: 640px;
+@width: 320px;
 
-@title-font-size: 30px;
+@title-font-size: 15px;
 
-@manual-font-size: 20px;
+@manual-font-size: 10px;
 
 .shake() {
 	0% { left: 0px; }
@@ -61,8 +61,8 @@ body {
 
 #header {
 	position: relative;
-	width: @width;
-	padding: 7px;
+	width: @width - 5*2;
+	padding: 5px;
 	background-image: url(images/dragon.jpg);
 	background-size: cover;
 	background-repeat: no-repeat;
@@ -136,7 +136,7 @@ h1 {
 	position: absolute;
 	margin: 0px;
 	bottom: 0px;
-	right: 20px;
+	right: 10px;
 	font-size: @manual-font-size;
 	background-color: #FFFFFF;
 	opacity: 0.7;
@@ -155,7 +155,7 @@ h1 {
 }
 
 .modal-body p {
-	font-size: 25px;
+	font-size: 12px;
 }
 
 audio {
