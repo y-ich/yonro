@@ -155,7 +155,8 @@ userPlayAndResponse = (position) ->
 
 
 $board = $('#board')
-if window.Touch
+try  
+    document.createEvent("TouchEvent");  
     waitForUserPlay = ->
         $board.on 'touchstart', '.intersection:not(.black):not(.white)', ->
             $board.off 'touchstart', '.intersection:not(.black):not(.white)'
@@ -182,7 +183,7 @@ if window.Touch
     cancelWaiting = ->
         $board.off 'touchstart', '.intersection:not(.black):not(.white)'
         $board.off 'touchmove touchend touchcancel'
-else
+catch
     waitForUserPlay = ->
         $board.on 'mousedown', '.intersection:not(.black):not(.white)', ->
             $board.off 'mousedown', '.intersection:not(.black):not(.white)'
