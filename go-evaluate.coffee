@@ -1,9 +1,9 @@
-#
-# 局面評価
-# 中国ルールを採用。ただし自殺手は着手禁止とする。
+###
+局面評価
+中国ルールを採用。ただし自殺手は着手禁止とする。
+###
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
-#
 
 evaluate = (history, next) ->
     evalUntilDepth history, next, 100
@@ -19,12 +19,13 @@ class EvaluationResult
     constructor: (@value, @history) ->
 
 evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: null }, beta = { value: Infinity, history: null }) ->
-    # historyの最終局面の評価値と評価値に至る手順を返す。
-    # nextは次の手番。
-    # passは直前、その前の手がパスだったかを示す。(局面比較の演算を省略するため)
-    # depthは最大深度。反復進化パラメータ
-    # alpha, betaはαβ枝狩りパラメータ
-
+    ###
+    historyの最終局面の評価値と評価値に至る手順を返す。
+    nextは次の手番。
+    passは直前、その前の手がパスだったかを示す。(局面比較の演算を省略するため)
+    depthは最大深度。反復進化パラメータ
+    alpha, betaはαβ枝狩りパラメータ
+    ###
     board = history[history.length - 1]
 
     if (board is history[history.length - 2]) and (board is history[history.length - 3])

@@ -1,12 +1,13 @@
-#
-# 碁カーネル
-# 中国ルールを採用。ただし自殺手は着手禁止とする。
+###
+碁カーネル
+中国ルールを採用。ただし自殺手は着手禁止とする。
+###
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
-#
 
 
 Array::isEqualTo = (array) ->
+    ###　配列の要素すべてが等しいか否かを返す。 ###
     return false if @length != array.length
     @every (e, i) -> e == array[i]
 
@@ -18,12 +19,14 @@ BLACK = 1
 WHITE = 2
 
 opponentOf = (stone) ->
+    ### 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 ###
     switch stone
         when BLACK then WHITE
         when WHITE then BLACK
         else throw 'error'
 
 adjacenciesAt = (position) ->
+    ### 隣接する点の座標の配列を返す。 ###
     result = []
     for e in [[0, -1], [-1, 0], [1, 0], [0, 1]]
         x = position[0] + e[0]
@@ -32,7 +35,9 @@ adjacenciesAt = (position) ->
     result
 
 class OnBoard
+    ### 盤上の状態を表すクラス ###
     @fromString: (str) ->
+        ### X(黒)とO(白)と空点(スペース)と改行で表示された盤上の状態からインスタンスを生成する。 ###
         blacks = []
         whites = []
         lines = str.replace(/(\r?\n)*$/, '').split /\r?\n/
@@ -50,7 +55,7 @@ class OnBoard
         new OnBoard blacks, whites
 
     @random: ->
-        # ランダムな配置の碁盤を返す。
+        ### ランダムな配置の碁盤を返す。 ###
         loop
             blacks = []
             whites = []
@@ -63,14 +68,16 @@ class OnBoard
             return result if result.isLegal()
 
     @compare: (a, b, stone) ->
-        # 探索のための優先順位を決める局面比較関数。
-        # a, bは比較する局面。stoneの立場で比較する。
-        # 整数値を返す。
-        # スコアに差があればそれを返す。(石を取った手を優先する)
-        # 自分の眼の数に差があればそれを返す。(眼形が多い手を優先する)
-        # 自分のダメの数と相手のダメの数の差に差があればそれを返す。(攻め合いに有効な手を優先する)
-        # 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
-        # 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
+        ###
+        探索のための優先順位を決める局面比較関数。
+        a, bは比較する局面。stoneの立場で比較し、結果を整数値で返す。
+
+        1. スコアに差があればそれを返す。(石を取った手を優先する)
+        2. 自分の眼の数に差があればそれを返す。(眼形が多い手を優先する)
+        3. 自分のダメの数と相手のダメの数の差に差があればそれを返す。(攻め合いに有効な手を優先する)
+        4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
+        5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
+        ###
         score = a.score() - b.score()
         if score != 0
             return if stone is BLACK then score else - score
@@ -102,7 +109,7 @@ class OnBoard
                 return bWhite.length - aWhite.length
 
     constructor: (blacks, whites) ->
-        # blacks, whitesは黒石/白石のある場所の座標の配列。
+        ### blacks, whitesは黒石/白石のある場所の座標の配列。 ###
         @onBoard = [[EMPTY, EMPTY, EMPTY, EMPTY]
                     [EMPTY, EMPTY, EMPTY, EMPTY]
                     [EMPTY, EMPTY, EMPTY, EMPTY]
@@ -115,19 +122,21 @@ class OnBoard
     # 状態テストメソッド
 
     isEmptyAt: (position) ->
-        # 座標が空点かどうか。
+        ### 座標が空点かどうか。 ###
         switch @stateAt position
             when BLACK, WHITE then false
             else true
 
     isLegalAt: (stone, position) ->
-        # 座標が合法着手点かどうか。
-        # コウ(循環)の着手禁止はチェックしない。循環については手順関連で別途チェックすること
+        ###
+        座標が合法着手点かどうか。
+        コウ(循環)の着手禁止はチェックしない。循環については手順関連で別途チェックすること
+        ###
         board = @copy()
         board.place stone, position
 
     isLegal: ->
-        # 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと)
+        ### 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) ###
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE] when not @isEmptyAt [x, y]
                 [g, d] = @stringAndLibertyAt [x, y]
@@ -135,7 +144,7 @@ class OnBoard
         true
 
     isEqualTo: (board) ->
-        # 盤上が同じかどうか。
+        ### 盤上が同じかどうか。 ###
         ###
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
@@ -147,12 +156,14 @@ class OnBoard
     # 状態アクセスメソッド
 
     stateAt: (position) ->
-        # 座標の状態を返す。
+        ### 座標の状態を返す。 ###
         @onBoard[position[0]][position[1]]
 
     deployment: ->
-        # 現在の配置を返す。
-        # コンストラクタの逆関数
+        ###
+        現在の配置を返す。
+        コンストラクタの逆関数
+        ###
         blacks = []
         whites = []
         for x in [0...BOARD_SIZE]
@@ -164,22 +175,26 @@ class OnBoard
         [blacks, whites]
 
     score: ->
-        # 石の数の差を返す。
-        # 中国ルールを採用。盤上の石の数の差が評価値。
+        ###
+        石の数の差を返す。
+        中国ルールを採用。盤上の石の数の差が評価値。
+        ###
         [blacks, whites] = @deployment()
         blacks.length - whites.length
 
     add: (stone, position) ->
-        # 石を座標にセットする。
-        # stateはBLACK, WHITEのいずれか。(本当はEMPTYもOK)
+        ###
+        石を座標にセットする。
+        stateはBLACK, WHITEのいずれか。(本当はEMPTYもOK)
+        ###
         @onBoard[position[0]][position[1]] = stone
 
     delete: (position) ->
-        # 座標の石をただ取る。
+        ### 座標の石をただ取る。 ###
         @add EMPTY, position
 
     candidates: (stone) ->
-        # stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。
+        ### stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 ###
         result = []
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
@@ -188,7 +203,7 @@ class OnBoard
         result
 
     stringAndLibertyAt: (position) ->
-        # 座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。(ストリング)
+        ### 座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。(ストリング) ###
         return null if @isEmptyAt position
 
         stone = @stateAt position
@@ -208,7 +223,7 @@ class OnBoard
         aux [position], [position], []
 
     emptyStringAt: (position) ->
-        # 座標の空点と接続した空点の座標の配列を返す。
+        ### 座標の空点と接続した空点の座標の配列を返す。 ###
         return null unless @isEmptyAt position
 
         aux = (unchecked, string) =>
@@ -224,7 +239,7 @@ class OnBoard
         aux [position], [position]
 
     emptyStrings: ->
-        # 盤上の空点のストリングを返す。
+        ### 盤上の空点のストリングを返す。 ###
         result = []
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
@@ -233,7 +248,7 @@ class OnBoard
         result
 
     strings: ->
-        # 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。
+        ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
         result = [[], []]
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
@@ -248,14 +263,14 @@ class OnBoard
         result
 
     isTouchedBetween: (a, b) ->
-        # ストリングa, bが接触しているかどうか。
+        ### ストリングa, bが接触しているかどうか。 ###
         for p in a
             for q in b
                 return true if (Math.abs(p[0] - q[0]) == 1) and (Math.abs(p[1] - q[1]) == 1)
         false
 
     stringsToContacts: (strings) ->
-        # string(接続した石の集合)の配列からcontact(接続もしくは接触した石の集合)を算出して返す。
+        ### string(接続した石の集合)の配列からcontact(接続もしくは接触した石の集合)を算出して返す。 ###
         result = []
         for i in [0...strings.length]
             result[i] ?= [strings[i]]
@@ -271,10 +286,12 @@ class OnBoard
         unique result
 
     whoseEyeAt: (position, checkings = []) ->
-        # 座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
-        # 眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
-        # checkingsは再帰用引数
-        # 石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
+        ###
+        座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
+        眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
+        checkingsは再帰用引数
+        石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
+        ###
         return null if not @isEmptyAt position
 
         adjacencies = adjacenciesAt position
@@ -299,7 +316,7 @@ class OnBoard
             null
 
     eyes: ->
-        # 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。
+        ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         result = [[], []]
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
@@ -315,7 +332,7 @@ class OnBoard
         new OnBoard blacks, whites
 
     captureBy: (position) ->
-        # 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石の座標の配列を返す。
+        ### 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石の座標の配列を返す。 ###
         capturedStone = opponentOf @stateAt position
         adjacencies = adjacenciesAt position
         captives = []
@@ -327,10 +344,12 @@ class OnBoard
         captives
 
     place: (stone, position) ->
-        # 石を座標に着手する。
-        # 着手候補を減らす便宜上、自殺手は着手禁止とする。(中国ルールからの逸脱)
-        # 着手が成立したらtrue。着手禁止の場合false。
-        # 循環手か否かは未チェック。
+        ###
+        石を座標に着手する。
+        着手候補を減らす便宜上、自殺手は着手禁止とする。(中国ルールからの逸脱)
+        着手が成立したらtrue。着手禁止の場合false。
+        循環手か否かは未チェック。
+        ###
         return true unless position? # パス
         return false unless @isEmptyAt position
         adjacencies = adjacenciesAt position
