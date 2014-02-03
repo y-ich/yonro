@@ -1,7 +1,8 @@
 ###
+main for solver.html
+###
 # 四路の碁(仮名)
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
-###
 
 evaluatedResult = null
 

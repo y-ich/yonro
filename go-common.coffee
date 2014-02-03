@@ -5,18 +5,22 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
-
 Array::isEqualTo = (array) ->
     ###　配列の要素すべてが等しいか否かを返す。 ###
     return false if @length != array.length
     @every (e, i) -> e == array[i]
 
-BOARD_SIZE = 4
+BOARD_SIZE = 4 # デフォルトは四路
 MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2
 
 EMPTY = 0
 BLACK = 1
 WHITE = 2
+
+setBoardSize = (size) ->
+    ### 碁盤のサイズを設定する。 デフォルトは4路。 ###
+    BOARD_SIZE = size
+    MAX_SCORE = size * size - 2
 
 opponentOf = (stone) ->
     ### 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 ###
@@ -26,6 +30,7 @@ opponentOf = (stone) ->
         else throw 'error'
 
 adjacenciesAt = (position) ->
+    ### プライベート ###
     ### 隣接する点の座標の配列を返す。 ###
     result = []
     for e in [[0, -1], [-1, 0], [1, 0], [0, 1]]

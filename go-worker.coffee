@@ -7,6 +7,7 @@ self.onmessage = (event) ->
             history[history.length - 2] = history[history.length - 1]
             if history[history.length - 3]?.isEqualTo history[history.length - 1]
                 history[history.length - 3] = history[history.length - 1]
+        setBoardSize event.data.size if event.data.size?
         result = evaluate history, event.data.next
         event.data.value = result.value
         event.data.history = result.history.map (e) -> e.toString()
