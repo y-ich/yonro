@@ -107,7 +107,7 @@ computerPlay = (board) ->
                     b.place computerStone, p
                     parity = if userStone is BLACK then 0 else 1
                     nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
-                nodes.sort (a, b) -> - OnBoard.compare a, b, computerStone
+                nodes.sort (a, b) -> - compare a, b, computerStone
                 expected.history.push nodes[0]
                 openAndCloseModal 'upset-modal', behaveNext
             )
@@ -128,7 +128,7 @@ computerPlay = (board) ->
                 b.place computerStone, p
                 parity = if userStone is BLACK then 0 else 1
                 nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
-            nodes.sort (a, b) -> - OnBoard.compare a, b, computerStone
+            nodes.sort (a, b) -> - compare a, b, computerStone
             expected.history.push nodes[0]
             behaveNext()
         )

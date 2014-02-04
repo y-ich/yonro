@@ -45,7 +45,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
 
     switch next
         when BLACK
-            nodes.sort (a, b) -> - OnBoard.compare a, b, next
+            nodes.sort (a, b) -> - compare a, b, next
             alpha0 = alpha
             for b in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
@@ -73,7 +73,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                 return beta
             return alpha
         when WHITE
-            nodes.sort (a, b) -> - OnBoard.compare a, b, next
+            nodes.sort (a, b) -> - compare a, b, next
             beta0 = beta
             for b in nodes
                 if (b.deployment()[0].length <= 1) and (b.emptyStrings().length >= 2)

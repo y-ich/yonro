@@ -39,6 +39,48 @@ adjacenciesAt = (position) ->
         result.push [x, y] if 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
     result
 
+compare: (a, b, stone) ->
+    ###
+    探索のための優先順位を決める局面比較関数。
+    a, bは比較する局面。stoneの立場で比較し、結果を整数値で返す。
+
+    1. スコアに差があればそれを返す。(石を取った手を優先する)
+    2. 自分の眼の数に差があればそれを返す。(眼形が多い手を優先する)
+    3. 自分のダメの数と相手のダメの数の差に差があればそれを返す。(攻め合いに有効な手を優先する)
+    4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
+    5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
+    ###
+    score = a.score() - b.score()
+    if score != 0
+        return if stone is BLACK then score else - score
+
+    index = if stone is BLACK then 0 else 1
+    eyes = a.eyes()[index].length - b.eyes()[index].length
+    if eyes != 0
+        return eyes
+
+    [aBlack, aWhite] = a.strings()
+    [bBlack, bWhite] = b.strings()
+    numOfLiberties = (strings) -> strings.reduce ((sum, e) -> sum + e[1].length), 0
+    switch stone
+        when BLACK
+            dame = (numOfLiberties(aBlack) - numOfLiberties(aWhite)) - (numOfLiberties(bBlack) - numOfLiberties(bWhite))
+            return dame if dame != 0
+            strings = bBlack.length - aBlack.length
+            return strings if strings != 0
+            aBlack = a.stringsToContacts aBlack
+            bBlack = b.stringsToContacts bBlack
+            return bBlack.length - aBlack.length
+        when WHITE
+            dame = (numOfLiberties(aWhite) - numOfLiberties(aBlack)) - (numOfLiberties(bWhite) - numOfLiberties(bBlack))
+            return dame if dame != 0
+            strings = bWhite.length - aWhite.length
+            return strings if strings != 0
+            aWhite = a.stringsToContacts aWhite
+            bWhite = b.stringsToContacts bWhite
+            return bWhite.length - aWhite.length
+
+
 class OnBoard
     ### 盤上の状態を表すクラス ###
     @fromString: (str) ->
@@ -71,47 +113,6 @@ class OnBoard
                         when 2 then whites.push [x, y]
             result = new OnBoard(blacks, whites)
             return result if result.isLegal()
-
-    @compare: (a, b, stone) ->
-        ###
-        探索のための優先順位を決める局面比較関数。
-        a, bは比較する局面。stoneの立場で比較し、結果を整数値で返す。
-
-        1. スコアに差があればそれを返す。(石を取った手を優先する)
-        2. 自分の眼の数に差があればそれを返す。(眼形が多い手を優先する)
-        3. 自分のダメの数と相手のダメの数の差に差があればそれを返す。(攻め合いに有効な手を優先する)
-        4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
-        5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
-        ###
-        score = a.score() - b.score()
-        if score != 0
-            return if stone is BLACK then score else - score
-
-        index = if stone is BLACK then 0 else 1
-        eyes = a.eyes()[index].length - b.eyes()[index].length
-        if eyes != 0
-            return eyes
-
-        [aBlack, aWhite] = a.strings()
-        [bBlack, bWhite] = b.strings()
-        numOfLiberties = (strings) -> strings.reduce ((sum, e) -> sum + e[1].length), 0
-        switch stone
-            when BLACK
-                dame = (numOfLiberties(aBlack) - numOfLiberties(aWhite)) - (numOfLiberties(bBlack) - numOfLiberties(bWhite))
-                return dame if dame != 0
-                strings = bBlack.length - aBlack.length
-                return strings if strings != 0
-                aBlack = a.stringsToContacts aBlack
-                bBlack = b.stringsToContacts bBlack
-                return bBlack.length - aBlack.length
-            when WHITE
-                dame = (numOfLiberties(aWhite) - numOfLiberties(aBlack)) - (numOfLiberties(bWhite) - numOfLiberties(bBlack))
-                return dame if dame != 0
-                strings = bWhite.length - aWhite.length
-                return strings if strings != 0
-                aWhite = a.stringsToContacts aWhite
-                bWhite = b.stringsToContacts bWhite
-                return bWhite.length - aWhite.length
 
     constructor: (blacks, whites) ->
         ### blacks, whitesは黒石/白石のある場所の座標の配列。 ###

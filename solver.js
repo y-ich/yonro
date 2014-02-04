@@ -68,6 +68,69 @@
     return result;
   };
 
+  ({
+    compare: function(a, b, stone) {
+
+      /*
+      探索のための優先順位を決める局面比較関数。
+      a, bは比較する局面。stoneの立場で比較し、結果を整数値で返す。
+      
+      1. スコアに差があればそれを返す。(石を取った手を優先する)
+      2. 自分の眼の数に差があればそれを返す。(眼形が多い手を優先する)
+      3. 自分のダメの数と相手のダメの数の差に差があればそれを返す。(攻め合いに有効な手を優先する)
+      4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
+      5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
+       */
+      var aBlack, aWhite, bBlack, bWhite, dame, eyes, index, numOfLiberties, score, strings, _ref, _ref1;
+      score = a.score() - b.score();
+      if (score !== 0) {
+        if (stone === BLACK) {
+          return score;
+        } else {
+          return -score;
+        }
+      }
+      index = stone === BLACK ? 0 : 1;
+      eyes = a.eyes()[index].length - b.eyes()[index].length;
+      if (eyes !== 0) {
+        return eyes;
+      }
+      _ref = a.strings(), aBlack = _ref[0], aWhite = _ref[1];
+      _ref1 = b.strings(), bBlack = _ref1[0], bWhite = _ref1[1];
+      numOfLiberties = function(strings) {
+        return strings.reduce((function(sum, e) {
+          return sum + e[1].length;
+        }), 0);
+      };
+      switch (stone) {
+        case BLACK:
+          dame = (numOfLiberties(aBlack) - numOfLiberties(aWhite)) - (numOfLiberties(bBlack) - numOfLiberties(bWhite));
+          if (dame !== 0) {
+            return dame;
+          }
+          strings = bBlack.length - aBlack.length;
+          if (strings !== 0) {
+            return strings;
+          }
+          aBlack = a.stringsToContacts(aBlack);
+          bBlack = b.stringsToContacts(bBlack);
+          return bBlack.length - aBlack.length;
+        case WHITE:
+          dame = (numOfLiberties(aWhite) - numOfLiberties(aBlack)) - (numOfLiberties(bWhite) - numOfLiberties(bBlack));
+          if (dame !== 0) {
+            return dame;
+          }
+          strings = bWhite.length - aWhite.length;
+          if (strings !== 0) {
+            return strings;
+          }
+          aWhite = a.stringsToContacts(aWhite);
+          bWhite = b.stringsToContacts(bWhite);
+          return bWhite.length - aWhite.length;
+      }
+    }
+  });
+
   OnBoard = (function() {
 
     /* 盤上の状態を表すクラス */
@@ -127,67 +190,6 @@
         if (result.isLegal()) {
           return result;
         }
-      }
-    };
-
-    OnBoard.compare = function(a, b, stone) {
-
-      /*
-      探索のための優先順位を決める局面比較関数。
-      a, bは比較する局面。stoneの立場で比較し、結果を整数値で返す。
-      
-      1. スコアに差があればそれを返す。(石を取った手を優先する)
-      2. 自分の眼の数に差があればそれを返す。(眼形が多い手を優先する)
-      3. 自分のダメの数と相手のダメの数の差に差があればそれを返す。(攻め合いに有効な手を優先する)
-      4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
-      5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
-       */
-      var aBlack, aWhite, bBlack, bWhite, dame, eyes, index, numOfLiberties, score, strings, _ref, _ref1;
-      score = a.score() - b.score();
-      if (score !== 0) {
-        if (stone === BLACK) {
-          return score;
-        } else {
-          return -score;
-        }
-      }
-      index = stone === BLACK ? 0 : 1;
-      eyes = a.eyes()[index].length - b.eyes()[index].length;
-      if (eyes !== 0) {
-        return eyes;
-      }
-      _ref = a.strings(), aBlack = _ref[0], aWhite = _ref[1];
-      _ref1 = b.strings(), bBlack = _ref1[0], bWhite = _ref1[1];
-      numOfLiberties = function(strings) {
-        return strings.reduce((function(sum, e) {
-          return sum + e[1].length;
-        }), 0);
-      };
-      switch (stone) {
-        case BLACK:
-          dame = (numOfLiberties(aBlack) - numOfLiberties(aWhite)) - (numOfLiberties(bBlack) - numOfLiberties(bWhite));
-          if (dame !== 0) {
-            return dame;
-          }
-          strings = bBlack.length - aBlack.length;
-          if (strings !== 0) {
-            return strings;
-          }
-          aBlack = a.stringsToContacts(aBlack);
-          bBlack = b.stringsToContacts(bBlack);
-          return bBlack.length - aBlack.length;
-        case WHITE:
-          dame = (numOfLiberties(aWhite) - numOfLiberties(aBlack)) - (numOfLiberties(bWhite) - numOfLiberties(bBlack));
-          if (dame !== 0) {
-            return dame;
-          }
-          strings = bWhite.length - aWhite.length;
-          if (strings !== 0) {
-            return strings;
-          }
-          aWhite = a.stringsToContacts(aWhite);
-          bWhite = b.stringsToContacts(bWhite);
-          return bWhite.length - aWhite.length;
       }
     };
 
@@ -742,7 +744,7 @@
     switch (next) {
       case BLACK:
         nodes.sort(function(a, b) {
-          return -OnBoard.compare(a, b, next);
+          return -compare(a, b, next);
         });
         alpha0 = alpha;
         for (_j = 0, _len1 = nodes.length; _j < _len1; _j++) {
@@ -775,7 +777,7 @@
         return alpha;
       case WHITE:
         nodes.sort(function(a, b) {
-          return -OnBoard.compare(a, b, next);
+          return -compare(a, b, next);
         });
         beta0 = beta;
         for (_k = 0, _len2 = nodes.length; _k < _len2; _k++) {
