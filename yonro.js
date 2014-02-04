@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, bgm, cancelWaiting, computerPlay, currentIndex, endGame, evalUntilDepth, evaluate, expected, openAndCloseModal, opponentOf, responseInterval, setBoardSize, showOnBoard, userPlayAndResponse, userStone, waitForUserPlay;
+  var $board, BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, bgm, cancelWaiting, computerPlay, currentIndex, endGame, evalUntilDepth, evaluate, expected, openAndCloseModal, opponentOf, responseInterval, setBoardSize, showOnBoard, touchDevice, userPlayAndResponse, userStone, waitForUserPlay;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -933,6 +933,17 @@
 
   currentIndex = 0;
 
+  try {
+    document.createEvent("TouchEvent");
+    if ((window.Touch != null) && (typeof window.ontouchstart) !== 'undefined') {
+      touchDevice = true;
+    } else {
+      false;
+    }
+  } catch (_error) {
+    touchDevice = false;
+  }
+
   window.printExpected = function() {
     console.log(expected.history.map(function(e) {
       return e.toString();
@@ -1130,8 +1141,11 @@
 
   $board = $('#board');
 
-  try {
-    document.createEvent("TouchEvent");
+  if (touchDevice) {
+    console.log('touch device');
+    $(document.body).on('touchmove', function(e) {
+      return e.preventDefault();
+    });
     waitForUserPlay = function() {
       $board.on('touchstart', '.intersection:not(.black):not(.white)', function() {
         $board.off('touchstart', '.intersection:not(.black):not(.white)');
@@ -1165,7 +1179,8 @@
       $board.off('touchstart', '.intersection:not(.black):not(.white)');
       return $board.off('touchmove touchend touchcancel');
     };
-  } catch (_error) {
+  } else {
+    console.log('non-touch device');
     waitForUserPlay = function() {
       $board.on('mousedown', '.intersection:not(.black):not(.white)', function() {
         $board.off('mousedown', '.intersection:not(.black):not(.white)');
@@ -1194,12 +1209,6 @@
       return $board.off('mouseup', '.intersection.half-opacity');
     };
   }
-
-  $(document.body).on('touchmove', function(e) {
-    if (window.Touch) {
-      return e.preventDefault();
-    }
-  });
 
   $('#start-stop').on('click', function() {
     var board;

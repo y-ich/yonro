@@ -7,6 +7,14 @@ userStone = BLACK
 expected = null
 currentIndex = 0
 
+try
+    document.createEvent("TouchEvent");
+    if window.Touch? and (typeof window.ontouchstart) != 'undefined'
+        touchDevice = true
+    else false
+catch
+    touchDevice = false
+
 window.printExpected = ->
     # 最初からの手順と読み筋を表示する
     # デバッグ用関数
@@ -155,8 +163,9 @@ userPlayAndResponse = (position) ->
 
 
 $board = $('#board')
-try  
-    document.createEvent("TouchEvent");  
+if touchDevice
+    console.log 'touch device'
+    $(document.body).on 'touchmove', (e) -> e.preventDefault()
     waitForUserPlay = ->
         $board.on 'touchstart', '.intersection:not(.black):not(.white)', ->
             $board.off 'touchstart', '.intersection:not(.black):not(.white)'
@@ -183,7 +192,8 @@ try
     cancelWaiting = ->
         $board.off 'touchstart', '.intersection:not(.black):not(.white)'
         $board.off 'touchmove touchend touchcancel'
-catch
+else
+    console.log 'non-touch device'
     waitForUserPlay = ->
         $board.on 'mousedown', '.intersection:not(.black):not(.white)', ->
             $board.off 'mousedown', '.intersection:not(.black):not(.white)'
@@ -210,9 +220,6 @@ catch
         $board.off 'mouseleave', '.intersection.half-opacity'
         $board.off 'mouseenter', '.intersection:not(.black):not(.white)'
         $board.off 'mouseup', '.intersection.half-opacity'
-
-
-$(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#start-stop').on 'click', ->
     showOnBoard null
