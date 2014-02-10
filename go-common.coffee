@@ -84,7 +84,7 @@ compare: (a, b, stone) ->
 class OnBoard
     ### 盤上の状態を表すクラス ###
     @fromString: (str) ->
-        ### X(黒)とO(白)と空点(スペース)と改行で表示された盤上の状態からインスタンスを生成する。 ###
+        ### 盤上の状態を表すX(黒)とO(白)と空点(スペース)と改行で文字列からインスタンスを生成する。 ###
         blacks = []
         whites = []
         lines = str.replace(/(\r?\n)*$/, '').split /\r?\n/
@@ -209,7 +209,10 @@ class OnBoard
         result
 
     stringAndLibertyAt: (position) ->
-        ### 座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。(ストリング) ###
+        ###
+        座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
+        接続した石の集団を連(ストリング)と呼ぶ。
+        ###
         return null if @isEmptyAt position
 
         stone = @stateAt position

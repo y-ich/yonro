@@ -136,7 +136,7 @@
     /* 盤上の状態を表すクラス */
     OnBoard.fromString = function(str) {
 
-      /* X(黒)とO(白)と空点(スペース)と改行で表示された盤上の状態からインスタンスを生成する。 */
+      /* 盤上の状態を表すX(黒)とO(白)と空点(スペース)と改行で文字列からインスタンスを生成する。 */
       var blacks, line, lines, whites, x, y, _i, _j, _len;
       blacks = [];
       whites = [];
@@ -338,7 +338,10 @@
 
     OnBoard.prototype.stringAndLibertyAt = function(position) {
 
-      /* 座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。(ストリング) */
+      /*
+      座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
+      接続した石の集団を連(ストリング)と呼ぶ。
+       */
       var aux, stone;
       if (this.isEmptyAt(position)) {
         return null;

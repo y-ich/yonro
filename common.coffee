@@ -1,9 +1,19 @@
+###
+四路の純碁とソルバのクライアント側共通コード
+###
+# 四路の碁(仮名)
+# (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
+
 responseInterval = 2000
 
 
 evaluate = (history, next, success, error, timeout = 10000) ->
-    # (web workerを使って)局面を評価する。
-    # success, errorはコールバック関数。
+    ###
+    (web workerを使って)局面を評価する。
+
+    success, errorはコールバック関数。
+    ###
+
     $('#evaluating').css 'display', 'inline'
 
     timeid = null
@@ -31,9 +41,11 @@ evaluate = (history, next, success, error, timeout = 10000) ->
 
 
 showOnBoard = (board, effect = false, callback = ->) ->
-    # boardの状態を描画する。
-    # boardがnullなら空の盤。
-    # effectをtrueにすると、今の状態からエフェクト入りで盤を変更
+    ###
+    boardの状態を描画する。
+    boardがnullなら空の盤。
+    effectをtrueにすると、今の状態からエフェクト入りで盤を変更。
+    ###
     if not board?
         $('.intersection').removeClass 'black white half-opacity'
         return
@@ -74,6 +86,9 @@ showOnBoard = (board, effect = false, callback = ->) ->
 
 
 openAndCloseModal = (id, callback = ->) ->
+    ###
+    モーダルを一定時間表示する。
+    ###
     $("##{id}").modal 'show'
     setTimeout (->
         $("##{id}").modal 'hide'
