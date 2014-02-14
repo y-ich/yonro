@@ -39,7 +39,7 @@ adjacenciesAt = (position) ->
         result.push [x, y] if 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
     result
 
-compare: (a, b, stone) ->
+compare = (a, b, stone) ->
     ###
     探索のための優先順位を決める局面比較関数。
     a, bは比較する局面。stoneの立場で比較し、結果を整数値で返す。
