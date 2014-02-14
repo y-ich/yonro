@@ -1,6 +1,7 @@
 @import "lib/prefixer";
 
 @width: 320px;
+@board-size: 4;
 
 @title-font-size: 15px;
 
@@ -32,8 +33,8 @@
 
 /* modifying bootstrap */
 .modal {
-	width: @width * 540 / 640;
-	margin-left: -@width * 540 / 640 / 2;
+	width: (@width * 540 / 640);
+	margin-left: (-@width * 540 / 640 / 2);
 }
 
 .modal h3 {
@@ -74,7 +75,7 @@ body {
 
 #header {
 	position: relative;
-	width: @width - 5*2;
+	width: (@width - 5*2);
 	padding: 5px;
 	background-image: url(images/dragon.jpg);
 	background-size: cover;
@@ -110,8 +111,8 @@ h1 {
 .intersection {
 	position: relative;
 	float: left;
-	width: @width / 4;
-	height: @width / 4;
+	width: (@width / @board-size);
+	height: (@width / @board-size);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: contain;
@@ -130,7 +131,7 @@ h1 {
     -moz-transition: -moz-transform 1s linear;
     -o-transition: -o-transform 1s linear;
     transition: transform 1s linear;
-	.transform(translateY(-(@width / 9 * 16 + @width / 4)));
+	.transform(translateY(-(@width / 9 * 16 + @width / @board-size)));
 }
 
 .half-opacity {
