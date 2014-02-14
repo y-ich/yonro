@@ -144,17 +144,24 @@ h1 {
   font-size: 15px;
   line-height: 15px;
 }
-.board {
+.board-bg {
   background-image: url('images/ban.png');
   background-size: contain;
   width: 320px;
   height: 320px;
 }
+.board {
+  position: relative;
+  left: 20px;
+  top: 20px;
+  width: 280px;
+  height: 280px;
+}
 .intersection {
   position: relative;
   float: left;
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -187,11 +194,11 @@ h1 {
   -moz-transition: -moz-transform 1s linear;
   -o-transition: -o-transform 1s linear;
   transition: transform 1s linear;
-  -webkit-transform: translateY(-(320px / 9 * 16 + 320px / 4));
-  -moz-transform: translateY(-(320px / 9 * 16 + 320px / 4));
-  -ms-transform: translateY(-(320px / 9 * 16 + 320px / 4));
-  -o-transform: translateY(-(320px / 9 * 16 + 320px / 4));
-  transform: translateY(-(320px / 9 * 16 + 320px / 4));
+  -webkit-transform: translateY(-567.7777777777778px);
+  -moz-transform: translateY(-567.7777777777778px);
+  -ms-transform: translateY(-567.7777777777778px);
+  -o-transform: translateY(-567.7777777777778px);
+  transform: translateY(-567.7777777777778px);
 }
 .half-opacity {
   opacity: 0.5;

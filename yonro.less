@@ -1,6 +1,8 @@
 @import "lib/prefixer";
 
 @width: 320px;
+@board-padding: 20px;
+@frame-width: (@width - 2*@board-padding);
 @board-size: 4;
 
 @title-font-size: 15px;
@@ -101,18 +103,26 @@ h1 {
 	line-height: @title-font-size;
 }
 
-.board {
+.board-bg {
 	background-image: url('images/ban.png');
 	background-size: contain;
 	width: @width;
 	height: @width;
 }
 
+.board {
+    position: relative;
+    left: @board-padding;
+    top: @board-padding;
+	width: @frame-width;
+	height: @frame-width;
+}
+
 .intersection {
 	position: relative;
 	float: left;
-	width: (@width / @board-size);
-	height: (@width / @board-size);
+	width: (@frame-width / @board-size);
+	height: (@frame-width / @board-size);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: contain;
@@ -131,7 +141,7 @@ h1 {
     -moz-transition: -moz-transform 1s linear;
     -o-transition: -o-transform 1s linear;
     transition: transform 1s linear;
-	.transform(translateY(-(@width / 9 * 16 + @width / @board-size)));
+	.transform(translateY((-(@frame-width / 9 * 16 + @frame-width / @board-size))));
 }
 
 .half-opacity {
