@@ -194,14 +194,20 @@
     function OnBoard(blacks, whites) {
 
       /* blacks, whitesは黒石/白石のある場所の座標の配列。 */
-      var e, _i, _j, _len, _len1;
-      this.onBoard = [[EMPTY, EMPTY, EMPTY, EMPTY], [EMPTY, EMPTY, EMPTY, EMPTY], [EMPTY, EMPTY, EMPTY, EMPTY], [EMPTY, EMPTY, EMPTY, EMPTY]];
-      for (_i = 0, _len = blacks.length; _i < _len; _i++) {
-        e = blacks[_i];
+      var e, i, j, _i, _j, _k, _l, _len, _len1, _ref, _ref1;
+      this.onBoard = new Array(BOARD_SIZE);
+      for (i = _i = 0, _ref = this.onBoard.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+        this.onBoard[i] = new Array(BOARD_SIZE);
+        for (j = _j = 0, _ref1 = this.onBoard[i].length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; j = 0 <= _ref1 ? ++_j : --_j) {
+          this.onBoard[i][j] = EMPTY;
+        }
+      }
+      for (_k = 0, _len = blacks.length; _k < _len; _k++) {
+        e = blacks[_k];
         this.onBoard[e[0]][e[1]] = BLACK;
       }
-      for (_j = 0, _len1 = whites.length; _j < _len1; _j++) {
-        e = whites[_j];
+      for (_l = 0, _len1 = whites.length; _l < _len1; _l++) {
+        e = whites[_l];
         this.onBoard[e[0]][e[1]] = WHITE;
       }
     }
@@ -1166,7 +1172,6 @@
   $board = $('#board');
 
   if (touchDevice) {
-    console.log('touch device');
     $(document.body).on('touchmove', function(e) {
       return e.preventDefault();
     });
@@ -1204,7 +1209,6 @@
       return $board.off('touchmove touchend touchcancel');
     };
   } else {
-    console.log('non-touch device');
     waitForUserPlay = function() {
       $board.on('mousedown', '.intersection:not(.black):not(.white)', function() {
         $board.off('mousedown', '.intersection:not(.black):not(.white)');
@@ -1244,7 +1248,9 @@
     };
     currentIndex = 0;
     showOnBoard(expected.history[currentIndex]);
-    return $('#select-modal').modal('show');
+    return setTimeout((function() {
+      return $('#select-modal').modal('show');
+    }), 3000);
   });
 
   $('#play-white, #play-black').on('click', function() {

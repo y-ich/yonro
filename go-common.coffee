@@ -116,10 +116,11 @@ class OnBoard
 
     constructor: (blacks, whites) ->
         ### blacks, whitesは黒石/白石のある場所の座標の配列。 ###
-        @onBoard = [[EMPTY, EMPTY, EMPTY, EMPTY]
-                    [EMPTY, EMPTY, EMPTY, EMPTY]
-                    [EMPTY, EMPTY, EMPTY, EMPTY]
-                    [EMPTY, EMPTY, EMPTY, EMPTY]]
+        @onBoard = new Array BOARD_SIZE
+        for i in [0...@onBoard.length]
+            @onBoard[i] = new Array BOARD_SIZE
+            for j in [0...@onBoard[i].length]
+                @onBoard[i][j] = EMPTY
         for e in blacks
             @onBoard[e[0]][e[1]] = BLACK
         for e in whites

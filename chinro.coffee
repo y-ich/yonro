@@ -162,6 +162,8 @@ userPlayAndResponse = (position) ->
         waitForUserPlay()
 
 
+setBoardSize 19
+
 $board = $('#board')
 if touchDevice
     $(document.body).on 'touchmove', (e) -> e.preventDefault()

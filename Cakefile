@@ -10,6 +10,9 @@ task 'app', 'build app', ->
     app2 = spawn 'coffee', ['-wcj', 'solver.js', 'go-common.coffee', 'go-evaluate.coffee', 'common.coffee', 'solver.coffee']
     app2.stdout.on 'data', (data) -> console.log data.toString().trim()
 
+    app3 = spawn 'coffee', ['-wcj', 'chinro.js', 'go-common.coffee', 'common.coffee', 'chinro.coffee']
+    app3.stdout.on 'data', (data) -> console.log data.toString().trim()
+
 task 'test', 'build test', ->
     test = spawn 'coffee', ['-wcbj', 'test/go-evaluate.js', 'go-common.coffee', 'go-evaluate.coffee']
     test.stdout.on 'data', (data) -> console.log data.toString().trim()

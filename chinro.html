@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=320, user-scalable=no">
+    <!-- <meta name="viewport" content="width=640"> <!-- for iOS and Android -->
+    <title>珍瓏ゲーム「追龍」</title>
+    <script src="js/modernizr.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="chinro.css" />
+</head>
+<body>
+    <!--<audio id="bgm" src="audio/tw029.mp3" loop></audio>-->
+    <div id="header">
+        <div class="title">
+            <h1>珍瓏ゲーム「追龍」</h1>
+            <p id="manual"><a href="manual.html" target="_blank">遊び方</a></p>
+        </div>
+        <button type="button" id="start-stop" class="btn">スタート</button>
+        <button type="button" id="pass" class="btn" disabled>パス</button>
+        <button type="button" id="resign" class="btn" disabled>投了</button>
+        <div id="evaluating">考え中</div>
+    </div>
+    <div class="board-bg">
+        <div id="board" class="board">
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+            <div class="intersection"></div>
+        </div>
+    </div>
+    <div id="select-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>スタート！</h3>
+      </div>
+      <div class="modal-body">
+        <p>白黒どちらを持ちますか？</p>
+        <p>(決定するとBGMが流れ始めます)</p>
+      </div>
+      <div class="modal-footer">
+        <button id="play-white" class="btn" data-dismiss="modal">白</button>
+        <button id="play-black" class="btn btn-inverse"data-dismiss="modal">黒</button>
+      </div>
+    </div>
+    <div id="start-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>お願いします!</h3>
+      </div>
+    </div>
+    <div id="end-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>ありがとうございました</h3>
+      </div>
+    </div>
+    <div id="expect-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>読み筋！</h3>
+      </div>
+    </div>
+    <div id="pessimistic-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>やばいか〜</h3>
+      </div>
+    </div>
+    <div id="unexpect-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>むむむっ</h3>
+      </div>
+    </div>
+    <div id="upset-modal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>えいっ</h3>
+      </div>
+    </div>
+    <script type="text/javascript">
+    for (key in Modernizr) {
+        if (!Modernizr[key]) {
+            alert('四路の純碁ゲームを動かすにはブラウザの機能が足らないようです。ChromeかSafariの最新版を使ってみてください。');
+            break;
+        }
+    }
+    </script>
+    <script src="js/support-util.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type='application/javascript' src='js/noClickDelay.js'></script>
+    <script type="text/javascript">
+    $('button, a').each(function() {
+        new NoClickDelay(this);
+    });
+    </script>
+    <script src="chinro.js"></script>
+    <script type="text/javascript"><!--
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-510249-13']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    --></script>
+</body>
+</html>
