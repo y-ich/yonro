@@ -86,12 +86,12 @@ $('#solve').on 'click', ->
         evaluate [boardOnScreen()], BLACK, ((result) ->
             evaluatedResult = result
             cancelMessage()
-            alert if result.value > 0 then "黒#{result.value}目勝ちですね" else if result.value < 0 then "白#{result.value}目勝ちですね" else '引き分けですね'
+            alert if result.value > 0 then "黒#{result.value}目勝ちですね" else if result.value < 0 then "白#{- result.value}目勝ちですね" else '引き分けですね'
             $('#sequence').removeAttr 'disabled'
             editBoard()
         ), ((error) ->
             if error.message is 'timeout'
-                alert 'ギブアップ…'
+                alert '降参…'
             else
                 alert error.message
         ), 120000

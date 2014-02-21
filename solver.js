@@ -1059,12 +1059,12 @@
       evaluate([boardOnScreen()], BLACK, (function(result) {
         evaluatedResult = result;
         cancelMessage();
-        alert(result.value > 0 ? "黒" + result.value + "目勝ちですね" : result.value < 0 ? "白" + result.value + "目勝ちですね" : '引き分けですね');
+        alert(result.value > 0 ? "黒" + result.value + "目勝ちですね" : result.value < 0 ? "白" + (-result.value) + "目勝ちですね" : '引き分けですね');
         $('#sequence').removeAttr('disabled');
         return editBoard();
       }), (function(error) {
         if (error.message === 'timeout') {
-          return alert('ギブアップ…');
+          return alert('降参…');
         } else {
           return alert(error.message);
         }
