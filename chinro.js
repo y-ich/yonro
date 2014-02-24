@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, chase, chaseShicho, chaser, compare, editBoard, escape, escaper, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, target, wEvaluate;
+  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, chase, chaseShicho, chaser, compare, editBoard, escape, escaper, evaluatedResult, longest, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, target, wEvaluate;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -698,7 +698,7 @@
   target = null;
 
   chaseShicho = function(board) {
-    var atari, b, bAtaris, e, strings, wAtaris;
+    var atari, bAtaris, e, strings, wAtaris;
     strings = board.strings();
     bAtaris = strings[0].filter(function(e) {
       return e[1].length === 1;
@@ -718,12 +718,8 @@
       return new EvaluationResult(false, [board]);
     }
     target = atari[0][0];
-    b = board.copy();
-    if (!b.place(escaper, atari[1][0])) {
-      return new EvaluationResult(true, [board]);
-    }
     try {
-      return chase([board, b]);
+      return escape([board]);
     } catch (_error) {
       e = _error;
       alert('頭が爆発しました…');
@@ -731,8 +727,10 @@
     }
   };
 
+  longest = [];
+
   escape = function(history) {
-    var b, board, candidates, e, p, result, sl, strings, _i, _j, _len, _len1, _ref;
+    var b, board, candidates, e, p, result, sl, strings, _i, _j, _len, _len1, _ref, _ref1;
     board = history[history.length - 1];
     sl = board.stringAndLibertyAt(target);
     strings = board.strings();
@@ -749,16 +747,22 @@
       p = candidates[_j];
       b = board.copy();
       b.place(escaper, p);
+      if ((_ref1 = history[history.length - 2]) != null ? _ref1.isEqualTo(b) : void 0) {
+        continue;
+      }
       result = chase(history.concat(b));
       if (!result.value) {
-        return result;
+        if (longest.length < result.history.length) {
+          longest = result.history;
+        }
+        return new EvaluationResult(false, longest);
       }
     }
     return result;
   };
 
   chase = function(history) {
-    var b, board, p, result, sl, _i, _len, _ref;
+    var b, board, p, result, sl, _i, _len, _ref, _ref1;
     board = history[history.length - 1];
     sl = board.stringAndLibertyAt(target);
     switch (sl[1].length) {
@@ -772,12 +776,19 @@
           p = _ref[_i];
           b = board.copy();
           b.place(chaser, p);
+          if ((_ref1 = history[history.length - 2]) != null ? _ref1.isEqualTo(b) : void 0) {
+            continue;
+          }
           result = escape(history.concat(b));
           if (result.value) {
             return result;
+          } else {
+            if (longest.length < result.history.length) {
+              longest = result.history;
+            }
           }
         }
-        return result;
+        return new EvaluationResult(false, longest);
       default:
         return new EvaluationResult(false, history);
     }
@@ -1022,6 +1033,7 @@
     stopEditing();
     return openAndCloseModal('start-modal', function() {
       evaluatedResult = chaseShicho(boardOnScreen());
+      console.log(evaluatedResult);
       alert(evaluatedResult.value ? "取れました！" : "取れません…");
       $('#sequence').removeAttr('disabled');
       return editBoard();

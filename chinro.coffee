@@ -84,6 +84,7 @@ $('#solve').on 'click', ->
     stopEditing()
     openAndCloseModal 'start-modal', ->
         evaluatedResult = chaseShicho boardOnScreen()
+        console.log evaluatedResult
         alert if evaluatedResult.value then "取れました！" else "取れません…"
         $('#sequence').removeAttr 'disabled'
         editBoard()
