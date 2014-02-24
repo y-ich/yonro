@@ -1034,4 +1034,6 @@
 
   editBoard();
 
+  $('#opening-modal').modal('show');
+
 }).call(this);
