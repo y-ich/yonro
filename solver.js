@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, compare, editBoard, evalUntilDepth, evaluate, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, wEvaluate;
+  var BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, compare, editBoard, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, wEvaluate;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -442,8 +442,8 @@
           switch (this.stateAt(position)) {
             case BLACK:
               if (result[0].every(function(g) {
-                return g.every(function(e) {
-                  return !e[0].isEqualTo(position);
+                return g[0].every(function(e) {
+                  return !e.isEqualTo(position);
                 });
               })) {
                 result[0].push(this.stringAndLibertyAt(position));
@@ -451,8 +451,8 @@
               break;
             case WHITE:
               if (result[1].every(function(g) {
-                return g.every(function(e) {
-                  return !e[0].isEqualTo(position);
+                return g[0].every(function(e) {
+                  return !e.isEqualTo(position);
                 });
               })) {
                 result[1].push(this.stringAndLibertyAt(position));
@@ -675,148 +675,6 @@
     return OnBoard;
 
   })();
-
-
-  /*
-  局面評価
-  中国ルールを採用。ただし自殺手は着手禁止とする。
-   */
-
-  evaluate = function(history, next) {
-    return evalUntilDepth(history, next, 100);
-
-    /*
-    for depth in [18, 34]
-        result = evalUntilDepth board, next, 0, depth, history
-        return result unless isNaN result
-    NaN
-     */
-  };
-
-  EvaluationResult = (function() {
-    function EvaluationResult(value, history) {
-      this.value = value;
-      this.history = history;
-    }
-
-    return EvaluationResult;
-
-  })();
-
-  evalUntilDepth = function(history, next, depth, alpha, beta) {
-    var alpha0, b, beta0, board, candidates, nodes, opponent, p, parity, result, _i, _j, _k, _len, _len1, _len2;
-    if (alpha == null) {
-      alpha = {
-        value: -Infinity,
-        history: null
-      };
-    }
-    if (beta == null) {
-      beta = {
-        value: Infinity,
-        history: null
-      };
-    }
-
-    /*
-    historyの最終局面の評価値と評価値に至る手順を返す。
-    nextは次の手番。
-    passは直前、その前の手がパスだったかを示す。(局面比較の演算を省略するため)
-    depthは最大深度。反復進化パラメータ
-    alpha, betaはαβ枝狩りパラメータ
-     */
-    board = history[history.length - 1];
-    if ((board === history[history.length - 2]) && (board === history[history.length - 3])) {
-      return new EvaluationResult(board.score(), history);
-    }
-    if (depth === 0) {
-      return new EvaluationResult(NaN, history);
-    }
-    opponent = opponentOf(next);
-    candidates = board.candidates(next);
-    nodes = [];
-    for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-      p = candidates[_i];
-      b = board.copy();
-      b.place(next, p);
-      parity = history.length % 2;
-      if (history.filter(function(e, i) {
-        return (i % 2) === parity;
-      }).every(function(e) {
-        return !b.isEqualTo(e);
-      })) {
-        nodes.push(b);
-      }
-    }
-    switch (next) {
-      case BLACK:
-        nodes.sort(function(a, b) {
-          return -compare(a, b, next);
-        });
-        alpha0 = alpha;
-        for (_j = 0, _len1 = nodes.length; _j < _len1; _j++) {
-          b = nodes[_j];
-          if ((b.deployment()[1].length <= 1) && (b.emptyStrings().length >= 2)) {
-            alpha = new EvaluationResult(MAX_SCORE, history.concat(b));
-            return alpha;
-          } else {
-            result = null;
-            if (result == null) {
-              result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
-            }
-            if (result.value === MAX_SCORE) {
-              return result;
-            }
-            alpha = (isNaN(alpha.value)) || (alpha.value >= result.value) ? alpha : result;
-            if (alpha.value >= beta.value) {
-              return beta;
-            }
-          }
-        }
-        result = evalUntilDepth(history.concat(board), opponent, depth - 1, alpha, beta);
-        if (result.value === MAX_SCORE) {
-          return result;
-        }
-        alpha = (isNaN(alpha.value)) || (alpha.value >= result.value) ? alpha : result;
-        if (alpha.value >= beta.value) {
-          return beta;
-        }
-        return alpha;
-      case WHITE:
-        nodes.sort(function(a, b) {
-          return -compare(a, b, next);
-        });
-        beta0 = beta;
-        for (_k = 0, _len2 = nodes.length; _k < _len2; _k++) {
-          b = nodes[_k];
-          if ((b.deployment()[0].length <= 1) && (b.emptyStrings().length >= 2)) {
-            beta = new EvaluationResult(-MAX_SCORE, history.concat(b));
-            return beta;
-          } else {
-            result = null;
-            if (result == null) {
-              result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
-            }
-            if (result.value === -MAX_SCORE) {
-              return result;
-            }
-            beta = (isNaN(beta.value)) || (beta.value <= result.value) ? beta : result;
-            if (alpha.value >= beta.value) {
-              return alpha;
-            }
-          }
-        }
-        result = evalUntilDepth(history.concat(board), opponent, depth - 1, alpha, beta);
-        if (result.value === -MAX_SCORE) {
-          return result;
-        }
-        beta = (isNaN(beta.value)) || (beta.value <= result.value) ? beta : result;
-        if (alpha.value >= beta.value) {
-          return alpha;
-        }
-        return beta;
-    }
-  };
 
 
   /*

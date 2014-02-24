@@ -1,257 +1,100 @@
 ###
+main for solver.html
+###
 # 四路の碁(仮名)
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
-###
 
-userStone = BLACK
-expected = null
-currentIndex = 0
-
-try
-    document.createEvent("TouchEvent");
-    if window.Touch? and (typeof window.ontouchstart) != 'undefined'
-        touchDevice = true
-    else false
-catch
-    touchDevice = false
-
-window.printExpected = ->
-    # 最初からの手順と読み筋を表示する
-    # デバッグ用関数
-    console.log expected.history.map((e)->e.toString()).join('\n')
-    console.log expected.value
+evaluatedResult = null
 
 
-bgm =
-    element: $('#bgm')[0]
-    state: 'stop'
-    play: ->
-        bgm.element.play()
-        bgm.state = 'play'
-    pause: ->
-        bgm.element.pause()
-        bgm.state = 'pause'
-    stop: ->
-        bgm.element.pause()
-        bgm.state = 'stop'
-        try
-            bgm.element.currentTime = 0 # iOS Safariでは再生前のavのcurrentTimeに代入しようとすると例外が発生する。
-        catch e
-            console.log e
+boardOnScreen = ->
+    blacks = []
+    whites = []
+    $('.intersection').each (i, e) ->
+        $e = $(e)
+        if $e.hasClass 'black'
+            blacks.push [i % BOARD_SIZE, Math.floor(i / BOARD_SIZE)]
+        else if $e.hasClass 'white'
+            whites.push [i % BOARD_SIZE, Math.floor(i / BOARD_SIZE)]
+    new OnBoard blacks, whites
 
-window.onpagehide = -> bgm.pause() if bgm.state is 'play'
 
-window.onpageshow = -> bgm.play() if bgm.state is 'pause'
-
-endGame = ->
-    bgm.stop()
-    score = expected.value - expected.history[0].score()
-    alert if score == 0
-            '引き分け'
-        else if score > 0
-            "黒#{score}目勝ち"
+editBoard = ->
+    $('#black, #white').removeAttr 'disabled'
+    $('.intersection').on 'click', ->
+        console.log this
+        $this = $(this)
+        stone = $('#black-white > .active').attr 'id'
+        if $this.hasClass stone
+            $this.removeClass stone
         else
-            "白#{-score}目勝ち"
-    $('#start-stop').removeAttr 'disabled'
+            $this.removeClass 'black white'
+            $this.addClass stone
 
 
-computerPlay = (board) ->
-    behaveNext = ->
-        currentIndex += 1 # コンピュータの手
-        if currentIndex < expected.history.length
-            if board.isEqualTo expected.history[currentIndex]
-                setTimeout (-> # behaveNextはwEvaluateのコールバックなのですぐに終了するようにタイマー処理。
-                    alert 'パスします'
-                    if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
-                        # 相手もパスだったら
-                        endGame()
-                    else
-                        waitForUserPlay()
-                ), 0
+stopEditing = ->
+    $('.intersection').off 'click'
+    $('#black, #white').attr 'disabled', 'disabled'
+
+
+scheduleMessage = ->
+    messages = [
+        interval: 10000
+        id: 'babble-modal1'
+    ,
+        interval: 20000
+        id: 'babble-modal2'
+    ,
+        interval: 30000
+        id: 'babble-modal3'
+    ,
+        interval: 30000
+        id: 'babble-modal4'
+    ]
+    aux = (index) ->
+        scheduleMessage.id = setTimeout (->
+            openAndCloseModal messages[index].id
+            aux index + 1 if index < messages.length - 1
+        ), messages[index].interval
+    aux 0
+
+
+cancelMessage = -> clearTimeout scheduleMessage.id
+
+
+playSequence = (history) ->
+    aux = (index) ->
+        setTimeout (->
+            if history[index].isEqualTo history[index - 1]
+                openAndCloseModal if index % 2 then 'black-pass' else 'white-pass'
             else
-                showOnBoard expected.history[currentIndex], true, waitForUserPlay
-        else
-            endGame()
-
-    if expected.history[currentIndex]?.isEqualTo board # 読み筋通りなら
-        if expected.history.length - 1 > currentIndex # 続きがあれば
-            if not expected.history[currentIndex - 1]?.isEqualTo board # パスでない
-                score = expected.value - expected.history[0].score()
-                score = if userStone is BLACK then -score else score
-                if score > 0
-                    openAndCloseModal 'expect-modal', behaveNext
-                else if (if userStone is BLACK then -expected.value else expected.value) == -MAX_SCORE
-                    openAndCloseModal 'pessimistic-modal', behaveNext
-                else
-                    setTimeout (->
-                        behaveNext()
-                    ), responseInterval
+                showOnBoard history[index], true
+            if index < history.length - 1
+                aux index + 1
             else
-                setTimeout (->
-                    behaveNext()
-                ), responseInterval
-        else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE)
-            bgm.stop()
-            setTimeout (->
-                alert '負けました…'
-                $('#start-stop').removeAttr 'disabled'
-            ), responseInterval
-        else
-            $('#unexpected-modal').modal 'show'
-            wEvaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
-                expected = result
-                behaveNext()
-            ),
-            ((error) ->
-                $('#evaluate-modal').modal 'hide'
-                expected =
-                    value: NaN
-                    history: expected.history[0...currentIndex].concat(board)
-                computerStone = opponentOf userStone
-                candidates = board.candidates computerStone
-                nodes = []
-                for p in candidates
-                    b = board.copy()
-                    b.place computerStone, p
-                    parity = if userStone is BLACK then 0 else 1
-                    nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
-                nodes.sort (a, b) -> - compare a, b, computerStone
-                expected.history.push nodes[0]
-                openAndCloseModal 'upset-modal', behaveNext
-            )
-    else
-        wEvaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
-            expected = result
-            behaveNext()
-        ),
-        ((error) ->
-            expected =
-                value: NaN
-                history: expected.history[0...currentIndex].concat(board)
-            computerStone = opponentOf userStone
-            candidates = board.candidates computerStone
-            nodes = []
-            for p in candidates
-                b = board.copy()
-                b.place computerStone, p
-                parity = if userStone is BLACK then 0 else 1
-                nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
-            nodes.sort (a, b) -> - compare a, b, computerStone
-            expected.history.push nodes[0]
-            behaveNext()
-        )
+                $('#sequence').removeAttr 'disabled'
+        ), 100
+    showOnBoard history[0]
+    aux 1
 
 
-userPlayAndResponse = (position) ->
-    $('#pass, #resign').attr 'disabled', 'disabled'
+$(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
-    board = expected.history[currentIndex].copy()
-    if board.place userStone, position
-        parity = (currentIndex + 1) % 2
-        if position? and expected.history[0...currentIndex].filter((e, i) -> (i % 2) == parity).some((e) -> board.isEqualTo e) # 循環
-            alert 'そこへ打つと繰り返し…'
-            showOnBoard expected.history[currentIndex]
-            waitForUserPlay()
-        else
-            showOnBoard board, true, ->
-                currentIndex += 1
-                computerPlay board
-    else
-        alert 'そこは打てないよ〜'
-        showOnBoard expected.history[currentIndex]
-        waitForUserPlay()
+$('#solve').on 'click', ->
+    stopEditing()
+    openAndCloseModal 'start-modal', ->
+        evaluatedResult = chaseShicho boardOnScreen()
+        alert if evaluatedResult.value then "取れました！" else "取れません…"
+        $('#sequence').removeAttr 'disabled'
+        editBoard()
 
+$('#sequence').on 'click', ->
+    $(this).attr 'disabled', 'disabled'
+    playSequence evaluatedResult.history
 
 setBoardSize 19
 
-$board = $('#board')
-if touchDevice
-    $(document.body).on 'touchmove', (e) -> e.preventDefault()
-    waitForUserPlay = ->
-        $board.on 'touchstart', '.intersection:not(.black):not(.white)', ->
-            $board.off 'touchstart', '.intersection:not(.black):not(.white)'
+showOnBoard new OnBoard [[5,1],[6,1],[12,1],[13,1],[9,5],[1,6],[1,7],[17,8],[17,9],[7,15],[8,15],[9,16],[9,17]]
+    ,[[5,0],[6,0],[12,0],[13,0],[9,2],[0,5],[8,5],[18,5],[0,6],[18,6],[0,7],[18,7],[0,8],[18,8],[0,9],[18,9],[9,14],[9,15],[8,16],[8,17],[10,17],[9,18]]
 
-            $(this).addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
-
-            $board.on 'touchmove', (e) ->
-                event = e.originalEvent
-                $target = $(document.elementFromPoint event.touches[0].clientX, event.touches[0].clientY)
-                if $target.is '.intersection:not(.black):not(.white)'
-                    $target.parent().children('.half-opacity').removeClass 'black white half-opacity'
-                    $target.addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
-
-            $board.on 'touchend touchcancel', (e) ->
-                $board.off 'touchmove touchend touchcancel'
-                return if e.type is 'touchcancel'
-                event = e.originalEvent
-                $target = $(document.elementFromPoint event.changedTouches[0].clientX, event.changedTouches[0].clientY)
-                if $target.is '.intersection.half-opacity'
-                    index = $target.prevAll().length
-                    userPlayAndResponse.call this, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]
-
-        $('#pass, #resign').removeAttr 'disabled'
-    cancelWaiting = ->
-        $board.off 'touchstart', '.intersection:not(.black):not(.white)'
-        $board.off 'touchmove touchend touchcancel'
-else
-    waitForUserPlay = ->
-        $board.on 'mousedown', '.intersection:not(.black):not(.white)', ->
-            $board.off 'mousedown', '.intersection:not(.black):not(.white)'
-
-            $(this).addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
-
-            $board.on 'mouseleave', '.intersection.half-opacity', ->
-                $(this).removeClass 'black white half-opacity'
-
-            $board.on 'mouseenter', '.intersection:not(.black):not(.white)', ->
-                $(this).addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
-
-            $board.on 'mouseup', '.intersection.half-opacity', ->
-                $board.off 'mouseleave', '.intersection.half-opacity'
-                $board.off 'mouseenter', '.intersection:not(.black):not(.white)'
-                $board.off 'mouseup', '.intersection.half-opacity'
-
-                index = $(this).prevAll().length
-                userPlayAndResponse.call this, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]
-
-        $('#pass, #resign').removeAttr 'disabled'
-    cancelWaiting = ->
-        $board.off 'mousedown', '.intersection:not(.black):not(.white)'
-        $board.off 'mouseleave', '.intersection.half-opacity'
-        $board.off 'mouseenter', '.intersection:not(.black):not(.white)'
-        $board.off 'mouseup', '.intersection.half-opacity'
-
-$('#start-stop').on 'click', ->
-    showOnBoard null
-
-    board = new OnBoard.random()
-    expected =
-        value: NaN
-        history: [board]
-    currentIndex = 0
-    showOnBoard expected.history[currentIndex]
-    setTimeout (-> $('#select-modal').modal 'show'), 3000
-
-$('#play-white, #play-black').on 'click', ->
-    $('#start-stop').attr 'disabled', 'disabled'
-    userStone = switch @id
-        when 'play-white' then WHITE
-        when 'play-black' then BLACK
-        else null
-    bgm.play()
-    openAndCloseModal 'start-modal', ->
-        if userStone is BLACK
-            waitForUserPlay()
-        else
-            computerPlay expected.history[currentIndex]
-
-$('#pass').on 'click', ->
-    cancelWaiting()
-    userPlayAndResponse null # パス
-
-$('#resign').on 'click', ->
-    cancelWaiting()
-    bgm.stop()
-    openAndCloseModal 'end-modal', ->
-        $('#start-stop').removeAttr 'disabled'
-        $('#pass, #resign').attr 'disabled', 'disabled'
+editBoard()

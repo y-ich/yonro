@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=320, user-scalable=no">
+    <meta name="viewport" content="width=640, user-scalable=no">
     <!-- <meta name="viewport" content="width=640"> <!-- for iOS and Android -->
     <title>珍瓏ゲーム「追龍」</title>
     <script src="js/modernizr.js"></script>
@@ -10,15 +10,17 @@
     <link rel="stylesheet" href="chinro.css" />
 </head>
 <body>
-    <!--<audio id="bgm" src="audio/tw029.mp3" loop></audio>-->
     <div id="header">
         <div class="title">
             <h1>珍瓏ゲーム「追龍」</h1>
             <p id="manual"><a href="manual.html" target="_blank">遊び方</a></p>
         </div>
-        <button type="button" id="start-stop" class="btn">スタート</button>
-        <button type="button" id="pass" class="btn" disabled>パス</button>
-        <button type="button" id="resign" class="btn" disabled>投了</button>
+        <div id="black-white" class="btn-group pull-left" style="margin-right: 10px;" data-toggle="buttons-radio">
+            <button type="button" id="black" class="btn btn-large active">黒</button>
+            <button type="button" id="white" class="btn btn-large">白</button>
+        </div>
+        <button type="button" id="solve" class="btn btn-large">解かせる</button>
+        <button type="button" id="sequence" class="btn btn-large" disabled>手順再生</button>
         <div id="evaluating">考え中</div>
     </div>
     <div class="board-bg">
@@ -386,53 +388,45 @@
             <div class="intersection"></div>
         </div>
     </div>
-    <div id="select-modal" class="modal hide fade">
-      <div class="modal-header">
-        <h3>スタート！</h3>
-      </div>
-      <div class="modal-body">
-        <p>白黒どちらを持ちますか？</p>
-        <p>(決定するとBGMが流れ始めます)</p>
-      </div>
-      <div class="modal-footer">
-        <button id="play-white" class="btn" data-dismiss="modal">白</button>
-        <button id="play-black" class="btn btn-inverse"data-dismiss="modal">黒</button>
-      </div>
-    </div>
     <div id="start-modal" class="modal hide fade">
       <div class="modal-header">
-        <h3>お願いします!</h3>
+        <h3>どれどれ？</h3>
       </div>
     </div>
-    <div id="end-modal" class="modal hide fade">
+    <div id="babble-modal1" class="modal hide fade">
       <div class="modal-header">
-        <h3>ありがとうございました</h3>
+        <h3>むむっ</h3>
       </div>
     </div>
-    <div id="expect-modal" class="modal hide fade">
+    <div id="babble-modal2" class="modal hide fade">
       <div class="modal-header">
-        <h3>読み筋！</h3>
+        <h3>ちょっと考えさせてね…</h3>
       </div>
     </div>
-    <div id="pessimistic-modal" class="modal hide fade">
+    <div id="babble-modal3" class="modal hide fade">
       <div class="modal-header">
-        <h3>やばいか〜</h3>
+        <h3>あれ、あれれ</h3>
       </div>
     </div>
-    <div id="unexpect-modal" class="modal hide fade">
+    <div id="babble-modal4" class="modal hide fade">
       <div class="modal-header">
-        <h3>むむむっ</h3>
+        <h3>わからん…</h3>
       </div>
     </div>
-    <div id="upset-modal" class="modal hide fade">
+    <div id="black-pass" class="modal hide fade">
       <div class="modal-header">
-        <h3>えいっ</h3>
+        <h3>黒パス</h3>
+      </div>
+    </div>
+    <div id="white-pass" class="modal hide fade">
+      <div class="modal-header">
+        <h3>白パス</h3>
       </div>
     </div>
     <script type="text/javascript">
     for (key in Modernizr) {
         if (!Modernizr[key]) {
-            alert('四路の純碁ゲームを動かすにはブラウザの機能が足らないようです。ChromeかSafariの最新版を使ってみてください。');
+            alert('四路の純碁ソルバを動かすにはブラウザの機能が足らないようです。ChromeかSafariの最新版を使ってみてください。');
             break;
         }
     }

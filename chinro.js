@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, bgm, cancelWaiting, compare, computerPlay, currentIndex, endGame, expected, openAndCloseModal, opponentOf, responseInterval, setBoardSize, showOnBoard, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay;
+  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, chase, chaseShicho, chaser, compare, editBoard, escape, escaper, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, target, wEvaluate;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -442,8 +442,8 @@
           switch (this.stateAt(position)) {
             case BLACK:
               if (result[0].every(function(g) {
-                return g.every(function(e) {
-                  return !e[0].isEqualTo(position);
+                return g[0].every(function(e) {
+                  return !e.isEqualTo(position);
                 });
               })) {
                 result[0].push(this.stringAndLibertyAt(position));
@@ -451,8 +451,8 @@
               break;
             case WHITE:
               if (result[1].every(function(g) {
-                return g.every(function(e) {
-                  return !e[0].isEqualTo(position);
+                return g[0].every(function(e) {
+                  return !e.isEqualTo(position);
                 });
               })) {
                 result[1].push(this.stringAndLibertyAt(position));
@@ -678,6 +678,108 @@
 
 
   /*
+  シチョウの結論
+   */
+
+  EvaluationResult = (function() {
+    function EvaluationResult(value, history) {
+      this.value = value;
+      this.history = history;
+    }
+
+    return EvaluationResult;
+
+  })();
+
+  chaser = null;
+
+  escaper = null;
+
+  target = null;
+
+  chaseShicho = function(board) {
+    var atari, b, bAtaris, strings, wAtaris;
+    strings = board.strings();
+    bAtaris = strings[0].filter(function(e) {
+      return e[1].length === 1;
+    });
+    wAtaris = strings[1].filter(function(e) {
+      return e[1].length === 1;
+    });
+    if (bAtaris.length === 1) {
+      escaper = BLACK;
+      chaser = WHITE;
+      atari = bAtaris[0];
+    } else if (wAtaris.length === 1) {
+      escaper = WHITE;
+      chaser = BLACK;
+      atari = wAtaris[0];
+    } else {
+      return new EvaluationResult(false, [board]);
+    }
+    target = atari[0][0];
+    b = board.copy();
+    if (!b.place(escaper, atari[1][0])) {
+      return new EvaluationResult(true, [board]);
+    }
+    return chase([board, b]);
+  };
+
+  escape = function(history) {
+    var b, board, candidates, e, p, result, sl, strings, _i, _j, _len, _len1, _ref;
+    board = history[history.length - 1];
+    console.log(board.toString());
+    sl = board.stringAndLibertyAt(target);
+    strings = board.strings();
+    candidates = [];
+    _ref = strings[chaser - 1];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      e = _ref[_i];
+      if (e[1].length === 1) {
+        candidates.push(e[1][0]);
+      }
+    }
+    candidates.push(sl[1][0]);
+    for (_j = 0, _len1 = candidates.length; _j < _len1; _j++) {
+      p = candidates[_j];
+      b = board.copy();
+      b.place(escaper, p);
+      result = chase(history.concat(b));
+      if (!result.value) {
+        return result;
+      }
+    }
+    return result;
+  };
+
+  chase = function(history) {
+    var b, board, p, result, sl, _i, _len, _ref;
+    board = history[history.length - 1];
+    sl = board.stringAndLibertyAt(target);
+    switch (sl[1].length) {
+      case 1:
+        b = board.copy();
+        b.place(chaser, sl[1][0]);
+        return new EvaluationResult(true, history.concat(b));
+      case 2:
+        _ref = sl[1];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          p = _ref[_i];
+          b = board.copy();
+          b.place(chaser, p);
+          result = escape(history.concat(b));
+          if (result.value) {
+            return result;
+          }
+        }
+        return result;
+      default:
+        return new EvaluationResult(false, history);
+    }
+  };
+
+
+  /*
   四路の純碁とソルバのクライアント側共通コード
    */
 
@@ -811,342 +913,125 @@
 
 
   /*
-   * 四路の碁(仮名)
-   * (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
+  main for solver.html
    */
 
-  userStone = BLACK;
+  evaluatedResult = null;
 
-  expected = null;
-
-  currentIndex = 0;
-
-  try {
-    document.createEvent("TouchEvent");
-    if ((window.Touch != null) && (typeof window.ontouchstart) !== 'undefined') {
-      touchDevice = true;
-    } else {
-      false;
-    }
-  } catch (_error) {
-    touchDevice = false;
-  }
-
-  window.printExpected = function() {
-    console.log(expected.history.map(function(e) {
-      return e.toString();
-    }).join('\n'));
-    return console.log(expected.value);
-  };
-
-  bgm = {
-    element: $('#bgm')[0],
-    state: 'stop',
-    play: function() {
-      bgm.element.play();
-      return bgm.state = 'play';
-    },
-    pause: function() {
-      bgm.element.pause();
-      return bgm.state = 'pause';
-    },
-    stop: function() {
-      var e;
-      bgm.element.pause();
-      bgm.state = 'stop';
-      try {
-        return bgm.element.currentTime = 0;
-      } catch (_error) {
-        e = _error;
-        return console.log(e);
+  boardOnScreen = function() {
+    var blacks, whites;
+    blacks = [];
+    whites = [];
+    $('.intersection').each(function(i, e) {
+      var $e;
+      $e = $(e);
+      if ($e.hasClass('black')) {
+        return blacks.push([i % BOARD_SIZE, Math.floor(i / BOARD_SIZE)]);
+      } else if ($e.hasClass('white')) {
+        return whites.push([i % BOARD_SIZE, Math.floor(i / BOARD_SIZE)]);
       }
-    }
+    });
+    return new OnBoard(blacks, whites);
   };
 
-  window.onpagehide = function() {
-    if (bgm.state === 'play') {
-      return bgm.pause();
-    }
-  };
-
-  window.onpageshow = function() {
-    if (bgm.state === 'pause') {
-      return bgm.play();
-    }
-  };
-
-  endGame = function() {
-    var score;
-    bgm.stop();
-    score = expected.value - expected.history[0].score();
-    alert(score === 0 ? '引き分け' : score > 0 ? "黒" + score + "目勝ち" : "白" + (-score) + "目勝ち");
-    return $('#start-stop').removeAttr('disabled');
-  };
-
-  computerPlay = function(board) {
-    var behaveNext, score, _ref, _ref1;
-    behaveNext = function() {
-      currentIndex += 1;
-      if (currentIndex < expected.history.length) {
-        if (board.isEqualTo(expected.history[currentIndex])) {
-          return setTimeout((function() {
-            var _ref, _ref1;
-            alert('パスします');
-            if (((_ref = expected.history[currentIndex - 2]) != null ? _ref.isEqualTo(board) : void 0) && ((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
-              return endGame();
-            } else {
-              return waitForUserPlay();
-            }
-          }), 0);
-        } else {
-          return showOnBoard(expected.history[currentIndex], true, waitForUserPlay);
-        }
+  editBoard = function() {
+    $('#black, #white').removeAttr('disabled');
+    return $('.intersection').on('click', function() {
+      var $this, stone;
+      console.log(this);
+      $this = $(this);
+      stone = $('#black-white > .active').attr('id');
+      if ($this.hasClass(stone)) {
+        return $this.removeClass(stone);
       } else {
-        return endGame();
+        $this.removeClass('black white');
+        return $this.addClass(stone);
       }
+    });
+  };
+
+  stopEditing = function() {
+    $('.intersection').off('click');
+    return $('#black, #white').attr('disabled', 'disabled');
+  };
+
+  scheduleMessage = function() {
+    var aux, messages;
+    messages = [
+      {
+        interval: 10000,
+        id: 'babble-modal1'
+      }, {
+        interval: 20000,
+        id: 'babble-modal2'
+      }, {
+        interval: 30000,
+        id: 'babble-modal3'
+      }, {
+        interval: 30000,
+        id: 'babble-modal4'
+      }
+    ];
+    aux = function(index) {
+      return scheduleMessage.id = setTimeout((function() {
+        openAndCloseModal(messages[index].id);
+        if (index < messages.length - 1) {
+          return aux(index + 1);
+        }
+      }), messages[index].interval);
     };
-    if ((_ref = expected.history[currentIndex]) != null ? _ref.isEqualTo(board) : void 0) {
-      if (expected.history.length - 1 > currentIndex) {
-        if (!((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
-          score = expected.value - expected.history[0].score();
-          score = userStone === BLACK ? -score : score;
-          if (score > 0) {
-            return openAndCloseModal('expect-modal', behaveNext);
-          } else if ((userStone === BLACK ? -expected.value : expected.value) === -MAX_SCORE) {
-            return openAndCloseModal('pessimistic-modal', behaveNext);
-          } else {
-            return setTimeout((function() {
-              return behaveNext();
-            }), responseInterval);
-          }
-        } else {
-          return setTimeout((function() {
-            return behaveNext();
-          }), responseInterval);
-        }
-      } else if (expected.value === (userStone === BLACK ? MAX_SCORE : -MAX_SCORE)) {
-        bgm.stop();
-        return setTimeout((function() {
-          alert('負けました…');
-          return $('#start-stop').removeAttr('disabled');
-        }), responseInterval);
-      } else {
-        $('#unexpected-modal').modal('show');
-        return wEvaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
-          expected = result;
-          return behaveNext();
-        }), (function(error) {
-          var b, candidates, computerStone, nodes, p, parity, _i, _len;
-          $('#evaluate-modal').modal('hide');
-          expected = {
-            value: NaN,
-            history: expected.history.slice(0, currentIndex).concat(board)
-          };
-          computerStone = opponentOf(userStone);
-          candidates = board.candidates(computerStone);
-          nodes = [];
-          for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-            p = candidates[_i];
-            b = board.copy();
-            b.place(computerStone, p);
-            parity = userStone === BLACK ? 0 : 1;
-            if (expected.history.filter(function(e, i) {
-              return (i % 2) === parity;
-            }).every(function(e) {
-              return !b.isEqualTo(e);
-            })) {
-              nodes.push(b);
-            }
-          }
-          nodes.sort(function(a, b) {
-            return -compare(a, b, computerStone);
-          });
-          expected.history.push(nodes[0]);
-          return openAndCloseModal('upset-modal', behaveNext);
-        }));
-      }
-    } else {
-      return wEvaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
-        expected = result;
-        return behaveNext();
-      }), (function(error) {
-        var b, candidates, computerStone, nodes, p, parity, _i, _len;
-        expected = {
-          value: NaN,
-          history: expected.history.slice(0, currentIndex).concat(board)
-        };
-        computerStone = opponentOf(userStone);
-        candidates = board.candidates(computerStone);
-        nodes = [];
-        for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-          p = candidates[_i];
-          b = board.copy();
-          b.place(computerStone, p);
-          parity = userStone === BLACK ? 0 : 1;
-          if (expected.history.filter(function(e, i) {
-            return (i % 2) === parity;
-          }).every(function(e) {
-            return !b.isEqualTo(e);
-          })) {
-            nodes.push(b);
-          }
-        }
-        nodes.sort(function(a, b) {
-          return -compare(a, b, computerStone);
-        });
-        expected.history.push(nodes[0]);
-        return behaveNext();
-      }));
-    }
+    return aux(0);
   };
 
-  userPlayAndResponse = function(position) {
-    var board, parity;
-    $('#pass, #resign').attr('disabled', 'disabled');
-    board = expected.history[currentIndex].copy();
-    if (board.place(userStone, position)) {
-      parity = (currentIndex + 1) % 2;
-      if ((position != null) && expected.history.slice(0, currentIndex).filter(function(e, i) {
-        return (i % 2) === parity;
-      }).some(function(e) {
-        return board.isEqualTo(e);
-      })) {
-        alert('そこへ打つと繰り返し…');
-        showOnBoard(expected.history[currentIndex]);
-        return waitForUserPlay();
-      } else {
-        return showOnBoard(board, true, function() {
-          currentIndex += 1;
-          return computerPlay(board);
-        });
-      }
-    } else {
-      alert('そこは打てないよ〜');
-      showOnBoard(expected.history[currentIndex]);
-      return waitForUserPlay();
-    }
+  cancelMessage = function() {
+    return clearTimeout(scheduleMessage.id);
   };
+
+  playSequence = function(history) {
+    var aux;
+    aux = function(index) {
+      return setTimeout((function() {
+        if (history[index].isEqualTo(history[index - 1])) {
+          openAndCloseModal(index % 2 ? 'black-pass' : 'white-pass');
+        } else {
+          showOnBoard(history[index], true);
+        }
+        if (index < history.length - 1) {
+          return aux(index + 1);
+        } else {
+          return $('#sequence').removeAttr('disabled');
+        }
+      }), 100);
+    };
+    showOnBoard(history[0]);
+    return aux(1);
+  };
+
+  $(document.body).on('touchmove', function(e) {
+    if (window.Touch) {
+      return e.preventDefault();
+    }
+  });
+
+  $('#solve').on('click', function() {
+    stopEditing();
+    return openAndCloseModal('start-modal', function() {
+      evaluatedResult = chaseShicho(boardOnScreen());
+      alert(evaluatedResult.value ? "取れました！" : "取れません…");
+      $('#sequence').removeAttr('disabled');
+      return editBoard();
+    });
+  });
+
+  $('#sequence').on('click', function() {
+    $(this).attr('disabled', 'disabled');
+    return playSequence(evaluatedResult.history);
+  });
 
   setBoardSize(19);
 
-  $board = $('#board');
+  showOnBoard(new OnBoard([[5, 1], [6, 1], [12, 1], [13, 1], [9, 5], [1, 6], [1, 7], [17, 8], [17, 9], [7, 15], [8, 15], [9, 16], [9, 17]], [[5, 0], [6, 0], [12, 0], [13, 0], [9, 2], [0, 5], [8, 5], [18, 5], [0, 6], [18, 6], [0, 7], [18, 7], [0, 8], [18, 8], [0, 9], [18, 9], [9, 14], [9, 15], [8, 16], [8, 17], [10, 17], [9, 18]]));
 
-  if (touchDevice) {
-    $(document.body).on('touchmove', function(e) {
-      return e.preventDefault();
-    });
-    waitForUserPlay = function() {
-      $board.on('touchstart', '.intersection:not(.black):not(.white)', function() {
-        $board.off('touchstart', '.intersection:not(.black):not(.white)');
-        $(this).addClass("" + (userStone === BLACK ? 'black' : 'white') + " half-opacity");
-        $board.on('touchmove', function(e) {
-          var $target, event;
-          event = e.originalEvent;
-          $target = $(document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY));
-          if ($target.is('.intersection:not(.black):not(.white)')) {
-            $target.parent().children('.half-opacity').removeClass('black white half-opacity');
-            return $target.addClass("" + (userStone === BLACK ? 'black' : 'white') + " half-opacity");
-          }
-        });
-        return $board.on('touchend touchcancel', function(e) {
-          var $target, event, index;
-          $board.off('touchmove touchend touchcancel');
-          if (e.type === 'touchcancel') {
-            return;
-          }
-          event = e.originalEvent;
-          $target = $(document.elementFromPoint(event.changedTouches[0].clientX, event.changedTouches[0].clientY));
-          if ($target.is('.intersection.half-opacity')) {
-            index = $target.prevAll().length;
-            return userPlayAndResponse.call(this, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]);
-          }
-        });
-      });
-      return $('#pass, #resign').removeAttr('disabled');
-    };
-    cancelWaiting = function() {
-      $board.off('touchstart', '.intersection:not(.black):not(.white)');
-      return $board.off('touchmove touchend touchcancel');
-    };
-  } else {
-    waitForUserPlay = function() {
-      $board.on('mousedown', '.intersection:not(.black):not(.white)', function() {
-        $board.off('mousedown', '.intersection:not(.black):not(.white)');
-        $(this).addClass("" + (userStone === BLACK ? 'black' : 'white') + " half-opacity");
-        $board.on('mouseleave', '.intersection.half-opacity', function() {
-          return $(this).removeClass('black white half-opacity');
-        });
-        $board.on('mouseenter', '.intersection:not(.black):not(.white)', function() {
-          return $(this).addClass("" + (userStone === BLACK ? 'black' : 'white') + " half-opacity");
-        });
-        return $board.on('mouseup', '.intersection.half-opacity', function() {
-          var index;
-          $board.off('mouseleave', '.intersection.half-opacity');
-          $board.off('mouseenter', '.intersection:not(.black):not(.white)');
-          $board.off('mouseup', '.intersection.half-opacity');
-          index = $(this).prevAll().length;
-          return userPlayAndResponse.call(this, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]);
-        });
-      });
-      return $('#pass, #resign').removeAttr('disabled');
-    };
-    cancelWaiting = function() {
-      $board.off('mousedown', '.intersection:not(.black):not(.white)');
-      $board.off('mouseleave', '.intersection.half-opacity');
-      $board.off('mouseenter', '.intersection:not(.black):not(.white)');
-      return $board.off('mouseup', '.intersection.half-opacity');
-    };
-  }
-
-  $('#start-stop').on('click', function() {
-    var board;
-    showOnBoard(null);
-    board = new OnBoard.random();
-    expected = {
-      value: NaN,
-      history: [board]
-    };
-    currentIndex = 0;
-    showOnBoard(expected.history[currentIndex]);
-    return setTimeout((function() {
-      return $('#select-modal').modal('show');
-    }), 3000);
-  });
-
-  $('#play-white, #play-black').on('click', function() {
-    $('#start-stop').attr('disabled', 'disabled');
-    userStone = (function() {
-      switch (this.id) {
-        case 'play-white':
-          return WHITE;
-        case 'play-black':
-          return BLACK;
-        default:
-          return null;
-      }
-    }).call(this);
-    bgm.play();
-    return openAndCloseModal('start-modal', function() {
-      if (userStone === BLACK) {
-        return waitForUserPlay();
-      } else {
-        return computerPlay(expected.history[currentIndex]);
-      }
-    });
-  });
-
-  $('#pass').on('click', function() {
-    cancelWaiting();
-    return userPlayAndResponse(null);
-  });
-
-  $('#resign').on('click', function() {
-    cancelWaiting();
-    bgm.stop();
-    return openAndCloseModal('end-modal', function() {
-      $('#start-stop').removeAttr('disabled');
-      return $('#pass, #resign').attr('disabled', 'disabled');
-    });
-  });
+  editBoard();
 
 }).call(this);

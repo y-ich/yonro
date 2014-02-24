@@ -442,8 +442,8 @@
           switch (this.stateAt(position)) {
             case BLACK:
               if (result[0].every(function(g) {
-                return g.every(function(e) {
-                  return !e[0].isEqualTo(position);
+                return g[0].every(function(e) {
+                  return !e.isEqualTo(position);
                 });
               })) {
                 result[0].push(this.stringAndLibertyAt(position));
@@ -451,8 +451,8 @@
               break;
             case WHITE:
               if (result[1].every(function(g) {
-                return g.every(function(e) {
-                  return !e[0].isEqualTo(position);
+                return g[0].every(function(e) {
+                  return !e.isEqualTo(position);
                 });
               })) {
                 result[1].push(this.stringAndLibertyAt(position));
