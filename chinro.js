@@ -698,7 +698,7 @@
   target = null;
 
   chaseShicho = function(board) {
-    var atari, b, bAtaris, strings, wAtaris;
+    var atari, b, bAtaris, e, strings, wAtaris;
     strings = board.strings();
     bAtaris = strings[0].filter(function(e) {
       return e[1].length === 1;
@@ -722,13 +722,18 @@
     if (!b.place(escaper, atari[1][0])) {
       return new EvaluationResult(true, [board]);
     }
-    return chase([board, b]);
+    try {
+      return chase([board, b]);
+    } catch (_error) {
+      e = _error;
+      alert('頭が爆発しました…');
+      return new EvaluationResult(false, [board]);
+    }
   };
 
   escape = function(history) {
     var b, board, candidates, e, p, result, sl, strings, _i, _j, _len, _len1, _ref;
     board = history[history.length - 1];
-    console.log(board.toString());
     sl = board.stringAndLibertyAt(target);
     strings = board.strings();
     candidates = [];
