@@ -265,10 +265,10 @@ class OnBoard
                 position = [x, y]
                 switch @stateAt position
                     when BLACK
-                        if (result[0].every (g) -> g.every (e) -> not e[0].isEqualTo position)
+                        if (result[0].every (g) -> g[0].every (e) -> not e.isEqualTo position)
                             result[0].push @stringAndLibertyAt position
                     when WHITE
-                        if (result[1].every (g) -> g.every (e) -> not e[0].isEqualTo position)
+                        if (result[1].every (g) -> g[0].every (e) -> not e.isEqualTo position)
                             result[1].push @stringAndLibertyAt position
         result
 
