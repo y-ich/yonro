@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, bgm, cancelWaiting, compare, computerPlay, currentIndex, endGame, evalUntilDepth, evaluate, expected, openAndCloseModal, opponentOf, responseInterval, setBoardSize, showOnBoard, touchDevice, userPlayAndResponse, userStone, waitForUserPlay;
+  var $board, BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, bgm, cancelWaiting, compare, computerPlay, currentIndex, endGame, evalUntilDepth, evaluate, expected, openAndCloseModal, opponentOf, responseInterval, setBoardSize, showOnBoard, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -825,7 +825,7 @@
 
   responseInterval = 2000;
 
-  evaluate = function(history, next, success, error, timeout) {
+  wEvaluate = function(history, next, success, error, timeout) {
     var timeid, worker;
     if (timeout == null) {
       timeout = 10000;
@@ -1074,7 +1074,7 @@
         }), responseInterval);
       } else {
         $('#unexpected-modal').modal('show');
-        return evaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
+        return wEvaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
           expected = result;
           return behaveNext();
         }), (function(error) {
@@ -1108,7 +1108,7 @@
         }));
       }
     } else {
-      return evaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
+      return wEvaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
         expected = result;
         return behaveNext();
       }), (function(error) {

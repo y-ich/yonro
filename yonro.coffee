@@ -60,7 +60,7 @@ computerPlay = (board) ->
         currentIndex += 1 # コンピュータの手
         if currentIndex < expected.history.length
             if board.isEqualTo expected.history[currentIndex]
-                setTimeout (-> # behaveNextはevaluateのコールバックなのですぐに終了するようにタイマー処理。
+                setTimeout (-> # behaveNextはwEvaluateのコールバックなのですぐに終了するようにタイマー処理。
                     alert 'パスします'
                     if (expected.history[currentIndex - 2]?.isEqualTo board) and (expected.history[currentIndex - 1]?.isEqualTo board)
                         # 相手もパスだったら
@@ -98,7 +98,7 @@ computerPlay = (board) ->
             ), responseInterval
         else
             $('#unexpected-modal').modal 'show'
-            evaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
+            wEvaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
                 expected = result
                 behaveNext()
             ),
@@ -120,7 +120,7 @@ computerPlay = (board) ->
                 openAndCloseModal 'upset-modal', behaveNext
             )
     else
-        evaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
+        wEvaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
             expected = result
             behaveNext()
         ),

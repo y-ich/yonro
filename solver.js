@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, compare, editBoard, evalUntilDepth, evaluate, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing;
+  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, compare, editBoard, evalUntilDepth, evaluate, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, wEvaluate;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -825,7 +825,7 @@
 
   responseInterval = 2000;
 
-  evaluate = function(history, next, success, error, timeout) {
+  wEvaluate = function(history, next, success, error, timeout) {
     var timeid, worker;
     if (timeout == null) {
       timeout = 10000;
@@ -1056,7 +1056,7 @@
   $('#solve').on('click', function() {
     stopEditing();
     return openAndCloseModal('start-modal', function() {
-      evaluate([boardOnScreen()], BLACK, (function(result) {
+      wEvaluate([boardOnScreen()], BLACK, (function(result) {
         evaluatedResult = result;
         cancelMessage();
         alert(result.value > 0 ? "黒" + result.value + "目勝ちですね" : result.value < 0 ? "白" + (-result.value) + "目勝ちですね" : '引き分けですね');

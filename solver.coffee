@@ -83,7 +83,7 @@ $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 $('#solve').on 'click', ->
     stopEditing()
     openAndCloseModal 'start-modal', ->
-        evaluate [boardOnScreen()], BLACK, ((result) ->
+        wEvaluate [boardOnScreen()], BLACK, ((result) ->
             evaluatedResult = result
             cancelMessage()
             alert if result.value > 0 then "黒#{result.value}目勝ちですね" else if result.value < 0 then "白#{- result.value}目勝ちですね" else '引き分けですね'
