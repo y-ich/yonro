@@ -22,7 +22,6 @@ boardOnScreen = ->
 editBoard = ->
     $('#black, #white').removeAttr 'disabled'
     $('.intersection').on 'click', ->
-        console.log this
         $this = $(this)
         stone = $('#black-white > .active').attr 'id'
         if $this.hasClass stone
@@ -82,14 +81,27 @@ $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
 $('#reset').on 'click', -> $('.intersection').removeClass 'black white'
 
-$('#solve').on 'click', ->
-    stopEditing()
+startSolve = (board, target)->
     openAndCloseModal 'start-modal', ->
-        evaluatedResult = chaseShicho boardOnScreen()
-        console.log evaluatedResult
+        evaluatedResult = chaseShicho board, target
         alert if evaluatedResult.value then "取れました！" else "取れません…"
         $('#sequence').removeAttr 'disabled'
         editBoard()
+
+$('#solve').on 'click', ->
+    stopEditing()
+    board = boardOnScreen()
+    ps = checkTarget board
+    if ps.length == 0
+        alert 'アタリの石を作ってください'
+        editBoard()
+    else if ps.length == 1
+        startSolve board, ps[0][0][0]
+    else
+        openAndCloseModal 'target-modal', ->
+            $('.intersection').one 'click', ->
+                index = $('.intersection').index this
+                startSolve board, [index % BOARD_SIZE, Math.floor index / BOARD_SIZE]
 
 $('#sequence').on 'click', ->
     $(this).attr 'disabled', 'disabled'

@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, chase, chaseShicho, chaser, compare, editBoard, escape, escaper, evaluatedResult, longest, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, target, wEvaluate;
+  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, chase, chaseShicho, chaser, checkTarget, compare, editBoard, escape, escaper, evaluatedResult, longest, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, startSolve, stopEditing, target, wEvaluate;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -697,8 +697,8 @@
 
   target = null;
 
-  chaseShicho = function(board) {
-    var atari, bAtaris, e, strings, wAtaris;
+  checkTarget = function(board) {
+    var bAtaris, strings, wAtaris;
     strings = board.strings();
     bAtaris = strings[0].filter(function(e) {
       return e[1].length === 1;
@@ -706,18 +706,14 @@
     wAtaris = strings[1].filter(function(e) {
       return e[1].length === 1;
     });
-    if (bAtaris.length === 1) {
-      escaper = BLACK;
-      chaser = WHITE;
-      atari = bAtaris[0];
-    } else if (wAtaris.length === 1) {
-      escaper = WHITE;
-      chaser = BLACK;
-      atari = wAtaris[0];
-    } else {
-      return new EvaluationResult(false, [board]);
-    }
-    target = atari[0][0];
+    return bAtaris.concat(wAtaris);
+  };
+
+  chaseShicho = function(board, targetPosition) {
+    var e;
+    escaper = board.stateAt(targetPosition);
+    chaser = opponentOf(escaper);
+    target = targetPosition;
     try {
       return escape([board]);
     } catch (_error) {
@@ -954,7 +950,6 @@
     $('#black, #white').removeAttr('disabled');
     return $('.intersection').on('click', function() {
       var $this, stone;
-      console.log(this);
       $this = $(this);
       stone = $('#black-white > .active').attr('id');
       if ($this.hasClass(stone)) {
@@ -1033,15 +1028,34 @@
     return $('.intersection').removeClass('black white');
   });
 
-  $('#solve').on('click', function() {
-    stopEditing();
+  startSolve = function(board, target) {
     return openAndCloseModal('start-modal', function() {
-      evaluatedResult = chaseShicho(boardOnScreen());
-      console.log(evaluatedResult);
+      evaluatedResult = chaseShicho(board, target);
       alert(evaluatedResult.value ? "取れました！" : "取れません…");
       $('#sequence').removeAttr('disabled');
       return editBoard();
     });
+  };
+
+  $('#solve').on('click', function() {
+    var board, ps;
+    stopEditing();
+    board = boardOnScreen();
+    ps = checkTarget(board);
+    if (ps.length === 0) {
+      alert('アタリの石を作ってください');
+      return editBoard();
+    } else if (ps.length === 1) {
+      return startSolve(board, ps[0][0][0]);
+    } else {
+      return openAndCloseModal('target-modal', function() {
+        return $('.intersection').one('click', function() {
+          var index;
+          index = $('.intersection').index(this);
+          return startSolve(board, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]);
+        });
+      });
+    }
   });
 
   $('#sequence').on('click', function() {
