@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, chase, chaseShicho, chaser, checkTarget, compare, editBoard, escape, escaper, evaluatedResult, longest, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, startSolve, stopEditing, target, wEvaluate;
+  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, chase, chaseShicho, chaser, checkTarget, compare, editBoard, escape, escaper, evaluatedResult, longestFail, longestSuccess, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, startSolve, stopEditing, target, wEvaluate;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -710,20 +710,27 @@
   };
 
   chaseShicho = function(board, targetPosition) {
-    var e;
+    var result;
     escaper = board.stateAt(targetPosition);
     chaser = opponentOf(escaper);
     target = targetPosition;
-    try {
-      return escape([board]);
-    } catch (_error) {
-      e = _error;
-      alert('頭が爆発しました…');
-      return new EvaluationResult(false, [board]);
-    }
+    result = escape([board]);
+    return new EvaluationResult(result.value, result.value ? longestSuccess : longestFail);
+
+    /*
+    try
+        result = escape [board]
+        new EvaluationResult result.value, if result.value then longestSuccess else longestFail
+    catch e
+        console.error e
+        alert '頭が爆発しました…'
+        new EvaluationResult false, longestFail
+     */
   };
 
-  longest = [];
+  longestFail = [];
+
+  longestSuccess = [];
 
   escape = function(history) {
     var b, board, candidates, e, p, result, sl, strings, _i, _j, _len, _len1, _ref, _ref1;
@@ -742,17 +749,24 @@
     for (_j = 0, _len1 = candidates.length; _j < _len1; _j++) {
       p = candidates[_j];
       b = board.copy();
-      b.place(escaper, p);
-      if ((_ref1 = history[history.length - 2]) != null ? _ref1.isEqualTo(b) : void 0) {
+      if (!b.place(escaper, p) || ((_ref1 = history[history.length - 2]) != null ? _ref1.isEqualTo(b) : void 0)) {
         continue;
       }
       result = chase(history.concat(b));
-      if (!result.value) {
-        if (longest.length < result.history.length) {
-          longest = result.history;
+      if (result.value) {
+        if (longestSuccess.length < result.history.length) {
+          longestSuccess = result.history;
         }
-        return new EvaluationResult(false, longest);
+      } else {
+        if (longestFail.length < result.history.length) {
+          longestFail = result.history;
+        }
+        return result;
       }
+    }
+    result = chase(history.concat(board));
+    if (longestSuccess.length < result.history.length) {
+      longestSuccess = result.history;
     }
     return result;
   };
@@ -765,27 +779,36 @@
       case 1:
         b = board.copy();
         b.place(chaser, sl[1][0]);
-        return new EvaluationResult(true, history.concat(b));
+        history.push(b);
+        if (longestSuccess.length < history.length) {
+          longestSuccess = history;
+        }
+        return new EvaluationResult(true, history);
       case 2:
         _ref = sl[1];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           p = _ref[_i];
           b = board.copy();
-          b.place(chaser, p);
-          if ((_ref1 = history[history.length - 2]) != null ? _ref1.isEqualTo(b) : void 0) {
+          if (!b.place(chaser, p) || ((_ref1 = history[history.length - 2]) != null ? _ref1.isEqualTo(b) : void 0)) {
             continue;
           }
           result = escape(history.concat(b));
           if (result.value) {
+            if (longestSuccess.length < result.history.length) {
+              longestSuccess = result.history;
+            }
             return result;
           } else {
-            if (longest.length < result.history.length) {
-              longest = result.history;
+            if (longestFail.length < result.history.length) {
+              longestFail = result.history;
             }
           }
         }
-        return new EvaluationResult(false, longest);
+        return new EvaluationResult(false, []);
       default:
+        if (longestFail.length < history.length) {
+          longestFail = history;
+        }
         return new EvaluationResult(false, history);
     }
   };
@@ -1049,8 +1072,9 @@
       return startSolve(board, ps[0][0][0]);
     } else {
       return openAndCloseModal('target-modal', function() {
-        return $('.intersection').one('click', function() {
+        return $('.intersection').on('click', function() {
           var index;
+          $('.intersection').off('click');
           index = $('.intersection').index(this);
           return startSolve(board, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]);
         });
@@ -1066,6 +1090,13 @@
   setBoardSize(19);
 
   showOnBoard(new OnBoard([[5, 1], [6, 1], [12, 1], [13, 1], [9, 5], [1, 6], [1, 7], [17, 8], [17, 9], [7, 15], [8, 15], [9, 16], [9, 17]], [[5, 0], [6, 0], [12, 0], [13, 0], [9, 2], [0, 5], [8, 5], [18, 5], [0, 6], [18, 6], [0, 7], [18, 7], [0, 8], [18, 8], [0, 9], [18, 9], [9, 14], [9, 15], [8, 16], [8, 17], [10, 17], [9, 18]]));
+
+
+  /*
+   * 浦壁和彦「鬼ごっこ」
+  showOnBoard new OnBoard [[1,9],[2,8],[2,9],[2,10],[5,9],[7,9],[8,2],[8,8],[8,18],[9,1],[9,2],[9,5],[9,7],[9,8],[9,16],[9,17],[10,2],[10,16],[11,9],[12,10],[12,13],[12,14],[12,16],[12,17],[13,9],[13,13],[16,8],[16,9],[16,10],[17,9]]
+      ,[[0,7],[0,9],[0,11],[1,6],[1,8],[1,10],[1,12],[2,5],[2,13],[3,4],[3,9],[3,14],[4,3],[4,9],[4,15],[5,2],[5,16],[6,1],[6,9],[6,17],[7,0],[7,8],[7,18],[8,1],[8,7],[9,0],[9,3],[9,4],[9,6],[9,9],[10,1],[10,7],[10,8],[10,9],[10,15],[10,17],[11,0],[11,14],[11,16],[11,18],[12,1],[12,11],[12,15],[12,18],[13,2],[13,14],[13,16],[13,17],[14,3],[14,9],[14,15],[15,4],[15,9],[15,14],[16,5],[16,13],[17,6],[17,8],[17,10],[17,12],[18,7],[18,9],[18,11]]
+   */
 
   editBoard();
 
