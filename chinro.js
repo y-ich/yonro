@@ -1029,6 +1029,10 @@
     }
   });
 
+  $('#reset').on('click', function() {
+    return $('.intersection').removeClass('black white');
+  });
+
   $('#solve').on('click', function() {
     stopEditing();
     return openAndCloseModal('start-modal', function() {

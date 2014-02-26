@@ -80,6 +80,8 @@ playSequence = (history) ->
 
 $(document.body).on 'touchmove', (e) -> e.preventDefault() if window.Touch
 
+$('#reset').on 'click', -> $('.intersection').removeClass 'black white'
+
 $('#solve').on 'click', ->
     stopEditing()
     openAndCloseModal 'start-modal', ->
