@@ -28,7 +28,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     ###
     board = history[history.length - 1]
 
-    if (board is history[history.length - 2]) and (board is history[history.length - 3])
+    if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 
     if depth == 0

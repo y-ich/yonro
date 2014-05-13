@@ -22,7 +22,6 @@ boardOnScreen = ->
 editBoard = ->
     $('#black, #white').removeAttr 'disabled'
     $('.intersection').on 'click', ->
-        console.log this
         $this = $(this)
         stone = $('#black-white > .active').attr 'id'
         if $this.hasClass stone
