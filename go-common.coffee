@@ -320,7 +320,7 @@ class OnBoard
         if gds.length == 1 or (gds.every (gd) =>
                 newCheckings = checkings.concat [position]
                 gd[1].filter((e) -> not e.isEqualTo position).some (d) =>
-                    checkings.some((e) -> d.isEqualTo e) or ((c) => @whoseEyeAt(d, c) == stone)(newCheckings))
+                    checkings.some((e) -> d.isEqualTo e) or (@whoseEyeAt(d, newCheckings) is stone))
             stone
         else
             null

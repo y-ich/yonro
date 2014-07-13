@@ -563,9 +563,7 @@
           }).some(function(d) {
             return checkings.some(function(e) {
               return d.isEqualTo(e);
-            }) || (function(c) {
-              return _this.whoseEyeAt(d, c) === stone;
-            })(newCheckings);
+            }) || (_this.whoseEyeAt(d, newCheckings) === stone);
           });
         };
       })(this)))) {
@@ -836,7 +834,6 @@
     $('#black, #white').removeAttr('disabled');
     return $('.intersection').on('click', function() {
       var $this, stone;
-      console.log(this);
       $this = $(this);
       stone = $('#black-white > .active').attr('id');
       if ($this.hasClass(stone)) {

@@ -563,9 +563,7 @@
           }).some(function(d) {
             return checkings.some(function(e) {
               return d.isEqualTo(e);
-            }) || (function(c) {
-              return _this.whoseEyeAt(d, c) === stone;
-            })(newCheckings);
+            }) || (_this.whoseEyeAt(d, newCheckings) === stone);
           });
         };
       })(this)))) {
