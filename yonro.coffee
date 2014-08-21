@@ -110,9 +110,7 @@ computerPlay = (board) ->
                 computerStone = opponentOf userStone
                 candidates = board.candidates computerStone
                 nodes = []
-                for p in candidates
-                    b = board.copy()
-                    b.place computerStone, p
+                for b in candidates
                     parity = if userStone is BLACK then 0 else 1
                     nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
                 nodes.sort (a, b) -> - compare a, b, computerStone
@@ -131,9 +129,7 @@ computerPlay = (board) ->
             computerStone = opponentOf userStone
             candidates = board.candidates computerStone
             nodes = []
-            for p in candidates
-                b = board.copy()
-                b.place computerStone, p
+            for b in candidates
                 parity = if userStone is BLACK then 0 else 1
                 nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
             nodes.sort (a, b) -> - compare a, b, computerStone

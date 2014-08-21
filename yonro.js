@@ -938,7 +938,7 @@
           expected = result;
           return behaveNext();
         }), (function(error) {
-          var b, candidates, computerStone, nodes, p, parity, _i, _len;
+          var b, candidates, computerStone, nodes, parity, _i, _len;
           $('#evaluate-modal').modal('hide');
           expected = {
             value: NaN,
@@ -948,9 +948,7 @@
           candidates = board.candidates(computerStone);
           nodes = [];
           for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-            p = candidates[_i];
-            b = board.copy();
-            b.place(computerStone, p);
+            b = candidates[_i];
             parity = userStone === BLACK ? 0 : 1;
             if (expected.history.filter(function(e, i) {
               return (i % 2) === parity;
@@ -972,7 +970,7 @@
         expected = result;
         return behaveNext();
       }), (function(error) {
-        var b, candidates, computerStone, nodes, p, parity, _i, _len;
+        var b, candidates, computerStone, nodes, parity, _i, _len;
         expected = {
           value: NaN,
           history: expected.history.slice(0, currentIndex).concat(board)
@@ -981,9 +979,7 @@
         candidates = board.candidates(computerStone);
         nodes = [];
         for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-          p = candidates[_i];
-          b = board.copy();
-          b.place(computerStone, p);
+          b = candidates[_i];
           parity = userStone === BLACK ? 0 : 1;
           if (expected.history.filter(function(e, i) {
             return (i % 2) === parity;
