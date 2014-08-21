@@ -327,13 +327,18 @@
     OnBoard.prototype.candidates = function(stone) {
 
       /* stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 */
-      var position, result, x, y, _i, _j;
+      var board, next, position, result, x, y, _i, _j;
       result = [];
       for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
         for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
-          if (this.isLegalAt(stone, position) && !(this.whoseEyeAt(position) === stone)) {
-            result.push(position);
+          if (this.whoseEyeAt(position) === stone) {
+            continue;
+          }
+          board = this.copy();
+          next = board.place(stone, position);
+          if (next) {
+            result.push(next);
           }
         }
       }
@@ -631,14 +636,13 @@
       着手が成立したらtrue。着手禁止の場合false。
       循環手か否かは未チェック。
        */
-      var adjacencies, liberty, string, _ref;
+      var liberty, string, _ref;
       if (position == null) {
         return true;
       }
       if (!this.isEmptyAt(position)) {
         return false;
       }
-      adjacencies = adjacenciesAt(position);
       this.add(stone, position);
       this.captureBy(position);
       _ref = this.stringAndLibertyAt(position), string = _ref[0], liberty = _ref[1];
@@ -702,7 +706,7 @@
   })();
 
   evalUntilDepth = function(history, next, depth, alpha, beta) {
-    var alpha0, b, beta0, board, candidates, nodes, opponent, p, parity, result, _i, _j, _k, _len, _len1, _len2;
+    var alpha0, b, beta0, board, candidates, nodes, opponent, parity, result, _i, _j, _k, _len, _len1, _len2;
     if (alpha == null) {
       alpha = {
         value: -Infinity,
@@ -734,9 +738,7 @@
     candidates = board.candidates(next);
     nodes = [];
     for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-      p = candidates[_i];
-      b = board.copy();
-      b.place(next, p);
+      b = candidates[_i];
       parity = history.length % 2;
       if (history.filter(function(e, i) {
         return (i % 2) === parity;

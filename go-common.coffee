@@ -206,7 +206,10 @@ class OnBoard
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
                 position = [x, y]
-                result.push position if @isLegalAt(stone, position) and not (@whoseEyeAt(position) is stone)
+                continue if @whoseEyeAt(position) is stone
+                board = @copy()
+                next = board.place stone, position
+                result.push next if next
         result
 
     stringAndLibertyAt: (position) ->

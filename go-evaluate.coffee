@@ -37,9 +37,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     opponent = opponentOf next
     candidates = board.candidates next
     nodes = []
-    for p in candidates
-        b = board.copy()
-        b.place next, p
+    for b in candidates
         parity = history.length % 2
         nodes.push b if history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
 
