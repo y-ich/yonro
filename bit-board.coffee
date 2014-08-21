@@ -5,7 +5,7 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
-# position [1..BOARD_SIZE, 1..BOARD_SIZE]
+# 座標(position)の原点は[1, 1]
 
 BOARD_SIZE = null
 BIT_BOARD_SIZE = null
@@ -20,7 +20,7 @@ setBoardSize = (size) ->
     ### 碁盤のサイズを設定する。 デフォルトは4路。 ###
     BOARD_SIZE = size
     BIT_BOARD_SIZE = BOARD_SIZE + 2
-    throw 'overflow' if BIT_BOARD_SIZE * BIT_BOARD_SIZE > 32
+    throw "overflow #{BIT_BOARD_SIZE * BOARD_SIZE}" if BIT_BOARD_SIZE * BOARD_SIZE > 32
 
     ON_BOARD = 0
     for x in [1..BOARD_SIZE]
@@ -29,8 +29,6 @@ setBoardSize = (size) ->
 
     MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2
 
-
-setBoardSize 4 # デフォルトは四路
 
 opponentOf = (stone) ->
     ### 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 ###
@@ -127,12 +125,8 @@ class OnBoard
 
     constructor: (blacks, whites) ->
         ### blacks, whitesは黒石/白石のある場所の座標の配列。 ###
-        @black = 0
-        @white = 0
-        for e in blacks
-            @black |= positionTobit e
-        for e in whites
-            @white |= positionTobit e
+        @black = positionsToBits blacks
+        @white = positionsToBits whites
 
     # 状態テストメソッド
 
@@ -391,16 +385,6 @@ class OnBoard
             str += '\n'
         str
 
-positionTobit = (position) ->
-    1 << (position[0] + position[1] * BIT_BOARD_SIZE)
-
-string = (bitBoard, seed) ->
-    expanded = seed | (adjacent seed) & bitBoard
-    if expanded == seed
-        seed
-    else
-        string bitBoard, expanded
-
 countBits = (x) ->
     x -= ((x >>> 1) & 0x55555555)
     x = (x & 0x33333333) + ((x >>> 2) & 0x33333333)
@@ -409,16 +393,34 @@ countBits = (x) ->
     x += (x >>> 16)
     x & 0x0000003F
 
+positionToBit = (position) ->
+    1 << (position[0] + (position[1] - 1) * BIT_BOARD_SIZE)
+
+positionsToBits = (positions) ->
+    bits = 0
+    for e in positions
+        bits |= positionToBit e
+    bits
+
 adjacent = (bitBoard) ->
-    expanded = bitBoard << BOARD_SIZE
+    expanded = bitBoard << BIT_BOARD_SIZE
     expanded |= bitBoard << 1
     expanded |= bitBoard >>> 1
-    expanded |= bitBoard >>> BOARD_SIZE
+    expanded |= bitBoard >>> BIT_BOARD_SIZE
     expanded & (~ bitBoard) & ON_BOARD
+
+string = (bitBoard, seed) ->
+    expanded = seed | (adjacent seed) & bitBoard
+    if expanded == seed
+        seed
+    else
+        string bitBoard, expanded
 
 captured = (objective, subjective) ->
     l = adjacent(objective) & ~ subjective
     breaths = adjacent l
-    objective & (~ (string objective breaths))
+    objective & (~ string(objective, breaths))
 
+# 初期化
+setBoardSize 4 # デフォルトは四路
 
