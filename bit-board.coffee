@@ -5,23 +5,12 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
-countBits = (x) ->
-    x = x - ((x >>> 1) & 0x55555555)
-    x = (x & 0x33333333) + ((x >>> 2) & 0x33333333)
-    x = (x + (x >>> 4)) & 0x0F0F0F0F
-    x = x + (x >>> 8)
-    x = x + (x >>> 16)
-    x & 0x0000003F
+# position [1..BOARD_SIZE, 1..BOARD_SIZE]
 
-Array::isEqualTo = (array) ->
-    ###　配列の要素すべてが等しいか否かを返す。 ###
-    return false if @length != array.length
-    @every (e, i) -> e == array[i]
-
-BOARD_SIZE = 4 # デフォルトは四路
-throw 'overflow' if BOARD_SIZE * BOARD_SIZE > 32
-
-MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2
+BOARD_SIZE = null
+BIT_BOARD_SIZE = null
+ON_BOARD = null
+MAX_SCORE = null
 
 EMPTY = 0
 BLACK = 1
@@ -30,7 +19,18 @@ WHITE = 2
 setBoardSize = (size) ->
     ### 碁盤のサイズを設定する。 デフォルトは4路。 ###
     BOARD_SIZE = size
-    MAX_SCORE = size * size - 2
+    BIT_BOARD_SIZE = BOARD_SIZE + 2
+    throw 'overflow' if BIT_BOARD_SIZE * BIT_BOARD_SIZE > 32
+
+    ON_BOARD = 0
+    for x in [1..BOARD_SIZE]
+        for y in [1..BOARD_SIZE]
+            ON_BOARD |= positionToBit [x, y]
+
+    MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2
+
+
+setBoardSize 4 # デフォルトは四路
 
 opponentOf = (stone) ->
     ### 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 ###
@@ -46,11 +46,8 @@ adjacenciesAt = (position) ->
     for e in [[0, -1], [-1, 0], [1, 0], [0, 1]]
         x = position[0] + e[0]
         y = position[1] + e[1]
-        result.push [x, y] if 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
+        result.push [x, y] if 1 <= x <= BOARD_SIZE and 1 <= y <= BOARD_SIZE
     result
-
-positionTobit = (position) ->
-    1 << (position[0] + position[1] * BOARD_SIZE)
 
 compare = (a, b, stone) ->
     ###
@@ -96,6 +93,7 @@ compare = (a, b, stone) ->
 
 class OnBoard
     ### 盤上の状態を表すクラス ###
+
     @fromString: (str) ->
         ### 盤上の状態を表すX(黒)とO(白)と空点(スペース)と改行で文字列からインスタンスを生成する。 ###
         blacks = []
@@ -132,9 +130,9 @@ class OnBoard
         @black = 0
         @white = 0
         for e in blacks
-            @black |= positionTobit(e)
+            @black |= positionTobit e
         for e in whites
-            @white |= positionTobit(e)
+            @white |= positionTobit e
 
     # 状態テストメソッド
 
@@ -196,7 +194,7 @@ class OnBoard
         石の数の差を返す。
         中国ルールを採用。盤上の石の数の差が評価値。
         ###
-        [countBits(@black), countBits(@white)]
+        countBits(@black) - countBits(@white)
 
     add: (stone, position) ->
         ###
@@ -238,45 +236,30 @@ class OnBoard
             else null
         return null if board is null
 
-        aux = (seed) ->
-            expanded = seed | (adjacents seed) & board
-            if expanded == seed
-                seed
-            else
-                aux expanded
-
-        aux positionTobit position
+        string board, positionTobit position
 
     stringAndLibertyAt: (position) ->
         ###
         座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
         接続した石の集団を連(ストリング)と呼ぶ。
         ###
-        string = stringAt postion
-        liberties = (self, opponent) ->
-            adjacents self & ~ opponent
+        opponent = switch @stateAt position
+            when BLACK then @white
+            when WHITE then @black
+        [string, adjacent @stringAt(position) & ~ opponent]
 
     emptyStringAt: (position) ->
         ### 座標の空点と接続した空点の座標の配列を返す。 ###
         return null unless @isEmptyAt position
 
-        aux = (unchecked, string) =>
-            return string if unchecked.length == 0
-            checking = unchecked.pop()
-            adjacencies = adjacenciesAt checking
-            for adjacency in adjacencies
-                if @isEmptyAt(adjacency) and (string.every (e) -> not e.isEqualTo adjacency)
-                    string.push adjacency
-                    unchecked.push adjacency
-            aux unchecked, string
-
-        aux [position], [position]
+        empty = ~ (@black | @white)
+        string empty, positionToBit position
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
         result = []
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
+        for x in [1..BOARD_SIZE]
+            for y in [1..BOARD_SIZE]
                 position = [x, y]
                 result.push @emptyStringAt position if (@isEmptyAt position) and (result.every (s) -> s.every (e) -> not e.isEqualTo position)
         result
@@ -284,8 +267,8 @@ class OnBoard
     strings: ->
         ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
         result = [[], []]
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
+        for x in [1..BOARD_SIZE]
+            for y in [1..BOARD_SIZE]
                 position = [x, y]
                 switch @stateAt position
                     when BLACK
@@ -298,10 +281,7 @@ class OnBoard
 
     isTouchedBetween: (a, b) ->
         ### ストリングa, bが接触しているかどうか。 ###
-        for p in a
-            for q in b
-                return true if (Math.abs(p[0] - q[0]) == 1) and (Math.abs(p[1] - q[1]) == 1)
-        false
+        (adjacent(a) | b) != 0
 
     stringsToContacts: (strings) ->
         ### string(接続した石の集合)の配列からcontact(接続もしくは接触した石の集合)を算出して返す。 ###
@@ -365,16 +345,20 @@ class OnBoard
         [blacks, whites] = @deployment()
         new OnBoard blacks, whites
 
-    captureBy: (position) ->
+    captureBy: (stone) ->
         ### 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石の座標の配列を返す。 ###
-        capturedStone = opponentOf @stateAt position
-        adjacencies = adjacenciesAt position
-        captives = []
-        for adjacency in adjacencies when @stateAt(adjacency) is capturedStone
-            stringAndLiberty = @stringAndLibertyAt adjacency
-            if stringAndLiberty[1].length == 0
-                @delete e for e in stringAndLiberty[0]
-                captives = captives.concat stringAndLiberty[0]
+        objective = switch stone
+            when BLACK then @white
+            when WHITE then @black
+        subjective = switch stone
+            when BLACK then @black
+            when WHITE then @white
+        captives = captured objective, subjective
+        switch stone
+            when BLACK
+                @white &= ~captives
+            when WHITE
+                @black &= ~captives
         captives
 
     place: (stone, position) ->
@@ -386,11 +370,10 @@ class OnBoard
         ###
         return true unless position? # パス
         return false unless @isEmptyAt position
-        adjacencies = adjacenciesAt position
         @add stone, position
-        @captureBy position
+        @captureBy stone
         [string, liberty] = @stringAndLibertyAt position
-        if liberty.length == 0 # 候補を減らすために自殺手は着手禁止とする。
+        if countBits(liberty) == 0 # 候補を減らすために自殺手は着手禁止とする。
             @delete position
             return false
         true
@@ -399,11 +382,43 @@ class OnBoard
 
     toString: ->
         str = new String()
-        for y in [0...BOARD_SIZE]
-            for x in [0...BOARD_SIZE]
-                str += switch @onBoard[x][y]
+        for y in [1..BOARD_SIZE]
+            for x in [1..BOARD_SIZE]
+                str += switch @stateAt [x, y]
                     when BLACK then 'X'
                     when WHITE then 'O'
                     else ' '
             str += '\n'
         str
+
+positionTobit = (position) ->
+    1 << (position[0] + position[1] * BIT_BOARD_SIZE)
+
+string = (bitBoard, seed) ->
+    expanded = seed | (adjacent seed) & bitBoard
+    if expanded == seed
+        seed
+    else
+        string bitBoard, expanded
+
+countBits = (x) ->
+    x -= ((x >>> 1) & 0x55555555)
+    x = (x & 0x33333333) + ((x >>> 2) & 0x33333333)
+    x = (x + (x >>> 4)) & 0x0F0F0F0F
+    x += (x >>> 8)
+    x += (x >>> 16)
+    x & 0x0000003F
+
+adjacent = (bitBoard) ->
+    expanded = bitBoard << BOARD_SIZE
+    expanded |= bitBoard << 1
+    expanded |= bitBoard >>> 1
+    expanded |= bitBoard >>> BOARD_SIZE
+    expanded & (~ bitBoard) & ON_BOARD
+
+captured = (objective, subjective) ->
+    l = adjacent(objective) & ~ subjective
+    breaths = adjacent l
+    objective & (~ (string objective breaths))
+
+

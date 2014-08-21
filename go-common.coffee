@@ -362,7 +362,6 @@ class OnBoard
         ###
         return true unless position? # パス
         return false unless @isEmptyAt position
-        adjacencies = adjacenciesAt position
         @add stone, position
         @captureBy position
         [string, liberty] = @stringAndLibertyAt position
