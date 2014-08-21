@@ -208,8 +208,7 @@ class OnBoard
                 position = [x, y]
                 continue if @whoseEyeAt(position) is stone
                 board = @copy()
-                next = board.place stone, position
-                result.push next if next
+                result.push board if board.place stone, position
         result
 
     stringAndLibertyAt: (position) ->
