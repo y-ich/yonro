@@ -1,4 +1,4 @@
-test: tests/test-go-common.js tests/testBitBoard.js tests/test-go-evaluate.js
+test: tests/test-go-common.js tests/test-bit-board.js tests/test-go-evaluate.js
 	mocha tests
 
 tests/test-go-common.js: tests/test-go-common.coffee go-common.coffee
