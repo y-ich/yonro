@@ -34,7 +34,7 @@ describe "evaluate", ->
     it "should returns 14", ->
         board = new OnBoard [[0,0],[0,1],[0,2],[0,3],[1,0],[1,1],[1,2],[1,3],[2,1],[3,1],[3,3],[3,2],[2,3]], [[3,0]]
         console.log board.toString()
-        expect(evaluate([board], WHITE).value).toBe 14
+        assert.equal evaluate([board], WHITE).value, 14
     it "should returns 14", ->
         board = new OnBoard [[0,0],[0,1],[0,2],[0,3],[1,0],[1,1],[1,2],[1,3],[2,1],[3,1],[3,3]], [[3,0]]
         console.log board.toString()
@@ -122,12 +122,13 @@ describe "evaluate", ->
         result = evaluate [board], BLACK
         console.log result.history.map((e) -> e.toString()).join('\n')
         assert.equal result.value - (blacks.length - whites.length) > 0, true
+    ###
     it "黒猫のヨンロ", ->
         board = new OnBoard [[1,0],[2,0],[1,1],[1,2]], [[2,1],[2,2],[1,3],[2,3]]
         console.log board.toString()
         result = evaluate [board], BLACK
         console.log result.history.map((e) -> e.toString()).join('\n')
-        expect(result.value).toBe 1
+        assert.equal result.value, 1
     it "メモ化の際のバグ確認", ->
         board0 = new OnBoard [[1,0],[0,1],[1,1],[1,2]], [[2,0],[2,1],[2,2],[1,3],[3,3]]
         board1 = new OnBoard [[1,0],[0,1],[1,1],[1,2],[3,1]], [[2,0],[2,1],[2,2],[1,3],[2,3],[3,3]]
@@ -193,3 +194,4 @@ describe "evaluate", ->
         score = evaluate([board], BLACK).value
         console.log score
         assert.equal (typeof score), 'number'
+    ###
