@@ -243,7 +243,7 @@ class OnBoard
             when WHITE then @white
             else ~ (@black | @white)
 
-        string board, positionToBit position
+        stringOf board, positionToBit position
 
     stringAndLibertyAt: (position) ->
         ###
@@ -253,7 +253,8 @@ class OnBoard
         opponent = switch @stateAt position
             when BLACK then @white
             when WHITE then @black
-        [string, adjacent @stringAt(position) & ~ opponent]
+        s = @stringAt(position)
+        [s, adjacent s & ~ opponent]
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
@@ -331,7 +332,7 @@ class OnBoard
         # アルゴリズム
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
-        gds0 = string bitBoard, adj
+        gds0 = stringOf bitBoard, adj
         gds = []
         # gds0から同じグループを除いたものがgds
         for gd0 in gds0
@@ -431,17 +432,17 @@ adjacent = (bitBoard) ->
     expanded |= bitBoard >>> BIT_BOARD_SIZE
     expanded & (~ bitBoard) & ON_BOARD
 
-string = (bitBoard, seed) ->
+stringOf = (bitBoard, seed) ->
     expanded = seed | (adjacent seed) & bitBoard
     if expanded == seed
         seed
     else
-        string bitBoard, expanded
+        stringOf bitBoard, expanded
 
 captured = (objective, subjective) ->
     l = adjacent(objective) & ~ subjective
     breaths = adjacent l
-    objective & (~ string(objective, breaths))
+    objective & (~ stringOf objective, breaths)
 
 # 初期化
 setBoardSize 4 # デフォルトは四路
