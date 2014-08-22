@@ -43,8 +43,8 @@
       throw "overflow " + (BIT_BOARD_SIZE * BOARD_SIZE);
     }
     ON_BOARD = 0;
-    for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-      for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+    for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+      for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
         ON_BOARD |= positionToBit([x, y]);
       }
     }
@@ -76,7 +76,7 @@
       e = _ref[_i];
       x = position[0] + e[0];
       y = position[1] + e[1];
-      if ((1 <= x && x <= BOARD_SIZE) && (1 <= y && y <= BOARD_SIZE)) {
+      if ((0 <= x && x < BOARD_SIZE) && (0 <= y && y < BOARD_SIZE)) {
         result.push([x, y]);
       }
     }
@@ -155,7 +155,7 @@
         if (line.length !== BOARD_SIZE) {
           throw 'bad format';
         }
-        for (x = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_j : --_j) {
+        for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
           switch (line.charAt(x)) {
             case 'X':
               blacks.push([x, y]);
@@ -181,8 +181,8 @@
       while (true) {
         blacks = [];
         whites = [];
-        for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-          for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+        for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+          for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
             switch (Math.floor(Math.random() * 3)) {
               case 1:
                 blacks.push([x, y]);
@@ -233,8 +233,8 @@
 
       /* 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) */
       var d, g, x, y, _i, _j, _ref;
-      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
           if (!(!this.isEmptyAt([x, y]))) {
             continue;
           }
@@ -288,8 +288,8 @@
       var blacks, position, whites, x, y, _i, _j;
       blacks = [];
       whites = [];
-      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
           switch (this.stateAt(position)) {
             case BLACK:
@@ -346,14 +346,18 @@
 
     OnBoard.prototype.candidates = function(stone) {
 
-      /* stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 */
-      var position, result, x, y, _i, _j;
+      /* stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。 */
+      var board, position, result, x, y, _i, _j;
       result = [];
-      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
-          if (this.isLegalAt(stone, position) && !(this.whoseEyeAt(position) === stone)) {
-            result.push(position);
+          if (this.whoseEyeAt(position) === stone) {
+            continue;
+          }
+          board = this.copy();
+          if (board.place(stone, position)) {
+            result.push(board);
           }
         }
       }
@@ -398,8 +402,8 @@
       /* 盤上の空点のストリングを返す。 */
       var position, result, x, y, _i, _j;
       result = [];
-      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
           if ((this.isEmptyAt(position)) && (result.every(function(s) {
             return !(s & positionToBit(position));
@@ -431,24 +435,20 @@
       /* 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 */
       var position, result, x, y, _i, _j;
       result = [[], []];
-      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
           switch (this.stateAt(position)) {
             case BLACK:
               if (result[0].every(function(g) {
-                return g[0].every(function(e) {
-                  return !e.isEqualTo(position);
-                });
+                return (g[0] & positionToBit(position)) === 0;
               })) {
                 result[0].push(this.stringAndLibertyAt(position));
               }
               break;
             case WHITE:
               if (result[1].every(function(g) {
-                return g[0].every(function(e) {
-                  return !e.isEqualTo(position);
-                });
+                return (g[0] & positionToBit(position)) === 0;
               })) {
                 result[1].push(this.stringAndLibertyAt(position));
               }
@@ -552,8 +552,8 @@
       /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
       var result, x, y, _i, _j;
       result = [[], []];
-      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
           switch (this.whoseEyeAt([x, y])) {
             case BLACK:
               result[0].push([x, y]);
@@ -631,8 +631,8 @@
     OnBoard.prototype.toString = function() {
       var str, x, y, _i, _j;
       str = new String();
-      for (y = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_i : --_i) {
-        for (x = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_j : --_j) {
+      for (y = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_i : --_i) {
+        for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
           str += (function() {
             switch (this.stateAt([x, y])) {
               case BLACK:
@@ -663,7 +663,7 @@
   };
 
   positionToBit = function(position) {
-    return 1 << (position[0] + (position[1] - 1) * BIT_BOARD_SIZE);
+    return 1 << (position[0] + 1 + position[1] * BIT_BOARD_SIZE);
   };
 
   positionsToBits = function(positions) {

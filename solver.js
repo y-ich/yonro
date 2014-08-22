@@ -332,7 +332,7 @@
 
     OnBoard.prototype.candidates = function(stone) {
 
-      /* stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 */
+      /* stoneの手番で、合法かつ自分の眼ではない座標すべての局面を返す。 */
       var board, position, result, x, y, _i, _j;
       result = [];
       for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {

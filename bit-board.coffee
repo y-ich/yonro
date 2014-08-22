@@ -5,7 +5,7 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
-# 座標(position)の原点は[1, 1]
+# 座標(position)の原点は[0, 0]
 
 Array::isEqualTo = (array) ->
     ###　配列の要素すべてが等しいか否かを返す。 ###
@@ -28,8 +28,8 @@ setBoardSize = (size) ->
     throw "overflow #{BIT_BOARD_SIZE * BOARD_SIZE}" if BIT_BOARD_SIZE * BOARD_SIZE > 32
 
     ON_BOARD = 0
-    for x in [1..BOARD_SIZE]
-        for y in [1..BOARD_SIZE]
+    for x in [0...BOARD_SIZE]
+        for y in [0...BOARD_SIZE]
             ON_BOARD |= positionToBit [x, y]
 
     MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2
@@ -49,7 +49,7 @@ adjacenciesAt = (position) ->
     for e in [[0, -1], [-1, 0], [1, 0], [0, 1]]
         x = position[0] + e[0]
         y = position[1] + e[1]
-        result.push [x, y] if 1 <= x <= BOARD_SIZE and 1 <= y <= BOARD_SIZE
+        result.push [x, y] if 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
     result
 
 compare = (a, b, stone) ->
@@ -103,7 +103,7 @@ class OnBoard
 
         for line, y in lines
             throw 'bad format' if line.length isnt BOARD_SIZE
-            for x in [1..BOARD_SIZE]
+            for x in [0...BOARD_SIZE]
                 switch line.charAt x
                     when 'X' then blacks.push [x, y]
                     when 'O' then whites.push [x, y]
@@ -117,8 +117,8 @@ class OnBoard
         loop
             blacks = []
             whites = []
-            for x in [1..BOARD_SIZE]
-                for y in [1..BOARD_SIZE]
+            for x in [0...BOARD_SIZE]
+                for y in [0...BOARD_SIZE]
                     switch Math.floor Math.random() * 3
                         when 1 then blacks.push [x, y]
                         when 2 then whites.push [x, y]
@@ -148,8 +148,8 @@ class OnBoard
 
     isLegal: ->
         ### 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) ###
-        for x in [1..BOARD_SIZE]
-            for y in [1..BOARD_SIZE] when not @isEmptyAt [x, y]
+        for x in [0...BOARD_SIZE]
+            for y in [0...BOARD_SIZE] when not @isEmptyAt [x, y]
                 [g, d] = @stringAndLibertyAt [x, y]
                 return false if d.length == 0
         true
@@ -187,8 +187,8 @@ class OnBoard
         ###
         blacks = []
         whites = []
-        for x in [1..BOARD_SIZE]
-            for y in [1..BOARD_SIZE]
+        for x in [0...BOARD_SIZE]
+            for y in [0...BOARD_SIZE]
                 position = [x, y]
                 switch @stateAt(position)
                     when BLACK then blacks.push position
@@ -229,8 +229,8 @@ class OnBoard
     candidates: (stone) ->
         ### stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。 ###
         result = []
-        for x in [1..BOARD_SIZE]
-            for y in [1..BOARD_SIZE]
+        for x in [0...BOARD_SIZE]
+            for y in [0...BOARD_SIZE]
                 position = [x, y]
                 continue if @whoseEyeAt(position) is stone
                 board = @copy()
@@ -258,8 +258,8 @@ class OnBoard
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
         result = []
-        for x in [1..BOARD_SIZE]
-            for y in [1..BOARD_SIZE]
+        for x in [0...BOARD_SIZE]
+            for y in [0...BOARD_SIZE]
                 position = [x, y]
                 result.push @stringAt position if (@isEmptyAt position) and (result.every (s) -> not (s & positionToBit(position)))
         result
@@ -278,8 +278,8 @@ class OnBoard
     strings: ->
         ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
         result = [[], []]
-        for x in [1..BOARD_SIZE]
-            for y in [1..BOARD_SIZE]
+        for x in [0...BOARD_SIZE]
+            for y in [0...BOARD_SIZE]
                 position = [x, y]
                 switch @stateAt position
                     when BLACK
@@ -348,8 +348,8 @@ class OnBoard
     eyes: ->
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         result = [[], []]
-        for x in [1..BOARD_SIZE]
-            for y in [1..BOARD_SIZE]
+        for x in [0...BOARD_SIZE]
+            for y in [0...BOARD_SIZE]
                 switch @whoseEyeAt [x, y]
                     when BLACK then result[0].push [x, y]
                     when WHITE then result[1].push [x, y]
@@ -398,8 +398,8 @@ class OnBoard
 
     toString: ->
         str = new String()
-        for y in [1..BOARD_SIZE]
-            for x in [1..BOARD_SIZE]
+        for y in [0...BOARD_SIZE]
+            for x in [0...BOARD_SIZE]
                 str += switch @stateAt [x, y]
                     when BLACK then 'X'
                     when WHITE then 'O'
@@ -416,7 +416,7 @@ countBits = (x) ->
     x & 0x0000003F
 
 positionToBit = (position) ->
-    1 << (position[0] + (position[1] - 1) * BIT_BOARD_SIZE)
+    1 << (position[0] + 1 + position[1] * BIT_BOARD_SIZE)
 
 positionsToBits = (positions) ->
     bits = 0
