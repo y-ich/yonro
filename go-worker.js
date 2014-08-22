@@ -761,14 +761,13 @@
             alpha = new EvaluationResult(MAX_SCORE, history.concat(b));
             return alpha;
           } else {
-            result = null;
-            if (result == null) {
-              result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
-            }
+            result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
             if (result.value === MAX_SCORE) {
               return result;
             }
-            alpha = (isNaN(alpha.value)) || (alpha.value >= result.value) ? alpha : result;
+            if ((isNaN(alpha.value && result.value > 0)) || (alpha.value < result.value)) {
+              alpha = result;
+            }
             if (alpha.value >= beta.value) {
               return beta;
             }
@@ -794,14 +793,13 @@
             beta = new EvaluationResult(-MAX_SCORE, history.concat(b));
             return beta;
           } else {
-            result = null;
-            if (result == null) {
-              result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
-            }
+            result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
             if (result.value === -MAX_SCORE) {
               return result;
             }
-            beta = (isNaN(beta.value)) || (beta.value <= result.value) ? beta : result;
+            if ((isNaN(beta.value && result.value < 0)) || (beta.value > result.value)) {
+              beta = result;
+            }
             if (alpha.value >= beta.value) {
               return alpha;
             }

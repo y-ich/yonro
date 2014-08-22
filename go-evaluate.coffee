@@ -53,11 +53,12 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     alpha = new EvaluationResult MAX_SCORE, history.concat b
                     return alpha
                 else
-                    result = null
-                    result ?= evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                    result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is MAX_SCORE
                         return result
-                    alpha = if (isNaN alpha.value) or (alpha.value >= result.value) then alpha else result
+                    if (isNaN alpha.value and result.value > 0) or (alpha.value < result.value)
+                        # 先にdepth = 0のノードに到達していても勝てる手が見つかればそれを選ぶ。
+                        alpha = result
                     if alpha.value >= beta.value
                         return beta
 
@@ -77,11 +78,11 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     beta = new EvaluationResult -MAX_SCORE, history.concat b
                     return beta
                 else
-                    result = null
-                    result ?= evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                    result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is -MAX_SCORE
                         return result
-                    beta = if (isNaN beta.value) or (beta.value <= result.value) then beta else result
+                    if (isNaN beta.value and result.value < 0) or (beta.value > result.value)
+                        beta = result
                     if alpha.value >= beta.value
                         return alpha
 
