@@ -316,7 +316,7 @@ class OnBoard
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
         stone = @stateAt adjacencies[0]
-        gds0 = adjacencies.map (e) => a = @stringAndLibertyAt e
+        gds0 = adjacencies.map (e) => @stringAndLibertyAt e
         gds = []
         # gds0から同じグループを除いたものがgds
         for gd0 in gds0
