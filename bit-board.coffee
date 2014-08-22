@@ -7,6 +7,11 @@
 
 # 座標(position)の原点は[1, 1]
 
+Array::isEqualTo = (array) ->
+    ###　配列の要素すべてが等しいか否かを返す。 ###
+    return false if @length != array.length
+    @every (e, i) -> e == array[i]
+
 BOARD_SIZE = null
 BIT_BOARD_SIZE = null
 ON_BOARD = null
@@ -67,22 +72,19 @@ compare = (a, b, stone) ->
     if eyes != 0
         return eyes
 
-    [aBlack, aWhite] = a.strings()
-    [bBlack, bWhite] = b.strings()
-    numOfLiberties = (strings) -> strings.reduce ((sum, e) -> sum + e[1].length), 0
     switch stone
         when BLACK
-            dame = (numOfLiberties(aBlack) - numOfLiberties(aWhite)) - (numOfLiberties(bBlack) - numOfLiberties(bWhite))
+            dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE))
             return dame if dame != 0
-            strings = bBlack.length - aBlack.length
+            strings = b.strings()[0].length - a.strings()[0].length
             return strings if strings != 0
             aBlack = a.stringsToContacts aBlack
             bBlack = b.stringsToContacts bBlack
             return bBlack.length - aBlack.length
         when WHITE
-            dame = (numOfLiberties(aWhite) - numOfLiberties(aBlack)) - (numOfLiberties(bWhite) - numOfLiberties(bBlack))
+            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLAC))
             return dame if dame != 0
-            strings = bWhite.length - aWhite.length
+            strings = b.strings()[1].length - a.strings()[1].length
             return strings if strings != 0
             aWhite = a.stringsToContacts aWhite
             bWhite = b.stringsToContacts bWhite
@@ -101,7 +103,7 @@ class OnBoard
 
         for line, y in lines
             throw 'bad format' if line.length isnt BOARD_SIZE
-            for x in [0...BOARD_SIZE]
+            for x in [1..BOARD_SIZE]
                 switch line.charAt x
                     when 'X' then blacks.push [x, y]
                     when 'O' then whites.push [x, y]
@@ -115,8 +117,8 @@ class OnBoard
         loop
             blacks = []
             whites = []
-            for x in [0...BOARD_SIZE]
-                for y in [0...BOARD_SIZE]
+            for x in [1..BOARD_SIZE]
+                for y in [1..BOARD_SIZE]
                     switch Math.floor Math.random() * 3
                         when 1 then blacks.push [x, y]
                         when 2 then whites.push [x, y]
@@ -146,8 +148,8 @@ class OnBoard
 
     isLegal: ->
         ### 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) ###
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE] when not @isEmptyAt [x, y]
+        for x in [1..BOARD_SIZE]
+            for y in [1..BOARD_SIZE] when not @isEmptyAt [x, y]
                 [g, d] = @stringAndLibertyAt [x, y]
                 return false if d.length == 0
         true
@@ -185,8 +187,8 @@ class OnBoard
         ###
         blacks = []
         whites = []
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
+        for x in [1..BOARD_SIZE]
+            for y in [1..BOARD_SIZE]
                 position = [x, y]
                 switch @stateAt(position)
                     when BLACK then blacks.push position
@@ -227,8 +229,8 @@ class OnBoard
     candidates: (stone) ->
         ### stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 ###
         result = []
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
+        for x in [1..BOARD_SIZE]
+            for y in [1..BOARD_SIZE]
                 position = [x, y]
                 result.push position if @isLegalAt(stone, position) and not (@whoseEyeAt(position) is stone)
         result
@@ -237,10 +239,9 @@ class OnBoard
         board = switch @stateAt position
             when BLACK then @black
             when WHITE then @white
-            else null
-        return null if board is null
+            else ~ (@black | @white)
 
-        string board, positionTobit position
+        string board, positionToBit position
 
     stringAndLibertyAt: (position) ->
         ###
@@ -252,21 +253,25 @@ class OnBoard
             when WHITE then @black
         [string, adjacent @stringAt(position) & ~ opponent]
 
-    emptyStringAt: (position) ->
-        ### 座標の空点と接続した空点の座標の配列を返す。 ###
-        return null unless @isEmptyAt position
-
-        empty = ~ (@black | @white)
-        string empty, positionToBit position
-
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
         result = []
         for x in [1..BOARD_SIZE]
             for y in [1..BOARD_SIZE]
                 position = [x, y]
-                result.push @emptyStringAt position if (@isEmptyAt position) and (result.every (s) -> s.every (e) -> not e.isEqualTo position)
+                result.push @stringAt position if (@isEmptyAt position) and (result.every (s) -> not (s & positionToBit(position)))
         result
+
+    numOfLiberties: (stone) ->
+        switch stone
+            when BLACK
+                self = @black
+                opponent = @white
+            when WHITE
+                self = @white
+                opponent = @black
+        lib = adjacent(self) & ~ opponent
+        countBits lib
 
     strings: ->
         ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
@@ -312,14 +317,19 @@ class OnBoard
         ###
         return null if not @isEmptyAt position
 
-        adjacencies = adjacenciesAt position
-        return null unless adjacencies.every((e) => @stateAt(e) is BLACK) or adjacencies.every((e) => @stateAt(e) is WHITE)
+        adj = adjacent positionToBit position
+        bitBoard = if (adj & @black) is adj
+                @black
+            else if (adj & @white) is adj
+                @white
+            else
+                null
+        return null unless stone?
 
         # アルゴリズム
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
-        stone = @stateAt adjacencies[0]
-        gds0 = adjacencies.map (e) => a = @stringAndLibertyAt e
+        gds0 = string bitBoard, adj
         gds = []
         # gds0から同じグループを除いたものがgds
         for gd0 in gds0
@@ -336,8 +346,8 @@ class OnBoard
     eyes: ->
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         result = [[], []]
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
+        for x in [1..BOARD_SIZE]
+            for y in [1..BOARD_SIZE]
                 switch @whoseEyeAt [x, y]
                     when BLACK then result[0].push [x, y]
                     when WHITE then result[1].push [x, y]
@@ -350,7 +360,7 @@ class OnBoard
         new OnBoard blacks, whites
 
     captureBy: (stone) ->
-        ### 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石の座標の配列を返す。 ###
+        ### 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石のビットボードを返す。 ###
         objective = switch stone
             when BLACK then @white
             when WHITE then @black

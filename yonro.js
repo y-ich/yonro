@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, bgm, cancelWaiting, compare, computerPlay, currentIndex, endGame, expected, openAndCloseModal, opponentOf, responseInterval, setBoardSize, showOnBoard, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay;
+  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bgm, cancelWaiting, captured, compare, computerPlay, countBits, currentIndex, endGame, expected, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, setBoardSize, showOnBoard, string, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -19,9 +19,13 @@
     });
   };
 
-  BOARD_SIZE = 4;
+  BOARD_SIZE = null;
 
-  MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2;
+  BIT_BOARD_SIZE = null;
+
+  ON_BOARD = null;
+
+  MAX_SCORE = null;
 
   EMPTY = 0;
 
@@ -32,8 +36,19 @@
   setBoardSize = function(size) {
 
     /* 碁盤のサイズを設定する。 デフォルトは4路。 */
+    var x, y, _i, _j;
     BOARD_SIZE = size;
-    return MAX_SCORE = size * size - 2;
+    BIT_BOARD_SIZE = BOARD_SIZE + 2;
+    if (BIT_BOARD_SIZE * BOARD_SIZE > 32) {
+      throw "overflow " + (BIT_BOARD_SIZE * BOARD_SIZE);
+    }
+    ON_BOARD = 0;
+    for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+      for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
+        ON_BOARD |= positionToBit([x, y]);
+      }
+    }
+    return MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2;
   };
 
   opponentOf = function(stone) {
@@ -61,7 +76,7 @@
       e = _ref[_i];
       x = position[0] + e[0];
       y = position[1] + e[1];
-      if ((0 <= x && x < BOARD_SIZE) && (0 <= y && y < BOARD_SIZE)) {
+      if ((1 <= x && x <= BOARD_SIZE) && (1 <= y && y <= BOARD_SIZE)) {
         result.push([x, y]);
       }
     }
@@ -80,7 +95,7 @@
     4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
     5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
      */
-    var aBlack, aWhite, bBlack, bWhite, dame, eyes, index, numOfLiberties, score, strings, _ref, _ref1;
+    var aBlack, aWhite, bBlack, bWhite, dame, eyes, index, score, strings;
     score = a.score() - b.score();
     if (score !== 0) {
       if (stone === BLACK) {
@@ -94,20 +109,13 @@
     if (eyes !== 0) {
       return eyes;
     }
-    _ref = a.strings(), aBlack = _ref[0], aWhite = _ref[1];
-    _ref1 = b.strings(), bBlack = _ref1[0], bWhite = _ref1[1];
-    numOfLiberties = function(strings) {
-      return strings.reduce((function(sum, e) {
-        return sum + e[1].length;
-      }), 0);
-    };
     switch (stone) {
       case BLACK:
-        dame = (numOfLiberties(aBlack) - numOfLiberties(aWhite)) - (numOfLiberties(bBlack) - numOfLiberties(bWhite));
+        dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE));
         if (dame !== 0) {
           return dame;
         }
-        strings = bBlack.length - aBlack.length;
+        strings = b.strings()[0].length - a.strings()[0].length;
         if (strings !== 0) {
           return strings;
         }
@@ -115,11 +123,11 @@
         bBlack = b.stringsToContacts(bBlack);
         return bBlack.length - aBlack.length;
       case WHITE:
-        dame = (numOfLiberties(aWhite) - numOfLiberties(aBlack)) - (numOfLiberties(bWhite) - numOfLiberties(bBlack));
+        dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLAC));
         if (dame !== 0) {
           return dame;
         }
-        strings = bWhite.length - aWhite.length;
+        strings = b.strings()[1].length - a.strings()[1].length;
         if (strings !== 0) {
           return strings;
         }
@@ -147,7 +155,7 @@
         if (line.length !== BOARD_SIZE) {
           throw 'bad format';
         }
-        for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
+        for (x = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_j : --_j) {
           switch (line.charAt(x)) {
             case 'X':
               blacks.push([x, y]);
@@ -173,8 +181,8 @@
       while (true) {
         blacks = [];
         whites = [];
-        for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-          for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+        for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+          for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
             switch (Math.floor(Math.random() * 3)) {
               case 1:
                 blacks.push([x, y]);
@@ -194,22 +202,8 @@
     function OnBoard(blacks, whites) {
 
       /* blacks, whitesは黒石/白石のある場所の座標の配列。 */
-      var e, i, j, _i, _j, _k, _l, _len, _len1, _ref, _ref1;
-      this.onBoard = new Array(BOARD_SIZE);
-      for (i = _i = 0, _ref = this.onBoard.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-        this.onBoard[i] = new Array(BOARD_SIZE);
-        for (j = _j = 0, _ref1 = this.onBoard[i].length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; j = 0 <= _ref1 ? ++_j : --_j) {
-          this.onBoard[i][j] = EMPTY;
-        }
-      }
-      for (_k = 0, _len = blacks.length; _k < _len; _k++) {
-        e = blacks[_k];
-        this.onBoard[e[0]][e[1]] = BLACK;
-      }
-      for (_l = 0, _len1 = whites.length; _l < _len1; _l++) {
-        e = whites[_l];
-        this.onBoard[e[0]][e[1]] = WHITE;
-      }
+      this.black = positionsToBits(blacks);
+      this.white = positionsToBits(whites);
     }
 
     OnBoard.prototype.isEmptyAt = function(position) {
@@ -239,8 +233,8 @@
 
       /* 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) */
       var d, g, x, y, _i, _j, _ref;
-      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
           if (!(!this.isEmptyAt([x, y]))) {
             continue;
           }
@@ -256,30 +250,33 @@
     OnBoard.prototype.isEqualTo = function(board) {
 
       /* 盤上が同じかどうか。 */
-
-      /*
-      for x in [0...BOARD_SIZE]
-          for y in [0...BOARD_SIZE]
-              return false if @stateAt([x, y]) isnt board.stateAt([x, y])
-      true
-       */
-      return this.onBoard.every(function(column, i) {
-        return column.isEqualTo(board.onBoard[i]);
-      });
+      return this.black === board.black && this.white === board.white;
     };
 
     OnBoard.prototype.stateAt = function(position) {
 
       /* 座標の状態を返す。 */
-      return this.onBoard[position[0]][position[1]];
+      var bitPos;
+      bitPos = positionToBit(position);
+      if (this.black & bitPos) {
+        return BLACK;
+      } else if (this.white & bitPos) {
+        return WHITE;
+      } else {
+        return EMPTY;
+      }
     };
 
     OnBoard.prototype.numOf = function(stone) {
-      var flat;
-      flat = Array.prototype.concat.apply([], this.onBoard);
-      return flat.filter(function(e) {
-        return e === stone;
-      }).length;
+      switch (stone) {
+        case BLACK:
+          return countBits(this.black);
+        case WHITE:
+          return countBits(this.white);
+        default:
+          throw 'numOf';
+          return 0;
+      }
     };
 
     OnBoard.prototype.deployment = function() {
@@ -291,8 +288,8 @@
       var blacks, position, whites, x, y, _i, _j;
       blacks = [];
       whites = [];
-      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
           switch (this.stateAt(position)) {
             case BLACK:
@@ -312,7 +309,7 @@
       石の数の差を返す。
       中国ルールを採用。盤上の石の数の差が評価値。
        */
-      return this.numOf(BLACK) - this.numOf(WHITE);
+      return countBits(this.black) - countBits(this.white);
     };
 
     OnBoard.prototype.add = function(stone, position) {
@@ -321,7 +318,24 @@
       石を座標にセットする。
       stateはBLACK, WHITEのいずれか。(本当はEMPTYもOK)
        */
-      return this.onBoard[position[0]][position[1]] = stone;
+      var bitPos;
+      bitPos = positionToBit(position);
+      switch (stone) {
+        case BLACK:
+          this.black |= bitPos;
+          this.white &= ~bitPos;
+          break;
+        case WHITE:
+          this.white |= bitPos;
+          this.black &= ~bitPos;
+          break;
+        case EMPTY:
+          this.black &= ~bitPos;
+          this.white &= ~bitPos;
+          break;
+        default:
+          throw 'unknown type';
+      }
     };
 
     OnBoard.prototype["delete"] = function(position) {
@@ -333,21 +347,32 @@
     OnBoard.prototype.candidates = function(stone) {
 
       /* stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 */
-      var board, position, result, x, y, _i, _j;
+      var position, result, x, y, _i, _j;
       result = [];
-      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
-          if (this.whoseEyeAt(position) === stone) {
-            continue;
-          }
-          board = this.copy();
-          if (board.place(stone, position)) {
-            result.push(board);
+          if (this.isLegalAt(stone, position) && !(this.whoseEyeAt(position) === stone)) {
+            result.push(position);
           }
         }
       }
       return result;
+    };
+
+    OnBoard.prototype.stringAt = function(position) {
+      var board;
+      board = (function() {
+        switch (this.stateAt(position)) {
+          case BLACK:
+            return this.black;
+          case WHITE:
+            return this.white;
+          default:
+            return ~(this.black | this.white);
+        }
+      }).call(this);
+      return string(board, positionToBit(position));
     };
 
     OnBoard.prototype.stringAndLibertyAt = function(position) {
@@ -356,69 +381,16 @@
       座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
       接続した石の集団を連(ストリング)と呼ぶ。
        */
-      var aux, stone;
-      if (this.isEmptyAt(position)) {
-        return null;
-      }
-      stone = this.stateAt(position);
-      aux = (function(_this) {
-        return function(unchecked, string, liberty) {
-          var adjacencies, adjacency, checking, equalPositions, _i, _len;
-          if (unchecked.length === 0) {
-            return [string, liberty];
-          }
-          checking = unchecked.pop();
-          adjacencies = adjacenciesAt(checking);
-          equalPositions = function(a, b) {
-            return (a[0] === b[0]) && (a[1] === b[1]);
-          };
-          for (_i = 0, _len = adjacencies.length; _i < _len; _i++) {
-            adjacency = adjacencies[_i];
-            if ((_this.stateAt(adjacency) === stone) && (string.every(function(e) {
-              return !equalPositions(e, adjacency);
-            }))) {
-              string.push(adjacency);
-              unchecked.push(adjacency);
-            } else if (_this.isEmptyAt(adjacency) && (liberty.every(function(e) {
-              return !equalPositions(e, adjacency);
-            }))) {
-              liberty.push(adjacency);
-            }
-          }
-          return aux(unchecked, string, liberty);
-        };
-      })(this);
-      return aux([position], [position], []);
-    };
-
-    OnBoard.prototype.emptyStringAt = function(position) {
-
-      /* 座標の空点と接続した空点の座標の配列を返す。 */
-      var aux;
-      if (!this.isEmptyAt(position)) {
-        return null;
-      }
-      aux = (function(_this) {
-        return function(unchecked, string) {
-          var adjacencies, adjacency, checking, _i, _len;
-          if (unchecked.length === 0) {
-            return string;
-          }
-          checking = unchecked.pop();
-          adjacencies = adjacenciesAt(checking);
-          for (_i = 0, _len = adjacencies.length; _i < _len; _i++) {
-            adjacency = adjacencies[_i];
-            if (_this.isEmptyAt(adjacency) && (string.every(function(e) {
-              return !e.isEqualTo(adjacency);
-            }))) {
-              string.push(adjacency);
-              unchecked.push(adjacency);
-            }
-          }
-          return aux(unchecked, string);
-        };
-      })(this);
-      return aux([position], [position]);
+      var opponent;
+      opponent = (function() {
+        switch (this.stateAt(position)) {
+          case BLACK:
+            return this.white;
+          case WHITE:
+            return this.black;
+        }
+      }).call(this);
+      return [string, adjacent(this.stringAt(position) & ~opponent)];
     };
 
     OnBoard.prototype.emptyStrings = function() {
@@ -426,19 +398,32 @@
       /* 盤上の空点のストリングを返す。 */
       var position, result, x, y, _i, _j;
       result = [];
-      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
           if ((this.isEmptyAt(position)) && (result.every(function(s) {
-            return s.every(function(e) {
-              return !e.isEqualTo(position);
-            });
+            return !(s & positionToBit(position));
           }))) {
-            result.push(this.emptyStringAt(position));
+            result.push(this.stringAt(position));
           }
         }
       }
       return result;
+    };
+
+    OnBoard.prototype.numOfLiberties = function(stone) {
+      var lib, opponent, self;
+      switch (stone) {
+        case BLACK:
+          self = this.black;
+          opponent = this.white;
+          break;
+        case WHITE:
+          self = this.white;
+          opponent = this.black;
+      }
+      lib = adjacent(self) & ~opponent;
+      return countBits(lib);
     };
 
     OnBoard.prototype.strings = function() {
@@ -446,8 +431,8 @@
       /* 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 */
       var position, result, x, y, _i, _j;
       result = [[], []];
-      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
           position = [x, y];
           switch (this.stateAt(position)) {
             case BLACK:
@@ -476,17 +461,7 @@
     OnBoard.prototype.isTouchedBetween = function(a, b) {
 
       /* ストリングa, bが接触しているかどうか。 */
-      var p, q, _i, _j, _len, _len1;
-      for (_i = 0, _len = a.length; _i < _len; _i++) {
-        p = a[_i];
-        for (_j = 0, _len1 = b.length; _j < _len1; _j++) {
-          q = b[_j];
-          if ((Math.abs(p[0] - q[0]) === 1) && (Math.abs(p[1] - q[1]) === 1)) {
-            return true;
-          }
-        }
-      }
-      return false;
+      return (adjacent(a) | b) !== 0;
     };
 
     OnBoard.prototype.stringsToContacts = function(strings) {
@@ -520,7 +495,7 @@
     };
 
     OnBoard.prototype.whoseEyeAt = function(position, checkings) {
-      var adjacencies, gd0, gds, gds0, stone, _i, _len;
+      var adj, bitBoard, gd0, gds, gds0, _i, _len;
       if (checkings == null) {
         checkings = [];
       }
@@ -534,25 +509,12 @@
       if (!this.isEmptyAt(position)) {
         return null;
       }
-      adjacencies = adjacenciesAt(position);
-      if (!(adjacencies.every((function(_this) {
-        return function(e) {
-          return _this.stateAt(e) === BLACK;
-        };
-      })(this)) || adjacencies.every((function(_this) {
-        return function(e) {
-          return _this.stateAt(e) === WHITE;
-        };
-      })(this)))) {
+      adj = adjacent(positionToBit(position));
+      bitBoard = (adj & this.black) === adj ? this.black : (adj & this.white) === adj ? this.white : null;
+      if (typeof stone === "undefined" || stone === null) {
         return null;
       }
-      stone = this.stateAt(adjacencies[0]);
-      gds0 = adjacencies.map((function(_this) {
-        return function(e) {
-          var a;
-          return a = _this.stringAndLibertyAt(e);
-        };
-      })(this));
+      gds0 = string(bitBoard, adj);
       gds = [];
       for (_i = 0, _len = gds0.length; _i < _len; _i++) {
         gd0 = gds0[_i];
@@ -573,7 +535,9 @@
           }).some(function(d) {
             return checkings.some(function(e) {
               return d.isEqualTo(e);
-            }) || (_this.whoseEyeAt(d, newCheckings) === stone);
+            }) || (function(c) {
+              return _this.whoseEyeAt(d, c) === stone;
+            })(newCheckings);
           });
         };
       })(this)))) {
@@ -588,8 +552,8 @@
       /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
       var result, x, y, _i, _j;
       result = [[], []];
-      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (x = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_i : --_i) {
+        for (y = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_j : --_j) {
           switch (this.whoseEyeAt([x, y])) {
             case BLACK:
               result[0].push([x, y]);
@@ -608,27 +572,33 @@
       return new OnBoard(blacks, whites);
     };
 
-    OnBoard.prototype.captureBy = function(position) {
+    OnBoard.prototype.captureBy = function(stone) {
 
-      /* 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石の座標の配列を返す。 */
-      var adjacencies, adjacency, captives, capturedStone, e, stringAndLiberty, _i, _j, _len, _len1, _ref;
-      capturedStone = opponentOf(this.stateAt(position));
-      adjacencies = adjacenciesAt(position);
-      captives = [];
-      for (_i = 0, _len = adjacencies.length; _i < _len; _i++) {
-        adjacency = adjacencies[_i];
-        if (!(this.stateAt(adjacency) === capturedStone)) {
-          continue;
+      /* 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石のビットボードを返す。 */
+      var captives, objective, subjective;
+      objective = (function() {
+        switch (stone) {
+          case BLACK:
+            return this.white;
+          case WHITE:
+            return this.black;
         }
-        stringAndLiberty = this.stringAndLibertyAt(adjacency);
-        if (stringAndLiberty[1].length === 0) {
-          _ref = stringAndLiberty[0];
-          for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-            e = _ref[_j];
-            this["delete"](e);
-          }
-          captives = captives.concat(stringAndLiberty[0]);
+      }).call(this);
+      subjective = (function() {
+        switch (stone) {
+          case BLACK:
+            return this.black;
+          case WHITE:
+            return this.white;
         }
+      }).call(this);
+      captives = captured(objective, subjective);
+      switch (stone) {
+        case BLACK:
+          this.white &= ~captives;
+          break;
+        case WHITE:
+          this.black &= ~captives;
       }
       return captives;
     };
@@ -649,9 +619,9 @@
         return false;
       }
       this.add(stone, position);
-      this.captureBy(position);
+      this.captureBy(stone);
       _ref = this.stringAndLibertyAt(position), string = _ref[0], liberty = _ref[1];
-      if (liberty.length === 0) {
+      if (countBits(liberty) === 0) {
         this["delete"](position);
         return false;
       }
@@ -661,10 +631,10 @@
     OnBoard.prototype.toString = function() {
       var str, x, y, _i, _j;
       str = new String();
-      for (y = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (y = _i = 1; 1 <= BOARD_SIZE ? _i <= BOARD_SIZE : _i >= BOARD_SIZE; y = 1 <= BOARD_SIZE ? ++_i : --_i) {
+        for (x = _j = 1; 1 <= BOARD_SIZE ? _j <= BOARD_SIZE : _j >= BOARD_SIZE; x = 1 <= BOARD_SIZE ? ++_j : --_j) {
           str += (function() {
-            switch (this.onBoard[x][y]) {
+            switch (this.stateAt([x, y])) {
               case BLACK:
                 return 'X';
               case WHITE:
@@ -682,6 +652,57 @@
     return OnBoard;
 
   })();
+
+  countBits = function(x) {
+    x -= (x >>> 1) & 0x55555555;
+    x = (x & 0x33333333) + ((x >>> 2) & 0x33333333);
+    x = (x + (x >>> 4)) & 0x0F0F0F0F;
+    x += x >>> 8;
+    x += x >>> 16;
+    return x & 0x0000003F;
+  };
+
+  positionToBit = function(position) {
+    return 1 << (position[0] + (position[1] - 1) * BIT_BOARD_SIZE);
+  };
+
+  positionsToBits = function(positions) {
+    var bits, e, _i, _len;
+    bits = 0;
+    for (_i = 0, _len = positions.length; _i < _len; _i++) {
+      e = positions[_i];
+      bits |= positionToBit(e);
+    }
+    return bits;
+  };
+
+  adjacent = function(bitBoard) {
+    var expanded;
+    expanded = bitBoard << BIT_BOARD_SIZE;
+    expanded |= bitBoard << 1;
+    expanded |= bitBoard >>> 1;
+    expanded |= bitBoard >>> BIT_BOARD_SIZE;
+    return expanded & (~bitBoard) & ON_BOARD;
+  };
+
+  string = function(bitBoard, seed) {
+    var expanded;
+    expanded = seed | (adjacent(seed)) & bitBoard;
+    if (expanded === seed) {
+      return seed;
+    } else {
+      return string(bitBoard, expanded);
+    }
+  };
+
+  captured = function(objective, subjective) {
+    var breaths, l;
+    l = adjacent(objective) & ~subjective;
+    breaths = adjacent(l);
+    return objective & (~string(objective, breaths));
+  };
+
+  setBoardSize(4);
 
 
   /*
@@ -850,7 +871,6 @@
     element: $('#bgm')[0],
     state: 'stop',
     play: function() {
-      bgm.element.play();
       return bgm.state = 'play';
     },
     pause: function() {
@@ -1007,7 +1027,7 @@
     var board, parity;
     $('#pass, #resign').attr('disabled', 'disabled');
     board = expected.history[currentIndex].copy();
-    if (board.place(userStone, position)) {
+    if (board.place(userStone, [position[0] + 1, position[1] + 1])) {
       parity = (currentIndex + 1) % 2;
       if ((position != null) && expected.history.slice(0, currentIndex).filter(function(e, i) {
         return (i % 2) === parity;

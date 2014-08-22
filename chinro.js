@@ -549,8 +549,7 @@
       stone = this.stateAt(adjacencies[0]);
       gds0 = adjacencies.map((function(_this) {
         return function(e) {
-          var a;
-          return a = _this.stringAndLibertyAt(e);
+          return _this.stringAndLibertyAt(e);
         };
       })(this));
       gds = [];

@@ -26,7 +26,7 @@ bgm =
     element: $('#bgm')[0]
     state: 'stop'
     play: ->
-        bgm.element.play()
+        # bgm.element.play()
         bgm.state = 'play'
     pause: ->
         bgm.element.pause()
@@ -142,7 +142,8 @@ userPlayAndResponse = (position) ->
     $('#pass, #resign').attr 'disabled', 'disabled'
 
     board = expected.history[currentIndex].copy()
-    if board.place userStone, position
+    # if board.place userStone, position
+    if board.place userStone, [position[0] + 1, position[1] + 1]
         parity = (currentIndex + 1) % 2
         if position? and expected.history[0...currentIndex].filter((e, i) -> (i % 2) == parity).some((e) -> board.isEqualTo e) # 循環
             alert 'そこへ打つと繰り返し…'

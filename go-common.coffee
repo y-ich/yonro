@@ -5,6 +5,8 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
+# 座標(position)の原点は[0, 0]
+
 Array::isEqualTo = (array) ->
     ###　配列の要素すべてが等しいか否かを返す。 ###
     return false if @length != array.length
