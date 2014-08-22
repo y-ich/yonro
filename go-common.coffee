@@ -166,6 +166,10 @@ class OnBoard
         ### 座標の状態を返す。 ###
         @onBoard[position[0]][position[1]]
 
+    numOf: (stone) ->
+        flat = Array.prototype.concat.apply [], @onBoard
+        flat.filter((e) -> e is stone).length
+
     deployment: ->
         ###
         現在の配置を返す。
@@ -186,8 +190,7 @@ class OnBoard
         石の数の差を返す。
         中国ルールを採用。盤上の石の数の差が評価値。
         ###
-        [blacks, whites] = @deployment()
-        blacks.length - whites.length
+        @numOf(BLACK) - @numOf(WHITE)
 
     add: (stone, position) ->
         ###

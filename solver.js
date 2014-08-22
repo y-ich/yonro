@@ -274,6 +274,14 @@
       return this.onBoard[position[0]][position[1]];
     };
 
+    OnBoard.prototype.numOf = function(stone) {
+      var flat;
+      flat = Array.prototype.concat.apply([], this.onBoard);
+      return flat.filter(function(e) {
+        return e === stone;
+      }).length;
+    };
+
     OnBoard.prototype.deployment = function() {
 
       /*
@@ -304,9 +312,7 @@
       石の数の差を返す。
       中国ルールを採用。盤上の石の数の差が評価値。
        */
-      var blacks, whites, _ref;
-      _ref = this.deployment(), blacks = _ref[0], whites = _ref[1];
-      return blacks.length - whites.length;
+      return this.numOf(BLACK) - this.numOf(WHITE);
     };
 
     OnBoard.prototype.add = function(stone, position) {

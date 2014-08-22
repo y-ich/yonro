@@ -168,6 +168,16 @@ class OnBoard
         else
             EMPTY
 
+    numOf: (stone) ->
+        switch stone
+            when BLACK
+                countBits @black
+            when WHITE
+                countBits @white
+            else
+                throw 'numOf'
+                0
+
     deployment: ->
         ###
         現在の配置を返す。

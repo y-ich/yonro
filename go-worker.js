@@ -274,6 +274,14 @@
       return this.onBoard[position[0]][position[1]];
     };
 
+    OnBoard.prototype.numOf = function(stone) {
+      var flat;
+      flat = Array.prototype.concat.apply([], this.onBoard);
+      return flat.filter(function(e) {
+        return e === stone;
+      }).length;
+    };
+
     OnBoard.prototype.deployment = function() {
 
       /*
@@ -304,9 +312,7 @@
       石の数の差を返す。
       中国ルールを採用。盤上の石の数の差が評価値。
        */
-      var blacks, whites, _ref;
-      _ref = this.deployment(), blacks = _ref[0], whites = _ref[1];
-      return blacks.length - whites.length;
+      return this.numOf(BLACK) - this.numOf(WHITE);
     };
 
     OnBoard.prototype.add = function(stone, position) {
@@ -705,7 +711,7 @@
   })();
 
   evalUntilDepth = function(history, next, depth, alpha, beta) {
-    var alpha0, b, beta0, board, candidates, nodes, opponent, parity, result, _i, _j, _k, _len, _len1, _len2;
+    var alpha0, b, beta0, board, candidates, nodes, opponent, parity, result, _i, _j, _len, _len1;
     if (alpha == null) {
       alpha = {
         value: -Infinity,
@@ -720,9 +726,9 @@
     }
 
     /*
+    historyはOnBoardインスタンスの配列
     historyの最終局面の評価値と評価値に至る手順を返す。
     nextは次の手番。
-    passは直前、その前の手がパスだったかを示す。(局面比較の演算を省略するため)
     depthは最大深度。反復進化パラメータ
     alpha, betaはαβ枝狩りパラメータ
      */
@@ -735,27 +741,23 @@
     }
     opponent = opponentOf(next);
     candidates = board.candidates(next);
-    nodes = [];
-    for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-      b = candidates[_i];
-      parity = history.length % 2;
-      if (history.filter(function(e, i) {
+    parity = history.length % 2;
+    nodes = candidates.filter(function(b) {
+      return history.filter(function(e, i) {
         return (i % 2) === parity;
       }).every(function(e) {
         return !b.isEqualTo(e);
-      })) {
-        nodes.push(b);
-      }
-    }
+      });
+    });
     switch (next) {
       case BLACK:
         nodes.sort(function(a, b) {
           return -compare(a, b, next);
         });
         alpha0 = alpha;
-        for (_j = 0, _len1 = nodes.length; _j < _len1; _j++) {
-          b = nodes[_j];
-          if ((b.deployment()[1].length <= 1) && (b.emptyStrings().length >= 2)) {
+        for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+          b = nodes[_i];
+          if ((b.numOf(WHITE) <= 1) && (b.emptyStrings().length >= 2)) {
             alpha = new EvaluationResult(MAX_SCORE, history.concat(b));
             return alpha;
           } else {
@@ -786,9 +788,9 @@
           return -compare(a, b, next);
         });
         beta0 = beta;
-        for (_k = 0, _len2 = nodes.length; _k < _len2; _k++) {
-          b = nodes[_k];
-          if ((b.deployment()[0].length <= 1) && (b.emptyStrings().length >= 2)) {
+        for (_j = 0, _len1 = nodes.length; _j < _len1; _j++) {
+          b = nodes[_j];
+          if ((b.numOf(BLACK) <= 1) && (b.emptyStrings().length >= 2)) {
             beta = new EvaluationResult(-MAX_SCORE, history.concat(b));
             return beta;
           } else {
