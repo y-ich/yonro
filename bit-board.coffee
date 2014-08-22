@@ -328,7 +328,7 @@ class OnBoard
             else
                 null
         return null unless stone?
-
+        console.log 'pass'
         # アルゴリズム
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
