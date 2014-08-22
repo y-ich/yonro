@@ -227,12 +227,14 @@ class OnBoard
         @add EMPTY, position
 
     candidates: (stone) ->
-        ### stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 ###
+        ### stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。 ###
         result = []
         for x in [1..BOARD_SIZE]
             for y in [1..BOARD_SIZE]
                 position = [x, y]
-                result.push position if @isLegalAt(stone, position) and not (@whoseEyeAt(position) is stone)
+                continue if @whoseEyeAt(position) is stone
+                board = @copy()
+                result.push board if board.place stone, position
         result
 
     stringAt: (position) ->
@@ -281,10 +283,10 @@ class OnBoard
                 position = [x, y]
                 switch @stateAt position
                     when BLACK
-                        if (result[0].every (g) -> g[0].every (e) -> not e.isEqualTo position)
+                        if result[0].every((g) -> (g[0] & positionToBit(position)) == 0)
                             result[0].push @stringAndLibertyAt position
                     when WHITE
-                        if (result[1].every (g) -> g[0].every (e) -> not e.isEqualTo position)
+                        if result[1].every((g) -> (g[0] & positionToBit(position)) == 0)
                             result[1].push @stringAndLibertyAt position
         result
 

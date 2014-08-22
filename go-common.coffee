@@ -206,7 +206,7 @@ class OnBoard
         @add EMPTY, position
 
     candidates: (stone) ->
-        ### stoneの手番で、合法かつ自分の眼ではない座標すべての配列を返す。 ###
+        ### stoneの手番で、合法かつ自分の眼ではない座標すべての局面を返す。 ###
         result = []
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
