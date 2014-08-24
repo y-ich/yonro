@@ -278,18 +278,7 @@ class OnBoard
 
     strings: ->
         ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
-        result = [[], []]
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
-                position = [x, y]
-                switch @stateAt position
-                    when BLACK
-                        if result[0].every((g) -> (g[0] & positionToBit(position)) == 0)
-                            result[0].push @stringAndLibertyAt position
-                    when WHITE
-                        if result[1].every((g) -> (g[0] & positionToBit(position)) == 0)
-                            result[1].push @stringAndLibertyAt position
-        result
+        [decomposeToStrings(@black), decomposeToStrings(@white)]
 
     isTouchedBetween: (a, b) ->
         ### ストリングa, bが接触しているかどうか。 ###
@@ -321,23 +310,21 @@ class OnBoard
         return null if not @isEmptyAt position
 
         adj = adjacent positionToBit position
-        bitBoard = if (adj & @black) is adj
-                @black
-            else if (adj & @white) is adj
-                @white
-            else
-                null
+        if (adj & @black) is adj
+            stone = BLACK
+            bitBoard = @black
+        else if (adj & @white) is adj
+            stone = WHITE
+            bitBoard = @white
+        else
+            stone = null
+            bitBoard = null
         return null unless stone?
-        console.log 'pass'
+
         # アルゴリズム
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
-        gds0 = stringOf bitBoard, adj
-        gds = []
-        # gds0から同じグループを除いたものがgds
-        for gd0 in gds0
-            if gds.length == 0 or not (gds.some (gd) -> gd[0].some (e) -> e.isEqualTo gd0[0][0])
-                gds.push gd0
+        gds = decomposeToStrings stringOf bitBoard, adj
         if gds.length == 1 or (gds.every (gd) =>
                 newCheckings = checkings.concat [position]
                 gd[1].filter((e) -> not e.isEqualTo position).some (d) =>
@@ -443,6 +430,17 @@ captured = (objective, subjective) ->
     l = adjacent(objective) & ~ subjective
     breaths = adjacent l
     objective & (~ stringOf objective, breaths)
+
+decomposeToStrings: (bitBoard) ->
+    ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
+    result = []
+    for x in [0...BOARD_SIZE]
+        for y in [0...BOARD_SIZE]
+            position = [x, y]
+            bit = positionToBit position
+            if result.every((b) -> (b & bit) == 0)
+                result.push stringOf bitBoard, bit
+    result
 
 # 初期化
 setBoardSize 4 # デフォルトは四路
