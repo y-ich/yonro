@@ -115,7 +115,6 @@ describe "evaluate", ->
         result = evaluate [board], BLACK
         console.log result.history.map((e) -> e.toString()).join('\n')
         assert.equal result.value - (blacks.length - whites.length) > 0, true
-    ###
     it "黒猫のヨンロ", ->
         blacks = [[1,0],[0,2],[1,2]]
         whites = [[2,0],[3,0],[1,1],[3,1],[2,2],[3,2],[3,3]]
@@ -195,4 +194,5 @@ describe "evaluate", ->
         score = evaluate([board], BLACK).value
         console.log score
         assert.equal (typeof score), 'number'
+    ###
     ###
