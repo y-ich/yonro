@@ -391,7 +391,7 @@ class OnBoard
         str
 
 root = exports ? window
-for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY']
+for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY', 'MAX_SCORE', 'opponentOf']
     root[e] = eval e
 ###
 if exports?
