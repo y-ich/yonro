@@ -5,8 +5,6 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
-{ BLACK, WHITE, EMPTY, OnBoard, opponentOf, MAX_SCORE } = require './go-common.coffee' if exports?
-
 evaluate = (history, next) ->
     evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ

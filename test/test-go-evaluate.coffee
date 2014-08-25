@@ -1,6 +1,5 @@
 assert = require 'assert'
-{ BLACK, WHITE, EMPTY, OnBoard, opponentOf } = require '../go-common.coffee'
-{ evaluate } = require '../go-evaluate.coffee'
+{ BLACK, WHITE, EMPTY, OnBoard, opponentOf, evaluate } = require '/tmp/go-evaluate-common.coffee'
 
 describe "evaluate", ->
     it "両方活きの終局。0を返す", ->

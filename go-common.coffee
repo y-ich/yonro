@@ -396,8 +396,3 @@ class OnBoard
 root = exports ? window
 for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY', 'MAX_SCORE', 'opponentOf']
     root[e] = eval e
-###
-if exports?
-    for e in ['countBits', 'positionToBit', 'positionsToBits', 'adjacent', 'stringOf', 'captured']
-        root[e] = eval e if exports?
-###
