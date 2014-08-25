@@ -324,9 +324,12 @@ class OnBoard
         for gd0 in gds0
             if gds.length == 0 or not (gds.some (gd) -> gd[0].some (e) -> e.isEqualTo gd0[0][0])
                 gds.push gd0
-        if gds.length == 1 or (gds.every (gd) =>
+        if gds.length == 1 or # 眼を作っている石群が1つ
+            (gds.every (gd) => # すべての連の
                 newCheckings = checkings.concat [position]
-                gd[1].filter((e) -> not e.isEqualTo position).some (d) =>
+                gd[1].filter((e) ->
+                    not e.isEqualTo position) # 呼吸点の
+                .some (d) => # いずれかが眼
                     checkings.some((e) -> d.isEqualTo e) or (@whoseEyeAt(d, newCheckings) is stone))
             stone
         else

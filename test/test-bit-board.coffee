@@ -1,5 +1,5 @@
 assert = require 'assert'
-{ OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured } = require '../bit-board.coffee'
+{ BLACK, WHITE, EMPTY, OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured, decomposeToStrings } = require '../bit-board.coffee'
 
 describe 'functions ', ->
     describe 'countBits', ->
@@ -20,10 +20,17 @@ describe 'functions ', ->
         it 'should return one stone', ->
             p = positionToBit [1, 1]
             assert.equal stringOf(p, p), p
+        it 'should return one string', ->
+            p = positionsToBits [[0, 1], [1, 0], [1,1]]
+            assert.deepEqual stringOf(p, positionsToBits [[0, 1], [1, 0]]), p
     describe 'captured', ->
         it 'should return one stone', ->
             p = positionToBit [1, 1]
             assert.equal captured(p, adjacent(p, p)), p
+    describe 'decomposeToStrings', ->
+        it 'should return one string', ->
+            p = positionsToBits [[0, 1], [1, 0], [1,1]]
+            assert.deepEqual decomposeToStrings(stringOf p, positionsToBits [[0, 1], [1, 0]]), [p]
 
 comparePosition = (a, b) ->
     dx = a[0] - b[0]
@@ -73,13 +80,10 @@ describe "OnBoard", ->
 
         it "should returns 14", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[0,1],[2,1],[2,2],[0,3],[1,3],[2,3],[3,3]], []
-            console.log board.toString()
             candidates = board.candidates BLACK
-            console.log candidates
             assert.ok candidates instanceof Array
 
     describe "eyes", ->
         it "should returns 14", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
-            console.log board.toString()
             assert.equal board.eyes()[0].length, 1

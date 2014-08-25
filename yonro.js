@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bgm, cancelWaiting, captured, compare, computerPlay, countBits, currentIndex, endGame, expected, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, setBoardSize, showOnBoard, string, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay;
+  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bgm, cancelWaiting, captured, compare, computerPlay, countBits, currentIndex, decomposeToStrings, e, endGame, expected, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, root, setBoardSize, showOnBoard, stringOf, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay, _i, _len, _ref;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -376,7 +376,7 @@
             return ~(this.black | this.white);
         }
       }).call(this);
-      return string(board, positionToBit(position));
+      return stringOf(board, positionToBit(position));
     };
 
     OnBoard.prototype.stringAndLibertyAt = function(position) {
@@ -385,7 +385,7 @@
       座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
       接続した石の集団を連(ストリング)と呼ぶ。
        */
-      var opponent;
+      var opponent, s;
       opponent = (function() {
         switch (this.stateAt(position)) {
           case BLACK:
@@ -394,7 +394,8 @@
             return this.black;
         }
       }).call(this);
-      return [string, adjacent(this.stringAt(position) & ~opponent)];
+      s = this.stringAt(position);
+      return [s, adjacent(s & ~opponent)];
     };
 
     OnBoard.prototype.emptyStrings = function() {
@@ -433,29 +434,7 @@
     OnBoard.prototype.strings = function() {
 
       /* 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 */
-      var position, result, x, y, _i, _j;
-      result = [[], []];
-      for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-        for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
-          position = [x, y];
-          switch (this.stateAt(position)) {
-            case BLACK:
-              if (result[0].every(function(g) {
-                return (g[0] & positionToBit(position)) === 0;
-              })) {
-                result[0].push(this.stringAndLibertyAt(position));
-              }
-              break;
-            case WHITE:
-              if (result[1].every(function(g) {
-                return (g[0] & positionToBit(position)) === 0;
-              })) {
-                result[1].push(this.stringAndLibertyAt(position));
-              }
-          }
-        }
-      }
-      return result;
+      return [decomposeToStrings(this.black), decomposeToStrings(this.white)];
     };
 
     OnBoard.prototype.isTouchedBetween = function(a, b) {
@@ -495,7 +474,7 @@
     };
 
     OnBoard.prototype.whoseEyeAt = function(position, checkings) {
-      var adj, bitBoard, gd0, gds, gds0, _i, _len;
+      var adj, bitBoard, gds, stone;
       if (checkings == null) {
         checkings = [];
       }
@@ -510,22 +489,20 @@
         return null;
       }
       adj = adjacent(positionToBit(position));
-      bitBoard = (adj & this.black) === adj ? this.black : (adj & this.white) === adj ? this.white : null;
-      if (typeof stone === "undefined" || stone === null) {
+      if ((adj & this.black) === adj) {
+        stone = BLACK;
+        bitBoard = this.black;
+      } else if ((adj & this.white) === adj) {
+        stone = WHITE;
+        bitBoard = this.white;
+      } else {
+        stone = null;
+        bitBoard = null;
+      }
+      if (stone == null) {
         return null;
       }
-      gds0 = string(bitBoard, adj);
-      gds = [];
-      for (_i = 0, _len = gds0.length; _i < _len; _i++) {
-        gd0 = gds0[_i];
-        if (gds.length === 0 || !(gds.some(function(gd) {
-          return gd[0].some(function(e) {
-            return e.isEqualTo(gd0[0][0]);
-          });
-        }))) {
-          gds.push(gd0);
-        }
-      }
+      gds = decomposeToStrings(stringOf(bitBoard, adj));
       if (gds.length === 1 || (gds.every((function(_this) {
         return function(gd) {
           var newCheckings;
@@ -535,9 +512,7 @@
           }).some(function(d) {
             return checkings.some(function(e) {
               return d.isEqualTo(e);
-            }) || (function(c) {
-              return _this.whoseEyeAt(d, c) === stone;
-            })(newCheckings);
+            }) || (_this.whoseEyeAt(d, newCheckings) === stone);
           });
         };
       })(this)))) {
@@ -685,13 +660,13 @@
     return expanded & (~bitBoard) & ON_BOARD;
   };
 
-  string = function(bitBoard, seed) {
+  stringOf = function(bitBoard, seed) {
     var expanded;
     expanded = seed | (adjacent(seed)) & bitBoard;
     if (expanded === seed) {
       return seed;
     } else {
-      return string(bitBoard, expanded);
+      return stringOf(bitBoard, expanded);
     }
   };
 
@@ -699,10 +674,43 @@
     var breaths, l;
     l = adjacent(objective) & ~subjective;
     breaths = adjacent(l);
-    return objective & (~string(objective, breaths));
+    return objective & (~stringOf(objective, breaths));
+  };
+
+  decomposeToStrings = function(bitBoard) {
+
+    /* 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 */
+    var bit, position, result, x, y, _i, _j;
+    result = [];
+    for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
+      for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+        position = [x, y];
+        bit = positionToBit(position);
+        if (result.every(function(b) {
+          return (b & bit) === 0;
+        })) {
+          result.push(stringOf(bitBoard, bit));
+        }
+      }
+    }
+    return result;
   };
 
   setBoardSize(4);
+
+  root = typeof exports !== "undefined" && exports !== null ? exports : window;
+
+  root.OnBoard = OnBoard;
+
+  if (typeof exports !== "undefined" && exports !== null) {
+    _ref = ['countBits', 'positionToBit', 'positionsToBits', 'adjacent', 'stringOf', 'captured'];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      e = _ref[_i];
+      if (typeof exports !== "undefined" && exports !== null) {
+        root[e] = eval(e);
+      }
+    }
+  }
 
 
   /*
@@ -755,7 +763,7 @@
   };
 
   showOnBoard = function(board, effect, callback) {
-    var $intersection, blacks, deferred, deferredes, p, place, whites, x, y, _i, _j, _ref;
+    var $intersection, blacks, deferred, deferredes, p, place, whites, x, y, _j, _k, _ref1;
     if (effect == null) {
       effect = false;
     }
@@ -772,10 +780,10 @@
       $('.intersection').removeClass('black white half-opacity');
       return;
     }
-    _ref = board.deployment(), blacks = _ref[0], whites = _ref[1];
+    _ref1 = board.deployment(), blacks = _ref1[0], whites = _ref1[1];
     deferredes = [];
-    for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-      for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+    for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (y = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_k : --_k) {
         p = [x, y];
         $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * BOARD_SIZE) + ")");
         place = function(blackOrWhite) {
@@ -878,7 +886,6 @@
       return bgm.state = 'pause';
     },
     stop: function() {
-      var e;
       bgm.element.pause();
       bgm.state = 'stop';
       try {
@@ -911,15 +918,15 @@
   };
 
   computerPlay = function(board) {
-    var behaveNext, score, _ref, _ref1;
+    var behaveNext, score, _ref1, _ref2;
     behaveNext = function() {
       currentIndex += 1;
       if (currentIndex < expected.history.length) {
         if (board.isEqualTo(expected.history[currentIndex])) {
           return setTimeout((function() {
-            var _ref, _ref1;
+            var _ref1, _ref2;
             alert('パスします');
-            if (((_ref = expected.history[currentIndex - 2]) != null ? _ref.isEqualTo(board) : void 0) && ((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
+            if (((_ref1 = expected.history[currentIndex - 2]) != null ? _ref1.isEqualTo(board) : void 0) && ((_ref2 = expected.history[currentIndex - 1]) != null ? _ref2.isEqualTo(board) : void 0)) {
               return endGame();
             } else {
               return waitForUserPlay();
@@ -932,9 +939,9 @@
         return endGame();
       }
     };
-    if ((_ref = expected.history[currentIndex]) != null ? _ref.isEqualTo(board) : void 0) {
+    if ((_ref1 = expected.history[currentIndex]) != null ? _ref1.isEqualTo(board) : void 0) {
       if (expected.history.length - 1 > currentIndex) {
-        if (!((_ref1 = expected.history[currentIndex - 1]) != null ? _ref1.isEqualTo(board) : void 0)) {
+        if (!((_ref2 = expected.history[currentIndex - 1]) != null ? _ref2.isEqualTo(board) : void 0)) {
           score = expected.value - expected.history[0].score();
           score = userStone === BLACK ? -score : score;
           if (score > 0) {
@@ -963,7 +970,7 @@
           expected = result;
           return behaveNext();
         }), (function(error) {
-          var b, candidates, computerStone, nodes, parity, _i, _len;
+          var b, candidates, computerStone, nodes, parity, _j, _len1;
           $('#evaluate-modal').modal('hide');
           expected = {
             value: NaN,
@@ -972,8 +979,8 @@
           computerStone = opponentOf(userStone);
           candidates = board.candidates(computerStone);
           nodes = [];
-          for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-            b = candidates[_i];
+          for (_j = 0, _len1 = candidates.length; _j < _len1; _j++) {
+            b = candidates[_j];
             parity = userStone === BLACK ? 0 : 1;
             if (expected.history.filter(function(e, i) {
               return (i % 2) === parity;
@@ -995,7 +1002,7 @@
         expected = result;
         return behaveNext();
       }), (function(error) {
-        var b, candidates, computerStone, nodes, parity, _i, _len;
+        var b, candidates, computerStone, nodes, parity, _j, _len1;
         expected = {
           value: NaN,
           history: expected.history.slice(0, currentIndex).concat(board)
@@ -1003,8 +1010,8 @@
         computerStone = opponentOf(userStone);
         candidates = board.candidates(computerStone);
         nodes = [];
-        for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-          b = candidates[_i];
+        for (_j = 0, _len1 = candidates.length; _j < _len1; _j++) {
+          b = candidates[_j];
           parity = userStone === BLACK ? 0 : 1;
           if (expected.history.filter(function(e, i) {
             return (i % 2) === parity;

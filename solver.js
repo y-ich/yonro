@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, compare, editBoard, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, scheduleMessage, setBoardSize, showOnBoard, stopEditing, wEvaluate;
+  var BLACK, BOARD_SIZE, EMPTY, MAX_SCORE, OnBoard, WHITE, adjacenciesAt, boardOnScreen, cancelMessage, compare, e, editBoard, evaluatedResult, openAndCloseModal, opponentOf, playSequence, responseInterval, root, scheduleMessage, setBoardSize, showOnBoard, stopEditing, wEvaluate, _i, _len, _ref;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -682,6 +682,21 @@
 
   })();
 
+  root = typeof exports !== "undefined" && exports !== null ? exports : window;
+
+  _ref = ['OnBoard', 'BLACK', 'WHITE', 'EMPTY', 'MAX_SCORE', 'opponentOf'];
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    e = _ref[_i];
+    root[e] = eval(e);
+  }
+
+
+  /*
+  if exports?
+      for e in ['countBits', 'positionToBit', 'positionsToBits', 'adjacent', 'stringOf', 'captured']
+          root[e] = eval e if exports?
+   */
+
 
   /*
   四路の純碁とソルバのクライアント側共通コード
@@ -733,7 +748,7 @@
   };
 
   showOnBoard = function(board, effect, callback) {
-    var $intersection, blacks, deferred, deferredes, p, place, whites, x, y, _i, _j, _ref;
+    var $intersection, blacks, deferred, deferredes, p, place, whites, x, y, _j, _k, _ref1;
     if (effect == null) {
       effect = false;
     }
@@ -750,10 +765,10 @@
       $('.intersection').removeClass('black white half-opacity');
       return;
     }
-    _ref = board.deployment(), blacks = _ref[0], whites = _ref[1];
+    _ref1 = board.deployment(), blacks = _ref1[0], whites = _ref1[1];
     deferredes = [];
-    for (x = _i = 0; 0 <= BOARD_SIZE ? _i < BOARD_SIZE : _i > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_i : --_i) {
-      for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
+    for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      for (y = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_k : --_k) {
         p = [x, y];
         $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * BOARD_SIZE) + ")");
         place = function(blackOrWhite) {

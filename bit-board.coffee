@@ -127,8 +127,12 @@ class OnBoard
 
     constructor: (blacks, whites) ->
         ### blacks, whitesは黒石/白石のある場所の座標の配列。 ###
-        @black = positionsToBits blacks
-        @white = positionsToBits whites
+        if blacks? and whites?
+            @black = positionsToBits blacks
+            @white = positionsToBits whites
+        else
+            @black = 0
+            @white = 0
 
     # 状態テストメソッド
 
@@ -185,16 +189,7 @@ class OnBoard
         現在の配置を返す。
         コンストラクタの逆関数
         ###
-        blacks = []
-        whites = []
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
-                position = [x, y]
-                switch @stateAt(position)
-                    when BLACK then blacks.push position
-                    when WHITE then whites.push position
-        [blacks, whites]
-
+        [bitsToPositions @black, bitsToPositions @white]
     score: ->
         ###
         石の数の差を返す。
@@ -219,7 +214,7 @@ class OnBoard
                 @black &= ~bitPos
                 @white &= ~bitPos
             else
-                throw 'unknown type'
+                throw 'add: unknown stone type'
         return
 
     delete: (position) ->
@@ -300,7 +295,7 @@ class OnBoard
             result
         unique result
 
-    whoseEyeAt: (position, checkings = []) ->
+    whoseEyeAt: (position, checkings = 0) ->
         ###
         座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
         眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
@@ -325,10 +320,16 @@ class OnBoard
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
         gds = decomposeToStrings stringOf bitBoard, adj
-        if gds.length == 1 or (gds.every (gd) =>
-                newCheckings = checkings.concat [position]
-                gd[1].filter((e) -> not e.isEqualTo position).some (d) =>
-                    checkings.some((e) -> d.isEqualTo e) or ((c) => @whoseEyeAt(d, c) == stone)(newCheckings))
+        console.log '\n'
+        console.log bitsToString stringOf bitBoard, adj
+        console.log bitsToString(bitBoard)
+        console.log bitsToString(adj)
+        if gds.length == 1 or # 眼を作っている石群が1つ
+            (gds.every (gd) => # すべての連の
+                liberty = adjacent(gd) & ~positionToBit position
+                return true if liberty & checkings
+                bitsToPositions(liberty).some (d) => # いずれかが眼
+                    @whoseEyeAt(d, checkings | positionToBit position) is stone)
             stone
         else
             null
@@ -346,8 +347,10 @@ class OnBoard
     # 操作メソッド
 
     copy: ->
-        [blacks, whites] = @deployment()
-        new OnBoard blacks, whites
+        c = new OnBoard()
+        c.black = @black
+        c.white = @white
+        c
 
     captureBy: (stone) ->
         ### 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石のビットボードを返す。 ###
@@ -412,6 +415,14 @@ positionsToBits = (positions) ->
         bits |= positionToBit e
     bits
 
+bitsToPositions = (bitBoard) ->
+    positions = []
+    for x in [0...BOARD_SIZE]
+        for y in [0...BOARD_SIZE]
+            position = [x, y]
+            positions.push position if bitBoard & positionToBit position
+    positions
+
 adjacent = (bitBoard) ->
     expanded = bitBoard << BIT_BOARD_SIZE
     expanded |= bitBoard << 1
@@ -420,6 +431,7 @@ adjacent = (bitBoard) ->
     expanded & (~ bitBoard) & ON_BOARD
 
 stringOf = (bitBoard, seed) ->
+    return 0 unless bitBoard & seed
     expanded = seed | (adjacent seed) & bitBoard
     if expanded == seed
         seed
@@ -432,21 +444,31 @@ captured = (objective, subjective) ->
     objective & (~ stringOf objective, breaths)
 
 decomposeToStrings = (bitBoard) ->
-    ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
+    ### 盤上の石をストリングに分解する。###
     result = []
     for x in [0...BOARD_SIZE]
         for y in [0...BOARD_SIZE]
             position = [x, y]
             bit = positionToBit position
-            if result.every((b) -> (b & bit) == 0)
+            if (bitBoard & bit) and result.every((b) -> (b & bit) == 0)
+                console.log bitsToString stringOf bitBoard, bit
                 result.push stringOf bitBoard, bit
     result
+
+bitsToString = (bitBoard, char) ->
+    str = new String()
+    for y in [0...BOARD_SIZE]
+        for x in [0...BOARD_SIZE]
+            str += if bitBoard & positionToBit [x, y] then 'O' else '.'
+        str += '\n'
+    str
 
 # 初期化
 setBoardSize 4 # デフォルトは四路
 
 root = exports ? window
-root.OnBoard = OnBoard
+for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY', 'MAX_SCORE', 'opponentOf']
+    root[e] = eval e
 if exports?
-    for e in ['countBits', 'positionToBit', 'positionsToBits', 'adjacent', 'stringOf', 'captured']
+    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings']
         root[e] = eval e if exports?
