@@ -389,3 +389,12 @@ class OnBoard
                     else ' '
             str += '\n'
         str
+
+root = exports ? window
+for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY']
+    root[e] = eval e
+###
+if exports?
+    for e in ['countBits', 'positionToBit', 'positionsToBits', 'adjacent', 'stringOf', 'captured']
+        root[e] = eval e if exports?
+###
