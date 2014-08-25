@@ -285,7 +285,7 @@ class OnBoard
         for i in [0...strings.length]
             result[i] ?= [strings[i]]
             for j in [i + 1...strings.length]
-                if @isTouchedBetween strings[i][0], strings[j][0]
+                if @isTouchedBetween strings[i], strings[j]
                     result[i].push strings[j]
                     result[j] = result[i]
         unique = (array) ->
