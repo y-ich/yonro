@@ -1,4 +1,5 @@
 assert = require 'assert'
+{ OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured } = require '../bit-board.coffee'
 
 describe 'functions ', ->
     describe 'countBits', ->

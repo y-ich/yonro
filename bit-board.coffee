@@ -431,7 +431,7 @@ captured = (objective, subjective) ->
     breaths = adjacent l
     objective & (~ stringOf objective, breaths)
 
-decomposeToStrings: (bitBoard) ->
+decomposeToStrings = (bitBoard) ->
     ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
     result = []
     for x in [0...BOARD_SIZE]
@@ -445,3 +445,8 @@ decomposeToStrings: (bitBoard) ->
 # 初期化
 setBoardSize 4 # デフォルトは四路
 
+root = exports ? window
+root.OnBoard = OnBoard
+if exports?
+    for e in ['countBits', 'positionToBit', 'positionsToBits', 'adjacent', 'stringOf', 'captured']
+        root[e] = eval e if exports?
