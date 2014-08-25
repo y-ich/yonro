@@ -20,15 +20,15 @@ class EvaluationResult
 
 evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: null }, beta = { value: Infinity, history: null }) ->
     ###
-    historyはOnBoardインスタンスの配列
     historyの最終局面の評価値と評価値に至る手順を返す。
     nextは次の手番。
+    passは直前、その前の手がパスだったかを示す。(局面比較の演算を省略するため)
     depthは最大深度。反復進化パラメータ
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
 
-    if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
+    if (board is history[history.length - 2]) and (board is history[history.length - 3])
         return new EvaluationResult board.score(), history
 
     if depth == 0
@@ -36,29 +36,31 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
 
     opponent = opponentOf next
     candidates = board.candidates next
-    parity = history.length % 2
-    nodes = candidates.filter (b) ->
-        history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
+    nodes = []
+    for p in candidates
+        b = board.copy()
+        b.place next, p
+        parity = history.length % 2
+        nodes.push b if history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
 
     switch next
         when BLACK
-            nodes.sort (a, b) -> - compare a, b, next
+            nodes.sort (a, b) -> - OnBoard.compare a, b, next
             alpha0 = alpha
             for b in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
-                if (b.numOf(WHITE) <= 1) and (b.emptyStrings().length >= 2)
+                if (b.deployment()[1].length <= 1) and (b.emptyStrings().length >= 2)
                     # 相手の石を全部取って、眼が２つあれば最大勝ちとしてみたが、眼の中に1目入っている状態でのセキの読みに失敗する。
                     # 相手の石が1目残っていても地が２つあれば最大勝ちとした。正しい命題かどうか不明。
                     alpha = new EvaluationResult MAX_SCORE, history.concat b
                     return alpha
                 else
-                    result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                    result = null
+                    result ?= evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is MAX_SCORE
                         return result
-                    if (isNaN alpha.value and result.value > 0) or (alpha.value < result.value)
-                        # 先にdepth = 0のノードに到達していても勝てる手が見つかればそれを選ぶ。
-                        alpha = result
+                    alpha = if (isNaN alpha.value) or (alpha.value >= result.value) then alpha else result
                     if alpha.value >= beta.value
                         return beta
 
@@ -71,18 +73,18 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                 return beta
             return alpha
         when WHITE
-            nodes.sort (a, b) -> - compare a, b, next
+            nodes.sort (a, b) -> - OnBoard.compare a, b, next
             beta0 = beta
             for b in nodes
-                if (b.numOf(BLACK) <= 1) and (b.emptyStrings().length >= 2)
+                if (b.deployment()[0].length <= 1) and (b.emptyStrings().length >= 2)
                     beta = new EvaluationResult -MAX_SCORE, history.concat b
                     return beta
                 else
-                    result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                    result = null
+                    result ?= evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is -MAX_SCORE
                         return result
-                    if (isNaN beta.value and result.value < 0) or (beta.value > result.value)
-                        beta = result
+                    beta = if (isNaN beta.value) or (beta.value <= result.value) then beta else result
                     if alpha.value >= beta.value
                         return alpha
 
@@ -94,6 +96,3 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
             if alpha.value >= beta.value
                 return alpha
             return beta
-
-root = exports ? window
-root.evaluate = evaluate

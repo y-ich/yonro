@@ -78,14 +78,18 @@ compare = (a, b, stone) ->
             return dame if dame != 0
             strings = b.strings()[0].length - a.strings()[0].length
             return strings if strings != 0
+            [aBlack, aWhite] = a.strings()
+            [bBlack, bWhite] = b.strings()
             aBlack = a.stringsToContacts aBlack
             bBlack = b.stringsToContacts bBlack
             return bBlack.length - aBlack.length
         when WHITE
-            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLAC))
+            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK))
             return dame if dame != 0
             strings = b.strings()[1].length - a.strings()[1].length
             return strings if strings != 0
+            [aBlack, aWhite] = a.strings()
+            [bBlack, bWhite] = b.strings()
             aWhite = a.stringsToContacts aWhite
             bWhite = b.stringsToContacts bWhite
             return bWhite.length - aWhite.length
