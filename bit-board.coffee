@@ -324,10 +324,6 @@ class OnBoard
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
         gds = decomposeToStrings stringOf bitBoard, adj
-        console.log '\n'
-        console.log bitsToString stringOf bitBoard, adj
-        console.log bitsToString(bitBoard)
-        console.log bitsToString(adj)
         if gds.length == 1 or # 眼を作っている石群が1つ
             (gds.every (gd) => # すべての連の
                 liberty = adjacent(gd) & ~positionToBit position
@@ -455,7 +451,6 @@ decomposeToStrings = (bitBoard) ->
             position = [x, y]
             bit = positionToBit position
             if (bitBoard & bit) and result.every((b) -> (b & bit) == 0)
-                console.log bitsToString stringOf bitBoard, bit
                 result.push stringOf bitBoard, bit
     result
 
