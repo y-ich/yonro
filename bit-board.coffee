@@ -440,7 +440,7 @@ stringOf = (bitBoard, seed) ->
 
 captured = (objective, subjective) ->
     l = adjacent(objective) & ~ subjective
-    breaths = adjacent l
+    breaths = objective & adjacent l
     objective & (~ stringOf objective, breaths)
 
 decomposeToStrings = (bitBoard) ->

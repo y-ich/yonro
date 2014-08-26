@@ -99,6 +99,22 @@ describe "OnBoard", ->
                 """
             candidates = board.candidates WHITE
             assert.equal candidates.length, 0
+        it.only "should return no candidates", ->
+            board = OnBoard.fromString """
+                XXXX
+                X OX
+                O XX
+                XXXX
+                """
+            candidates = board.candidates BLACK
+            for b in candidates
+                console.log b.toString()
+            assert.equal candidates[0].toString(), """
+                XXXX
+                XX X
+                O XX
+                XXXX\n
+                """
 
     describe "eyes", ->
         it "should returns 14", ->
