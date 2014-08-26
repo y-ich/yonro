@@ -6,14 +6,12 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
 evaluate = (history, next) ->
-    evalUntilDepth history, next, 100
+    # evalUntilDepth history, next, 3
     # 32は盤を二回埋める深さ
-    ###
-    for depth in [18, 34]
-        result = evalUntilDepth board, next, 0, depth, history
-        return result unless isNaN result
-    NaN
-    ###
+    for depth in [3...100] by 2
+        result = evalUntilDepth history, next, depth
+        return result unless isNaN result.value
+    new EvaluationResult NaN, history
 
 class EvaluationResult
     constructor: (@value, @history) ->
@@ -27,7 +25,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-    console.log '\n' + board.toString()
+    # console.log '\n' + board.toString()
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 
