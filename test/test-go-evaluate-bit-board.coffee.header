@@ -1,0 +1,1 @@
+{ BLACK, WHITE, EMPTY, OnBoard, opponentOf, evaluate } = require '/tmp/go-evaluate-bit-board.coffee'
