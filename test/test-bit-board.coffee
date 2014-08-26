@@ -57,6 +57,14 @@ describe "OnBoard", ->
         it "", ->
             board = new OnBoard [[0,1], [1, 0], [1, 1]], []
             assert.deepEqual board.stringAndLibertyAt([0,1]), [positionsToBits([[0,1], [1, 0], [1, 1]]), positionsToBits([[0, 0], [2, 0], [2, 1], [1, 2], [0, 2]])]
+        it "", ->
+            board = OnBoard.fromString """
+                XXXX
+                XOX 
+                OOXX
+                OXXX
+                """
+            assert.equal board.stringAndLibertyAt([0,3])[1], 0
 
     describe "whoseEyeAt", ->
         it "should returns BLACK", ->
@@ -82,8 +90,26 @@ describe "OnBoard", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[0,1],[2,1],[2,2],[0,3],[1,3],[2,3],[3,3]], []
             candidates = board.candidates BLACK
             assert.ok candidates instanceof Array
+        it "should return no candidates", ->
+            board = OnBoard.fromString """
+                XXXX
+                XOX 
+                OOXX
+                 XXX
+                """
+            candidates = board.candidates WHITE
+            assert.equal candidates.length, 0
 
     describe "eyes", ->
         it "should returns 14", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
             assert.equal board.eyes()[0].length, 1
+
+    describe "place", ->
+        it "should returns true", ->
+            board = new OnBoard [], []
+            assert.equal board.place(BLACK, [0,0]), true
+        it "should returns false", ->
+            board = new OnBoard [[1,0],[0,1]], []
+            assert.equal board.place(WHITE, [0,0]), false
+

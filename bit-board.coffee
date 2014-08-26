@@ -253,7 +253,7 @@ class OnBoard
             when BLACK then @white
             when WHITE then @black
         s = @stringAt(position)
-        [s, adjacent s & ~ opponent]
+        [s, adjacent(s) & ~ opponent]
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###

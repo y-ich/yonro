@@ -27,7 +27,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-
+    console.log '\n' + board.toString()
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 

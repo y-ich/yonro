@@ -50,13 +50,10 @@ describe "OnBoard", ->
 
         it "should returns 14", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[0,1],[2,1],[2,2],[0,3],[1,3],[2,3],[3,3]], []
-            console.log board.toString()
             candidates = board.candidates BLACK
-            console.log candidates
             assert.ok candidates instanceof Array
 
     describe "eyes", ->
         it "should returns 14", ->
             board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
-            console.log board.toString()
             assert.equal board.eyes()[0].length, 1
