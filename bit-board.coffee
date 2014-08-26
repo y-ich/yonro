@@ -388,7 +388,7 @@ class OnBoard
     # 汎用メソッド
 
     toString: ->
-        str = new String()
+        str = ''
         for y in [0...BOARD_SIZE]
             for x in [0...BOARD_SIZE]
                 str += switch @stateAt [x, y]
@@ -455,7 +455,7 @@ decomposeToStrings = (bitBoard) ->
     result
 
 bitsToString = (bitBoard, char) ->
-    str = new String()
+    str = ''
     for y in [0...BOARD_SIZE]
         for x in [0...BOARD_SIZE]
             str += if bitBoard & positionToBit [x, y] then 'O' else '.'
