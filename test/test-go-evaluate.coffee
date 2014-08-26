@@ -136,6 +136,7 @@ describe "evaluate", ->
         result = evaluate result.history[0..1].concat(board1), WHITE
         console.log result.history[2].toString()
         assert.equal result.history[2].isEqualTo(board1), true
+    ###
     # 長手数問題
     it "should returns ", ->
         board = OnBoard.fromString '''
@@ -194,5 +195,4 @@ describe "evaluate", ->
         score = evaluate([board], BLACK).value
         console.log score
         assert.equal (typeof score), 'number'
-    ###
     ###

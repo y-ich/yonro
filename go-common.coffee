@@ -10,7 +10,8 @@
 Array::isEqualTo = (array) ->
     ###　配列の要素すべてが等しいか否かを返す。 ###
     return false if @length != array.length
-    @every (e, i) -> e == array[i]
+    @every (e, i) ->
+        e == array[i]
 
 BOARD_SIZE = 4 # デフォルトは四路
 MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2
@@ -154,13 +155,8 @@ class OnBoard
 
     isEqualTo: (board) ->
         ### 盤上が同じかどうか。 ###
-        ###
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
-                return false if @stateAt([x, y]) isnt board.stateAt([x, y])
-        true
-        ###
-        @onBoard.every (column, i) -> column.isEqualTo board.onBoard[i]
+        @onBoard.every (column, i) ->
+            column.isEqualTo board.onBoard[i]
 
     # 状態アクセスメソッド
 
@@ -261,7 +257,8 @@ class OnBoard
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
                 position = [x, y]
-                result.push @emptyStringAt position if (@isEmptyAt position) and (result.every (s) -> s.every (e) -> not e.isEqualTo position)
+                if (@isEmptyAt position) and (result.every (s) -> s.every (e) -> not e.isEqualTo position)
+                    result.push @emptyStringAt position
         result
 
     strings: ->
