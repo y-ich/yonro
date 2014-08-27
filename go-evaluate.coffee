@@ -6,9 +6,10 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
 evaluate = (history, next) ->
-    return evalUntilDepth history, next, 100
+    # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     for depth in [3...100] by 2
+        console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         return result unless isNaN result.value
     new EvaluationResult NaN, history
