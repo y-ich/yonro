@@ -4,7 +4,7 @@ showHistory = (history) ->
     for b in history
         console.log b.toString()
 
-describe "evaluate", ->
+describe "#{kernel} evaluate", ->
     it "両方活きの終局。0を返す", ->
         board = new OnBoard [[0,0],[1,0],[1,1],[1,2],[0,2],[1,3]], [[3,0],[2,0],[2,1],[2,2],[3,2],[2,3]]
         console.log '\n' + board.toString()

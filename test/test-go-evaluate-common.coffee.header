@@ -1,1 +1,2 @@
+kernel = 'go-common'
 { BLACK, WHITE, EMPTY, OnBoard, opponentOf, evaluate } = require '/tmp/go-evaluate-common.coffee'
