@@ -21,6 +21,9 @@ EMPTY = 0
 BLACK = 1
 WHITE = 2
 
+boardsToString = (history) ->
+    history.map((e) -> e.toString()).join '\n'
+
 setBoardSize = (size) ->
     ### 碁盤のサイズを設定する。 デフォルトは4路。 ###
     BOARD_SIZE = size
@@ -469,5 +472,5 @@ root = exports ? window
 for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY', 'MAX_SCORE', 'opponentOf']
     root[e] = eval e
 if exports?
-    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings']
+    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString']
         root[e] = eval e if exports?
