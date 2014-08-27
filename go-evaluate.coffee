@@ -9,6 +9,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     for depth in [11..33] by 2
+        console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         return result unless isNaN result.value
     result
@@ -34,6 +35,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
 
     opponent = opponentOf next
     candidates = board.candidates next
+    
     parity = history.length % 2
     nodes = candidates.filter (b) ->
         history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
@@ -41,55 +43,47 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     switch next
         when BLACK
             nodes.sort (a, b) -> - compare a, b, next
-            alpha0 = alpha
             for b in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
                 if (b.numOf(WHITE) <= 1) and (b.emptyStrings().length >= 2)
                     # 相手の石を全部取って、眼が２つあれば最大勝ちとしてみたが、眼の中に1目入っている状態でのセキの読みに失敗する。
                     # 相手の石が1目残っていても地が２つあれば最大勝ちとした。正しい命題かどうか不明。
-                    alpha = new EvaluationResult MAX_SCORE, history.concat b
-                    return alpha
+                    return new EvaluationResult MAX_SCORE, history.concat b
                 else
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is MAX_SCORE
                         return result
                     if alpha.value < result.value
                         alpha = result
-                    if alpha.value >= beta.value
-                        return beta
-
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
             if result.value is MAX_SCORE
                 return result
             if alpha.value < result.value
                 alpha = result
+
             if alpha.value >= beta.value
                 return beta
             return alpha
         when WHITE
             nodes.sort (a, b) -> - compare a, b, next
-            beta0 = beta
             for b in nodes
                 if (b.numOf(BLACK) <= 1) and (b.emptyStrings().length >= 2)
-                    beta = new EvaluationResult -MAX_SCORE, history.concat b
-                    return beta
+                    return new EvaluationResult -MAX_SCORE, history.concat b
                 else
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is -MAX_SCORE
                         return result
                     if beta.value > result.value
                         beta = result
-                    if alpha.value >= beta.value
-                        return alpha
-
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
             if result.value is -MAX_SCORE
                 return result
             if beta.value > result.value
                 beta = result
+
             if alpha.value >= beta.value
                 return alpha
             return beta
