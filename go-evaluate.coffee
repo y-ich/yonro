@@ -6,7 +6,7 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
 evaluate = (history, next) ->
-    # evalUntilDepth history, next, 3
+    # evalUntilDepth history, next, 10
     # 32は盤を二回埋める深さ
     for depth in [3...100] by 2
         result = evalUntilDepth history, next, depth
@@ -54,8 +54,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is MAX_SCORE
                         return result
-                    if (isNaN alpha.value and result.value > 0) or (alpha.value < result.value)
-                        # 先にdepth = 0のノードに到達していても勝てる手が見つかればそれを選ぶ。
+                    if alpha.value < result.value
                         alpha = result
                     if alpha.value >= beta.value
                         return beta
@@ -79,7 +78,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                     if result.value is -MAX_SCORE
                         return result
-                    if (isNaN beta.value and result.value < 0) or (beta.value > result.value)
+                    if beta.value > result.value
                         beta = result
                     if alpha.value >= beta.value
                         return alpha
