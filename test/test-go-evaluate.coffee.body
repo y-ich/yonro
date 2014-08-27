@@ -1,9 +1,5 @@
 assert = require 'assert'
 
-showHistory = (history) ->
-    for b in history
-        console.log b.toString()
-
 describe "#{kernel} evaluate", ->
     it "両方活きの終局。0を返す", ->
         board = OnBoard.fromString """
@@ -52,7 +48,9 @@ describe "#{kernel} evaluate", ->
             OOX 
               XX
             """
-        assert.equal evaluate([board], BLACK).value, 5
+        result = evaluate [board], BLACK
+        console.log boardsToString result.history
+        assert.equal result.value, 5
     it "should returns -14", ->
         board = OnBoard.fromString """
             X  O
@@ -60,7 +58,8 @@ describe "#{kernel} evaluate", ->
             OOOO
             OOOO
             """
-        assert.equal evaluate([board], WHITE).value, -14
+        result = evaluate [board], WHITE
+        assert.equal result.value, -14
     it "should returns ", ->
         board = OnBoard.fromString """
             O X 
@@ -181,7 +180,7 @@ describe "#{kernel} evaluate", ->
              O  
             '''
         result = evaluate [board], BLACK
-        # showHistory result.history
+        console.log boardsToString result.history
         assert.equal result.value, 2
     ###
     it "should returns ", ->
