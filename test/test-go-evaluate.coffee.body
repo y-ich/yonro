@@ -100,7 +100,9 @@ describe "#{kernel} evaluate", ->
             OX O
             OOOO
             """
-        assert.equal evaluate([board], BLACK).value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+        result = evaluate([board], BLACK)
+        showHistory result.history
+        assert.equal result.value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
     it "黒猫のヨンロ3", ->
         board = OnBoard.fromString """
              O O

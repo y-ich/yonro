@@ -8,11 +8,10 @@
 evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
-    for depth in [10..32] by 2
-        console.log "depth: #{depth}"
+    for depth in [11..33] by 2
         result = evalUntilDepth history, next, depth
         return result unless isNaN result.value
-    new EvaluationResult NaN, history
+    result
 
 class EvaluationResult
     constructor: (@value, @history) ->
@@ -53,7 +52,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     return alpha
                 else
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                    if (result.value is MAX_SCORE) or isNaN result.value
+                    if result.value is MAX_SCORE
                         return result
                     if alpha.value < result.value
                         alpha = result
@@ -62,7 +61,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
 
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if (result.value is MAX_SCORE) or isNaN result.value
+            if result.value is MAX_SCORE
                 return result
             if alpha.value < result.value
                 alpha = result
@@ -78,7 +77,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     return beta
                 else
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                    if (result.value is -MAX_SCORE) or isNaN result.value
+                    if result.value is -MAX_SCORE
                         return result
                     if beta.value > result.value
                         beta = result
@@ -87,7 +86,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
 
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if (result.value is -MAX_SCORE) or isNaN result.value
+            if result.value is -MAX_SCORE
                 return result
             if beta.value > result.value
                 beta = result
