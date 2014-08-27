@@ -6,7 +6,7 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
 evaluate = (history, next) ->
-    # evalUntilDepth history, next, 10
+    # evalUntilDepth history, next, 15
     # 32は盤を二回埋める深さ
     for depth in [3...100] by 2
         result = evalUntilDepth history, next, depth
@@ -25,7 +25,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-    # console.log '\n' + board.toString()
+    # console.log "depth#{depth}", '\n' + board.toString()
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 
@@ -52,7 +52,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     return alpha
                 else
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                    if result.value is MAX_SCORE
+                    if (result.value is MAX_SCORE) or isNaN result.value
                         return result
                     if alpha.value < result.value
                         alpha = result
@@ -61,9 +61,10 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
 
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if result.value is MAX_SCORE
+            if (result.value is MAX_SCORE) or isNaN result.value
                 return result
-            alpha = if (isNaN alpha.value) or (alpha.value >= result.value) then alpha else result
+            if alpha.value < result.value
+                alpha = result
             if alpha.value >= beta.value
                 return beta
             return alpha
@@ -76,7 +77,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                     return beta
                 else
                     result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                    if result.value is -MAX_SCORE
+                    if (result.value is -MAX_SCORE) or isNaN result.value
                         return result
                     if beta.value > result.value
                         beta = result
@@ -85,9 +86,10 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
 
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if result.value is -MAX_SCORE
+            if (result.value is -MAX_SCORE) or isNaN result.value
                 return result
-            beta = if (isNaN beta.value) or (beta.value <= result.value) then beta else result
+            if beta.value > result.value
+                beta = result
             if alpha.value >= beta.value
                 return alpha
             return beta
