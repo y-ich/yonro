@@ -8,7 +8,7 @@
 evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
-    for depth in [3...100] by 2
+    for depth in [10..32] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         return result unless isNaN result.value
