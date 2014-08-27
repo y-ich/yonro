@@ -6,7 +6,7 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
 evaluate = (history, next) ->
-    # evalUntilDepth history, next, 15
+    return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     for depth in [3...100] by 2
         result = evalUntilDepth history, next, depth
