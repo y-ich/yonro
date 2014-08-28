@@ -52,16 +52,16 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (result.value == MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
+                if (result.value >= MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
                     alpha = result
                 if alpha.value >= beta.value
                     return beta
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if (result.value == MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
+            if (result.value >= MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
                 alpha = result
 
-            if (isNaN result.value) or alpha.value >= beta.value
+            if alpha.value >= beta.value
                 return beta
             return alpha
         when WHITE
@@ -70,13 +70,13 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (result.value == -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
+                if (result.value <= -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
                     beta = result
                 if alpha.value >= beta.value
                     return alpha
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if (result.value == -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
+            if (result.value <= -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
                 beta = result
 
             if alpha.value >= beta.value

@@ -49,7 +49,6 @@ describe "#{kernel} evaluate", ->
             XXXX
             """
         result = evaluate [board], BLACK
-        console.log boardsToString(result.history ? [])
         assert.equal result.value, -MAX_SCORE
     it "should returns 5", ->
         board = OnBoard.fromString """
