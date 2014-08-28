@@ -1,2 +1,2 @@
 kernel = 'bit-board'
-{ BLACK, WHITE, EMPTY, boardsToString, OnBoard, opponentOf, evaluate } = require '/tmp/go-evaluate-bit-board.coffee'
+{ BLACK, WHITE, EMPTY, MAX_SCORE, boardsToString, OnBoard, opponentOf, evaluate } = require '/tmp/go-evaluate-bit-board.coffee'

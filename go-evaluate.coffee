@@ -11,7 +11,7 @@ evaluate = (history, next) ->
     for depth in [11..33] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
-        return result unless isNaN result.value
+        return result if isFinite result.value
     result
 
 class EvaluationResult
