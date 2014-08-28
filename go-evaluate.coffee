@@ -39,10 +39,10 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     parity = history.length % 2
     nodes = candidates.filter (b) ->
         history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
+    nodes.sort (a, b) -> - compare a, b, next
 
     switch next
         when BLACK
-            nodes.sort (a, b) -> - compare a, b, next
             for b in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
@@ -52,32 +52,31 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (isNaN result.value) or alpha.value < result.value
+                if (result.value == MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
                     alpha = result
                 if alpha.value >= beta.value
                     return beta
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if alpha.value < result.value
+            if (result.value == MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
                 alpha = result
 
             if (isNaN result.value) or alpha.value >= beta.value
                 return beta
             return alpha
         when WHITE
-            nodes.sort (a, b) -> - compare a, b, next
             for b in nodes
                 result = if (b.numOf(BLACK) <= 1) and (b.emptyStrings().length >= 2)
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (isNaN result.value) or beta.value > result.value
+                if (result.value == -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
                     beta = result
                 if alpha.value >= beta.value
                     return alpha
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if (isNaN result.value) or beta.value > result.value
+            if (result.value == -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
                 beta = result
 
             if alpha.value >= beta.value
