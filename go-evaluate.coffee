@@ -11,6 +11,7 @@ evaluate = (history, next) ->
     for depth in [11..33] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
+        console.log boardsToString result.history
         return result if isFinite result.value
     result
 
@@ -52,13 +53,13 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (result.value >= MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
+                if (result.value >= MAX_SCORE) or (alpha.value < MAX_SCORE and isNaN result.value) or alpha.value < result.value
                     alpha = result
                 if alpha.value >= beta.value
                     return beta
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if (result.value >= MAX_SCORE) or (isNaN result.value) or alpha.value < result.value
+            if (result.value >= MAX_SCORE) or (alpha.value < MAX_SCORE and isNaN result.value) or alpha.value < result.value
                 alpha = result
 
             if alpha.value >= beta.value
@@ -70,13 +71,13 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (result.value <= -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
+                if (result.value <= -MAX_SCORE) or (beta.value > -MAX_SCORE and isNaN result.value) or beta.value > result.value
                     beta = result
                 if alpha.value >= beta.value
                     return alpha
             # パス
             result = evalUntilDepth history.concat(board), opponent, depth - 1, alpha, beta
-            if (result.value <= -MAX_SCORE) or (isNaN result.value) or beta.value > result.value
+            if (result.value <= -MAX_SCORE) or (beta.value > -MAX_SCORE and isNaN result.value) or beta.value > result.value
                 beta = result
 
             if alpha.value >= beta.value
