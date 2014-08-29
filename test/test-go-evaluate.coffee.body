@@ -127,7 +127,9 @@ describe "#{kernel} evaluate", ->
             O X 
             OO O
             """
-        assert.equal evaluate([board], BLACK).value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+        result = evaluate([board], BLACK)
+        console.log result.toString()
+        assert.equal result.value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
     it "黒猫のヨンロ4", ->
         board = OnBoard.fromString """
              XXO

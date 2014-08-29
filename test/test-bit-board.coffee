@@ -1,5 +1,5 @@
 assert = require 'assert'
-{ BLACK, WHITE, EMPTY, OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured, decomposeToStrings } = require '../bit-board.coffee'
+{ BLACK, WHITE, EMPTY, OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured, decomposeToStrings, boardsToString, compare } = require '../bit-board.coffee'
 
 describe 'functions ', ->
     describe 'countBits', ->
@@ -31,6 +31,21 @@ describe 'functions ', ->
         it 'should return one string', ->
             p = positionsToBits [[0, 1], [1, 0], [1,1]]
             assert.deepEqual decomposeToStrings(stringOf p, positionsToBits [[0, 1], [1, 0]]), [p]
+    describe 'compare', ->
+        it 'should return positive', ->
+            board1 = OnBoard.fromString '''
+                XXXX
+                 OXO
+                OOX 
+                  XX
+                '''
+            board2 = OnBoard.fromString '''
+                XXXX
+                 O O
+                OOX 
+                 XXX
+                '''
+            assert.equal compare(board1, board2, BLACK) > 0, true
 
 comparePosition = (a, b) ->
     dx = a[0] - b[0]

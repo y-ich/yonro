@@ -77,20 +77,20 @@ compare = (a, b, stone) ->
 
     switch stone
         when BLACK
-            dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE))
-            return dame if dame != 0
             strings = b.strings()[0].length - a.strings()[0].length
             return strings if strings != 0
+            dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE))
+            return dame if dame != 0
             [aBlack, aWhite] = a.strings()
             [bBlack, bWhite] = b.strings()
             aBlack = a.stringsToContacts aBlack
             bBlack = b.stringsToContacts bBlack
             return bBlack.length - aBlack.length
         when WHITE
-            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK))
-            return dame if dame != 0
             strings = b.strings()[1].length - a.strings()[1].length
             return strings if strings != 0
+            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK))
+            return dame if dame != 0
             [aBlack, aWhite] = a.strings()
             [bBlack, bWhite] = b.strings()
             aWhite = a.stringsToContacts aWhite
@@ -472,5 +472,5 @@ root = exports ? window
 for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY', 'MAX_SCORE', 'opponentOf']
     root[e] = eval e
 if exports?
-    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString']
+    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare']
         root[e] = eval e if exports?
