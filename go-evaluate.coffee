@@ -8,7 +8,7 @@
 evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
-    for depth in [11..33] by 2
+    for depth in [13..33] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -56,6 +56,13 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                if b.isEqualTo OnBoard.fromString '''
+                        XXXX
+                        X X 
+                        OOXX
+                        XXXX
+                        '''
+                    console.log "depth: #{depth}, result: #{result.value}"
                 if (result.value >= MAX_SCORE) or (isNaN(result.value) and alpha.value < MAX_SCORE) or alpha.value < result.value
                     alpha = result
                 if alpha.value >= beta.value

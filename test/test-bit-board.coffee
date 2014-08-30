@@ -94,6 +94,14 @@ describe "OnBoard", ->
         it "should returns null", ->
             board = new OnBoard [[1,0], [2, 0], [3, 1], [3, 2], [1, 3], [2, 3]], []
             assert.equal board.whoseEyeAt([0,0]), null
+        it "should return two candidates", ->
+            board = OnBoard.fromString """
+                XXXX
+                X OX
+                O XX
+                XXXX
+                """
+            assert.equal board.whoseEyeAt([1, 2]), null
 
     describe "candidates", ->
         it "should returns candidates", ->
@@ -114,7 +122,7 @@ describe "OnBoard", ->
                 """
             candidates = board.candidates WHITE
             assert.equal candidates.length, 0
-        it "should return no candidates", ->
+        it "should return two candidates", ->
             board = OnBoard.fromString """
                 XXXX
                 X OX
@@ -122,12 +130,7 @@ describe "OnBoard", ->
                 XXXX
                 """
             candidates = board.candidates BLACK
-            assert.equal candidates[0].toString(), """
-                XXXX
-                XX X
-                O XX
-                XXXX\n
-                """
+            assert.equal candidates.length, 2
 
     describe "eyes", ->
         it "should returns 14", ->

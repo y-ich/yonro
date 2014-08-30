@@ -318,6 +318,15 @@ class OnBoard
         else if (adj & @white) is adj
             stone = WHITE
             bitBoard = @white
+        else if (adj & (@black | @white)) is adj
+            strings = decomposeToStrings(stringOf @white, (adj & @white))
+            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @black) == 1 and decomposeToStrings(stringOf @black, (adj & @black)).length == 1
+                return BLACK
+            strings = decomposeToStrings(stringOf @black, (adj & @black))
+            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @white) == 1 and decomposeToStrings(stringOf @white, (adj & @white)).length == 1
+                return WHITE
+            stone = null
+            bitBoard = null
         else
             stone = null
             bitBoard = null
