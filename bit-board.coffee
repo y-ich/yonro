@@ -234,7 +234,7 @@ class OnBoard
         for x in [0...BOARD_SIZE]
             for y in [0...BOARD_SIZE]
                 position = [x, y]
-                continue if @whoseEyeAt(position) is stone
+                continue if @whoseEyeAt(position, true) is stone
                 board = @copy()
                 result.push board if board.place stone, position
         result
@@ -302,7 +302,7 @@ class OnBoard
             result
         unique result
 
-    whoseEyeAt: (position, checkings = 0) ->
+    whoseEyeAt: (position, genuine = false, checkings = 0) ->
         ###
         座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
         眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
@@ -318,7 +318,7 @@ class OnBoard
         else if (adj & @white) is adj
             stone = WHITE
             bitBoard = @white
-        else if (adj & (@black | @white)) is adj
+        else if not genuine and (adj & (@black | @white)) is adj
             strings = decomposeToStrings(stringOf @white, (adj & @white))
             if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @black) == 1 and decomposeToStrings(stringOf @black, (adj & @black)).length == 1
                 return BLACK
@@ -341,7 +341,7 @@ class OnBoard
                 liberty = adjacent(gd) & ~positionToBit position
                 return true if liberty & checkings
                 bitsToPositions(liberty).some (d) => # いずれかが眼
-                    @whoseEyeAt(d, checkings | positionToBit position) is stone)
+                    @whoseEyeAt(d, genuine, checkings | positionToBit position) is stone)
             stone
         else
             null

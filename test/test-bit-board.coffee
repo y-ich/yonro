@@ -94,7 +94,7 @@ describe "OnBoard", ->
         it "should returns null", ->
             board = new OnBoard [[1,0], [2, 0], [3, 1], [3, 2], [1, 3], [2, 3]], []
             assert.equal board.whoseEyeAt([0,0]), null
-        it "should return two candidates", ->
+        it "should return no eyes yet", ->
             board = OnBoard.fromString """
                 XXXX
                 X OX
