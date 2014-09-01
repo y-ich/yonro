@@ -62,10 +62,9 @@ compare = (a, b, stone) ->
 
     [aBlack, aWhite] = a.strings()
     [bBlack, bWhite] = b.strings()
-    numOfLiberties = (strings) -> strings.reduce ((sum, e) -> sum + e[1].length), 0
     switch stone
         when BLACK
-            dame = (numOfLiberties(aBlack) - numOfLiberties(aWhite)) - (numOfLiberties(bBlack) - numOfLiberties(bWhite))
+            dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE))
             return dame if dame != 0
             strings = bBlack.length - aBlack.length
             return strings if strings != 0
@@ -73,7 +72,7 @@ compare = (a, b, stone) ->
             bBlack = b.stringsToContacts bBlack
             return bBlack.length - aBlack.length
         when WHITE
-            dame = (numOfLiberties(aWhite) - numOfLiberties(aBlack)) - (numOfLiberties(bWhite) - numOfLiberties(bBlack))
+            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK))
             return dame if dame != 0
             strings = bWhite.length - aWhite.length
             return strings if strings != 0
