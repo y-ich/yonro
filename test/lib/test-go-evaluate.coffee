@@ -93,7 +93,7 @@ testEvaluate = (kernel) ->
                 board = OnBoard.fromString """
                     O X 
                     XX  
-                
+                        
                       X 
                     """
                 assert.equal evaluate([board], WHITE).value, MAX_SCORE
