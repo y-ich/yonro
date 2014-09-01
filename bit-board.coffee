@@ -1,102 +1,87 @@
 ###
-碁カーネル
+碁カーネル(ビッとボードバージョン)
 中国ルールを採用。ただし自殺手は着手禁止とする。
 ###
 # 作者: 市川雄二
-# (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
+# (C) 2014 ICHIKAWA, Yuji (New 3 Rs)
 
-# 座標(position)の原点は[0, 0]
+if exports?
+    { BLACK, WHITE, EMPTY, MAX_SCORE, BOARD_SIZE, MAX_SCORE, opponentOf, boardsToString, compare } = require './go-common.coffee'
 
-Array::isEqualTo = (array) ->
-    ###　配列の要素すべてが等しいか否かを返す。 ###
-    return false if @length != array.length
-    @every (e, i) -> e == array[i]
+positionToBit = (position) ->
+    1 << (position[0] + 1 + position[1] * BIT_BOARD_SIZE)
 
-BOARD_SIZE = null
-BIT_BOARD_SIZE = null
-ON_BOARD = null
-MAX_SCORE = null
-
-EMPTY = 0
-BLACK = 1
-WHITE = 2
-
-boardsToString = (history) ->
-    history.map((e) -> e.toString()).join '\n'
-
-setBoardSize = (size) ->
-    ### 碁盤のサイズを設定する。 デフォルトは4路。 ###
-    BOARD_SIZE = size
-    BIT_BOARD_SIZE = BOARD_SIZE + 2
-    throw "overflow #{BIT_BOARD_SIZE * BOARD_SIZE}" if BIT_BOARD_SIZE * BOARD_SIZE > 32
-
-    ON_BOARD = 0
+# 初期化
+BIT_BOARD_SIZE = BOARD_SIZE + 2
+throw "overflow #{BIT_BOARD_SIZE * BOARD_SIZE}" if BIT_BOARD_SIZE * BOARD_SIZE > 32
+ON_BOARD = (->
+    result = 0
     for x in [0...BOARD_SIZE]
         for y in [0...BOARD_SIZE]
-            ON_BOARD |= positionToBit [x, y]
+            result |= positionToBit [x, y]
+    result
+    )()
 
-    MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2
+countBits = (x) ->
+    x -= ((x >>> 1) & 0x55555555)
+    x = (x & 0x33333333) + ((x >>> 2) & 0x33333333)
+    x = (x + (x >>> 4)) & 0x0F0F0F0F
+    x += (x >>> 8)
+    x += (x >>> 16)
+    x & 0x0000003F
 
+positionsToBits = (positions) ->
+    bits = 0
+    for e in positions
+        bits |= positionToBit e
+    bits
 
-opponentOf = (stone) ->
-    ### 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 ###
-    switch stone
-        when BLACK then WHITE
-        when WHITE then BLACK
-        else throw 'error'
+bitsToPositions = (bitBoard) ->
+    positions = []
+    for x in [0...BOARD_SIZE]
+        for y in [0...BOARD_SIZE]
+            position = [x, y]
+            positions.push position if bitBoard & positionToBit position
+    positions
 
-adjacenciesAt = (position) ->
-    ### プライベート ###
-    ### 隣接する点の座標の配列を返す。 ###
+adjacent = (bitBoard) ->
+    expanded = bitBoard << BIT_BOARD_SIZE
+    expanded |= bitBoard << 1
+    expanded |= bitBoard >>> 1
+    expanded |= bitBoard >>> BIT_BOARD_SIZE
+    expanded & (~ bitBoard) & ON_BOARD
+
+stringOf = (bitBoard, seed) ->
+    return 0 unless bitBoard & seed
+    expanded = seed | (adjacent seed) & bitBoard
+    if expanded == seed
+        seed
+    else
+        stringOf bitBoard, expanded
+
+captured = (objective, subjective) ->
+    l = adjacent(objective) & ~ subjective
+    breaths = objective & adjacent l
+    objective & (~ stringOf objective, breaths)
+
+decomposeToStrings = (bitBoard) ->
+    ### 盤上の石をストリングに分解する。###
     result = []
-    for e in [[0, -1], [-1, 0], [1, 0], [0, 1]]
-        x = position[0] + e[0]
-        y = position[1] + e[1]
-        result.push [x, y] if 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
+    for x in [0...BOARD_SIZE]
+        for y in [0...BOARD_SIZE]
+            position = [x, y]
+            bit = positionToBit position
+            if (bitBoard & bit) and result.every((b) -> (b & bit) == 0)
+                result.push stringOf bitBoard, bit
     result
 
-compare = (a, b, stone) ->
-    ###
-    探索のための優先順位を決める局面比較関数。
-    a, bは比較する局面。stoneの立場で比較し、結果を整数値で返す。
-
-    1. スコアに差があればそれを返す。(石を取った手を優先する)
-    2. 自分の眼の数に差があればそれを返す。(眼形が多い手を優先する)
-    3. 自分のダメの数と相手のダメの数の差に差があればそれを返す。(攻め合いに有効な手を優先する)
-    4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
-    5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
-    ###
-    score = a.score() - b.score()
-    if score != 0
-        return if stone is BLACK then score else - score
-
-    index = if stone is BLACK then 0 else 1
-    eyes = a.eyes()[index].length - b.eyes()[index].length
-    if eyes != 0
-        return eyes
-
-    switch stone
-        when BLACK
-            strings = b.strings()[0].length - a.strings()[0].length
-            return strings if strings != 0
-            dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE))
-            return dame if dame != 0
-            [aBlack, aWhite] = a.strings()
-            [bBlack, bWhite] = b.strings()
-            aBlack = a.stringsToContacts aBlack
-            bBlack = b.stringsToContacts bBlack
-            return bBlack.length - aBlack.length
-        when WHITE
-            strings = b.strings()[1].length - a.strings()[1].length
-            return strings if strings != 0
-            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK))
-            return dame if dame != 0
-            [aBlack, aWhite] = a.strings()
-            [bBlack, bWhite] = b.strings()
-            aWhite = a.stringsToContacts aWhite
-            bWhite = b.stringsToContacts bWhite
-            return bWhite.length - aWhite.length
-
+bitsToString = (bitBoard, char) ->
+    str = ''
+    for y in [0...BOARD_SIZE]
+        for x in [0...BOARD_SIZE]
+            str += if bitBoard & positionToBit [x, y] then 'O' else '.'
+        str += '\n'
+    str
 
 class OnBoard
     ### 盤上の状態を表すクラス ###
@@ -410,76 +395,9 @@ class OnBoard
             str += '\n'
         str
 
-countBits = (x) ->
-    x -= ((x >>> 1) & 0x55555555)
-    x = (x & 0x33333333) + ((x >>> 2) & 0x33333333)
-    x = (x + (x >>> 4)) & 0x0F0F0F0F
-    x += (x >>> 8)
-    x += (x >>> 16)
-    x & 0x0000003F
-
-positionToBit = (position) ->
-    1 << (position[0] + 1 + position[1] * BIT_BOARD_SIZE)
-
-positionsToBits = (positions) ->
-    bits = 0
-    for e in positions
-        bits |= positionToBit e
-    bits
-
-bitsToPositions = (bitBoard) ->
-    positions = []
-    for x in [0...BOARD_SIZE]
-        for y in [0...BOARD_SIZE]
-            position = [x, y]
-            positions.push position if bitBoard & positionToBit position
-    positions
-
-adjacent = (bitBoard) ->
-    expanded = bitBoard << BIT_BOARD_SIZE
-    expanded |= bitBoard << 1
-    expanded |= bitBoard >>> 1
-    expanded |= bitBoard >>> BIT_BOARD_SIZE
-    expanded & (~ bitBoard) & ON_BOARD
-
-stringOf = (bitBoard, seed) ->
-    return 0 unless bitBoard & seed
-    expanded = seed | (adjacent seed) & bitBoard
-    if expanded == seed
-        seed
-    else
-        stringOf bitBoard, expanded
-
-captured = (objective, subjective) ->
-    l = adjacent(objective) & ~ subjective
-    breaths = objective & adjacent l
-    objective & (~ stringOf objective, breaths)
-
-decomposeToStrings = (bitBoard) ->
-    ### 盤上の石をストリングに分解する。###
-    result = []
-    for x in [0...BOARD_SIZE]
-        for y in [0...BOARD_SIZE]
-            position = [x, y]
-            bit = positionToBit position
-            if (bitBoard & bit) and result.every((b) -> (b & bit) == 0)
-                result.push stringOf bitBoard, bit
-    result
-
-bitsToString = (bitBoard, char) ->
-    str = ''
-    for y in [0...BOARD_SIZE]
-        for x in [0...BOARD_SIZE]
-            str += if bitBoard & positionToBit [x, y] then 'O' else '.'
-        str += '\n'
-    str
-
-# 初期化
-setBoardSize 4 # デフォルトは四路
 
 root = exports ? window
-for e in ['OnBoard', 'BLACK', 'WHITE', 'EMPTY', 'MAX_SCORE', 'opponentOf']
-    root[e] = eval e
+root.OnBoard = OnBoard
 if exports?
     for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare']
         root[e] = eval e if exports?
