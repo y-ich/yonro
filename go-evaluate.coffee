@@ -10,7 +10,7 @@
 evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
-    for depth in [9..33] by 2
+    for depth in [3..33] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -32,7 +32,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-    # console.log "depth#{depth}", '\n' + board.toString()
+
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 
@@ -53,7 +53,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
                 eyes = b.eyes()
-                result = if (b.numOf(WHITE) <= 1 and eyes[0].length >= 1) or (eyes[0].length >= 2 and b.numOfLiberties(WHITE) <= 1)
+                result = if (b.numOf(WHITE) == 0 and b.emptyStrings().length >= 2) or (eyes[0].length >= 2 and b.numOfLiberties(WHITE) <= 1)
                         # 相手の石を全部取って、眼が２つあれば最大勝ちとしてみたが、眼の中に1目入っている状態でのセキの読みに失敗する。
                         # 相手の石が1目残っていても地が２つあれば最大勝ちとした。正しい命題かどうか不明。
                         new EvaluationResult MAX_SCORE, history.concat b
@@ -67,7 +67,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
         when WHITE
             for b in nodes
                 eyes = b.eyes()
-                result = if (b.numOf(BLACK) <= 1 and eyes[1].length >= 1) or (eyes[1].length >= 2 and b.numOfLiberties(BLACK) <= 1)
+                result = if (b.numOf(BLACK) == 0 and b.emptyStrings().length >= 2) or (eyes[1].length >= 2 and b.numOfLiberties(BLACK) <= 1)
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta

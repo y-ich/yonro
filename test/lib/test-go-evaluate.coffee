@@ -54,7 +54,6 @@ testEvaluate = (kernel) ->
                     XXXX
                     """
                 result = evaluate [board], BLACK
-                console.log boardsToString result.history
                 assert.equal result.value, -MAX_SCORE
             it "should returns 5", ->
                 board = OnBoard.fromString """
@@ -64,7 +63,6 @@ testEvaluate = (kernel) ->
                       XX
                     """
                 result = evaluate [board], BLACK
-                console.log boardsToString result.history
                 assert.equal result.value, 5
             it "should returns -MAX_SCORE", ->
                 board = OnBoard.fromString """
@@ -134,7 +132,6 @@ testEvaluate = (kernel) ->
                     OO O
                     """
                 result = evaluate([board], BLACK)
-                console.log result.toString()
                 assert.equal result.value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
             it "黒猫のヨンロ4", ->
                 board = OnBoard.fromString """
@@ -197,7 +194,6 @@ testEvaluate = (kernel) ->
                      O  
                     '''
                 result = evaluate [board], BLACK
-                console.log boardsToString result.history
                 assert.equal result.value, 2
             ###
             it "should returns ", ->
