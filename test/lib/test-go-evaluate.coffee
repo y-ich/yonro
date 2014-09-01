@@ -1,10 +1,26 @@
 assert = require 'assert'
 { BLACK, WHITE, MAX_SCORE, boardsToString } = require "../../go-common.coffee"
-{ evaluate } = require '../../go-evaluate.coffee'
+{ compare, evaluate } = require '../../go-evaluate.coffee'
 
 testEvaluate = (kernel) ->
     ->
         { OnBoard } = require "../../#{kernel}.coffee"
+        describe 'compare', ->
+            it 'should return positive', ->
+                board1 = OnBoard.fromString '''
+                    XXXX
+                     OXO
+                    OOX 
+                      XX
+                    '''
+                board2 = OnBoard.fromString '''
+                    XXXX
+                     O O
+                    OOX 
+                     XXX
+                    '''
+                assert.equal compare(board1, board2, BLACK) > 0, true
+
         describe "evaluate", ->
             it "両方活きの終局。0を返す", ->
                 board = OnBoard.fromString """
