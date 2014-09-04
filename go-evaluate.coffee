@@ -10,7 +10,7 @@
 evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
-    for depth in [3..33] by 2
+    for depth in [5..13] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -29,18 +29,15 @@ compare = (a, b, stone) ->
     4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
     5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
     ###
-    
-    return MAX_SCORE if a.numOf(opponentOf stone) == 0
-    return -MAX_SCORE if b.numOf(opponentOf stone) == 0
+
+    score = a.score() - b.score()
+    if score != 0
+        return if stone is BLACK then score else - score
 
     index = if stone is BLACK then 0 else 1
     eyes = a.eyes()[index].length - b.eyes()[index].length
     if eyes != 0
         return eyes
-
-    score = a.score() - b.score()
-    if score != 0
-        return if stone is BLACK then score else - score
 
     [aBlack, aWhite] = a.strings()
     [bBlack, bWhite] = b.strings()
@@ -92,6 +89,7 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
         history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
     nodes.sort (a, b) -> - compare a, b, next
     nodes.push board # パスを追加
+
     switch next
         when BLACK
             for b in nodes
@@ -102,6 +100,8 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         # 相手の石を全部取って、眼が２つあれば最大勝ちとしてみたが、眼の中に1目入っている状態でのセキの読みに失敗する。
                         # 相手の石が1目残っていても地が２つあれば最大勝ちとした。正しい命題かどうか不明。
                         new EvaluationResult MAX_SCORE, history.concat b
+                    else if eyes[1].length >= 2 and b.numOfLiberties(BLACK) <= 1
+                        new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if (result.value >= MAX_SCORE) or (isNaN(result.value) and alpha.value < MAX_SCORE) or alpha.value < result.value
@@ -114,6 +114,8 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                 eyes = b.eyes()
                 result = if (b.numOf(BLACK) == 0 and b.emptyStrings().length >= 2) or (eyes[1].length >= 2 and b.numOfLiberties(BLACK) <= 1)
                         new EvaluationResult -MAX_SCORE, history.concat b
+                    else if eyes[0].length >= 2 and b.numOfLiberties(WHITE) <= 1
+                        new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if (result.value <= -MAX_SCORE) or (beta.value > -MAX_SCORE and isNaN result.value) or beta.value > result.value
