@@ -20,8 +20,6 @@ testEvaluate = (kernel) ->
                      XXX
                     '''
                 assert.equal compare(board1, board2, BLACK) > 0, true
-
-        describe 'compare', ->
             it 'should return positive', ->
                 board1 = OnBoard.fromString '''
                     XXXX
@@ -87,7 +85,7 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], BLACK
                 assert.equal result.value, -MAX_SCORE
-            it "should returns 5", ->
+            it "should return 5", ->
                 board = OnBoard.fromString """
                     XXXX
                      O O
@@ -96,7 +94,7 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], BLACK
                 assert.equal result.value, 5
-            it "should returns -MAX_SCORE", ->
+            it "should return -MAX_SCORE", ->
                 board = OnBoard.fromString """
                     X  O
                      OOO
@@ -105,7 +103,7 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], WHITE
                 assert.equal result.value, -MAX_SCORE
-            it "should returns ", ->
+            it "should return ", ->
                 board = OnBoard.fromString """
                     O X 
                     XX  
@@ -113,7 +111,7 @@ testEvaluate = (kernel) ->
                       X 
                     """
                 assert.equal evaluate([board], WHITE).value, MAX_SCORE
-            it "should returns -5", ->
+            it "should return -5", ->
                 board = OnBoard.fromString """
                     O XO
                     XX O
@@ -121,7 +119,7 @@ testEvaluate = (kernel) ->
                     OO O
                     """
                 assert.equal evaluate([board], BLACK).value, -5
-            it "should returns ", ->
+            it.only "白先でも黒勝ち", ->
                 board = OnBoard.fromString """
                      XOO
                     XO O
@@ -138,7 +136,6 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], WHITE
                 assert.equal result.value, 2
-
             it "黒猫のヨンロ1", ->
                 board = OnBoard.fromString """
                      O O
@@ -150,7 +147,7 @@ testEvaluate = (kernel) ->
             it "黒猫のヨンロ2", ->
                 board = OnBoard.fromString """
                     XXXX
-                
+                        
                     OX O
                     OOOO
                     """
@@ -208,8 +205,9 @@ testEvaluate = (kernel) ->
                 result = evaluate [board0], BLACK
                 result = evaluate result.history[0..1].concat(board1), WHITE
                 assert.equal result.history[2].isEqualTo(board1), true
+            ###
             # 長手数問題
-            it "should returns ", ->
+            it "should return ", ->
                 board = OnBoard.fromString '''
                      XOX
                     XO X
@@ -218,7 +216,7 @@ testEvaluate = (kernel) ->
                     '''
                 result = evaluate [board], BLACK
                 assert.equal result.value, 4
-            it "should returns ", ->
+            it "should return ", ->
                 board = OnBoard.fromString '''
                       X 
                      XOX
@@ -227,38 +225,37 @@ testEvaluate = (kernel) ->
                     '''
                 result = evaluate [board], BLACK
                 assert.equal result.value, 2
-            ###
-            it "should returns ", ->
+            it "should return ", ->
                 board = new OnBoard [[1,0],[1,1],[1,2],[0,3]], [[0,0],[2,0],[1,3],[2,2],[3,3]]
                 console.log '\n' + board.toString()
                 result = evaluate [board], BLACK
                 console.log result.history.map((e) -> e.toString()).join('\n')
                 assert.equal result.value, MAX_SCORE
-            it "should returns ", ->
+            it "should return ", ->
                 board = new OnBoard [[0,0],[0,1],[1,2],[1,3],[2,3]], [[2,0],[2,1],[0,3],[3,3]]
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, MAX_SCORE
-            it "should returns ", ->
+            it "should return ", ->
                 board = new OnBoard [[2,0],[1,1],[1,2]], [[2,1],[2,2],[1,3]]
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, 0
-            it "should returns ", ->
+            it "should return ", ->
                 board = new OnBoard [[1,0],[1,1],[1,2]], [[2,1],[2,2],[2,3]]
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, 0
-            it "should returns ", ->
+            it "should return ", ->
                 board = new OnBoard [[2,0],[1,1],[1,2]], [[2,1],[2,2],[1,3]]
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, 0
-            it "should returns ", ->
+            it "should return ", ->
                 board = new OnBoard [[1,1],[1,2]], [[2,1],[2,2]]
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, 0
-            it "should returns ", -> # 100手で読めず。
+            it "should return ", -> # 100手で読めず。
                 board = new OnBoard [[1,1]], [[2,2]]
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, 0
-            it "should returns ", ->
+            it "should return ", ->
                 board = new OnBoard [], []
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, 0

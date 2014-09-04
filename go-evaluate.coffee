@@ -14,6 +14,14 @@ cache =
         @black = []
         @white = []
     add: (next, board, result) ->
+        if next is BLACK and board.isEqualTo '''
+                 XOO
+                XO O
+                XXOO
+                OO O
+                '''
+            console.log 'cache'
+            console.log result.toString()
         index = result.history.indexOf board
         array = switch next
             when BLACK then @black
@@ -104,14 +112,14 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-    if board.isEqualTo '''
-            XXXX
-                
-            OXXO
-            OOOO
+    flag = false
+    if next is BLACK and board.isEqualTo '''
+            O OO
+            XO O
+            XXOO
+              XO
             '''
         flag = true
-
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 
@@ -129,7 +137,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
         history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
     nodes.sort (a, b) -> - compare a, b, next
     nodes.push board # パスを追加
-
+    console.log 'nodes length', nodes.length if flag
     switch next
         when BLACK
             for b in nodes
@@ -144,7 +152,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if flag
                     console.log 'pass'
-                    console.log result.toString()
+                    console.log result.value
+                    console.log alpha.value
+                    console.log beta.value
                 if alpha.value < MAX_SCORE
                     if result.value > alpha.value
                         alpha = result
