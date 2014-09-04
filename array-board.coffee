@@ -81,6 +81,8 @@ class OnBoard
 
     isEqualTo: (board) ->
         ### 盤上が同じかどうか。 ###
+        if typeof board is 'string'
+            board = OnBoard.fromString board
         @onBoard.every (column, i) ->
             column.isEqualTo board.onBoard[i]
 

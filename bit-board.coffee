@@ -152,6 +152,8 @@ class OnBoard
 
     isEqualTo: (board) ->
         ### 盤上が同じかどうか。 ###
+        if typeof board is 'string'
+            board = OnBoard.fromString board
         @black == board.black and @white == board.white
 
     # 状態アクセスメソッド
