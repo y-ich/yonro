@@ -132,3 +132,29 @@ describe 'bit-board', ->
                 board = new OnBoard [[1,0],[0,1]], []
                 assert.equal board.place(WHITE, [0,0]), false
 
+        describe "isEqualTo", ->
+            it "should return true", ->
+                board = OnBoard.fromString '''
+                    X O 
+                    OOOO
+                    OO O
+                    O   
+                    '''
+                assert.equal board.isEqualTo('''
+                    X O 
+                    OOOO
+                    OO O
+                    O   
+                    '''), true
+
+    describe 'combination', ->
+        it "should return", ->
+            board = OnBoard.fromString '''
+                X O 
+                OOOO
+                OO O
+                O   
+                '''
+            eyes = board.eyes()
+            console.log eyes
+            assert.equal eyes[1].length >= 2 and board.numOfLiberties(BLACK) <= 1, true

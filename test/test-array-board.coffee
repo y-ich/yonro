@@ -59,3 +59,19 @@ describe 'array-board', ->
             it "should returns 14", ->
                 board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
                 assert.equal board.eyes()[0].length, 1
+
+        describe "isEqualTo", ->
+            it "should return true", ->
+                board = OnBoard.fromString '''
+                    X O 
+                    OOOO
+                    OO O
+                    O   
+                    '''
+                assert.equal board.isEqualTo('''
+                    X O 
+                    OOOO
+                    OO O
+                    O   
+                    '''), true
+            
