@@ -36,7 +36,10 @@ evaluate = (history, next) ->
     for depth in [5..33] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
-        console.log result.chance.toString() if result.chance?
+        console.log if result.chance?
+                result.chance.toString()
+            else
+                result.toString()
         return result unless result.chance?
     result
 
@@ -85,6 +88,9 @@ compare = (a, b, stone) ->
 class EvaluationResult
     constructor: (@value, @history, @chance = null) ->
     setChance: (@chance) ->
+        ###
+        もしalphaもしくはbetaの比較値としてNaNが現れたら、@chanceに登録する。@chanceはもっと良い値でである可能性。
+        ###
     toString: ->
         "value: #{@value}\n" +
         'history:\n' + boardsToString @history
@@ -129,14 +135,14 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if result.value > alpha.value
+                if alpha.value < MAX_SCORE and result.value > alpha.value
                     alpha = result
                 else if isNaN result.value
                     alpha.setChance result
                 if alpha.value >= beta.value
-                    cache.add next, board, beta if isFinite beta
+                    cache.add next, board, beta if isFinite(beta.value) and not beta.chance?
                     return beta
-            cache.add next, board, alpha if isFinite alpha.value
+            cache.add next, board, alpha if isFinite(alpha.value) and not alpha.chance?
             return alpha
         when WHITE
             for b in nodes
@@ -145,14 +151,14 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if result.value < beta.value
+                if beta.value > -MAX_SCORE and result.value < beta.value
                     beta = result
                 else if isNaN result.value
                     beta.setChance result
                 if alpha.value >= beta.value
-                    cache.add next, board, alpha if isFinite alpha
+                    cache.add next, board, alpha if isFinite(alpha.value) and not alpha.chance?
                     return alpha
-            cache.add next, board, beta if isFinite beta.value
+            cache.add next, board, beta if isFinite(beta.value) and not beta.chance?
             return beta
 
 root = exports ? window
