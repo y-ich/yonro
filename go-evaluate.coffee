@@ -33,11 +33,11 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [5..13] by 2
+    for depth in [5..33] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
-        console.log result.toString()
-        return result if isFinite result.value
+        console.log result.chance.toString() if result.chance?
+        return result unless result.chance?
     result
 
 compare = (a, b, stone) ->
@@ -83,12 +83,13 @@ compare = (a, b, stone) ->
             return bWhite.length - aWhite.length
 
 class EvaluationResult
-    constructor: (@value, @history) ->
+    constructor: (@value, @history, @chance = null) ->
+    setChance: (@chance) ->
     toString: ->
         "value: #{@value}\n" +
         'history:\n' + boardsToString @history
 
-evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: null }, beta = { value: Infinity, history: null }) ->
+evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity, []), beta = new EvaluationResult(Infinity, [])) ->
     ###
     historyはOnBoardインスタンスの配列
     historyの最終局面の評価値と評価値に至る手順を返す。
@@ -126,32 +127,32 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                         # 相手の石を全部取って、眼が２つあれば最大勝ちとしてみたが、眼の中に1目入っている状態でのセキの読みに失敗する。
                         # 相手の石が1目残っていても地が２つあれば最大勝ちとした。正しい命題かどうか不明。
                         new EvaluationResult MAX_SCORE, history.concat b
-                    else if eyes[1].length >= 2 and b.numOfLiberties(BLACK) <= 1
-                        new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (result.value >= MAX_SCORE) or (isNaN(result.value) and alpha.value < MAX_SCORE) or alpha.value < result.value
+                if result.value > alpha.value
                     alpha = result
+                else if isNaN result.value
+                    alpha.setChance result
                 if alpha.value >= beta.value
-                    cache.add next, board, beta
+                    cache.add next, board, beta if isFinite beta
                     return beta
-            cache.add next, board, alpha unless isNaN alpha.value
+            cache.add next, board, alpha if isFinite alpha.value
             return alpha
         when WHITE
             for b in nodes
                 eyes = b.eyes()
                 result = if (b.numOf(BLACK) == 0 and b.emptyStrings().length >= 2) or (eyes[1].length >= 2 and b.numOfLiberties(BLACK) <= 1)
                         new EvaluationResult -MAX_SCORE, history.concat b
-                    else if eyes[0].length >= 2 and b.numOfLiberties(WHITE) <= 1
-                        new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if (result.value <= -MAX_SCORE) or (beta.value > -MAX_SCORE and isNaN result.value) or beta.value > result.value
+                if result.value < beta.value
                     beta = result
+                else if isNaN result.value
+                    beta.setChance result
                 if alpha.value >= beta.value
-                    cache.add next, board, alpha
+                    cache.add next, board, alpha if isFinite alpha
                     return alpha
-            cache.add next, board, beta unless isNaN beta.value
+            cache.add next, board, beta if isFinite beta.value
             return beta
 
 root = exports ? window

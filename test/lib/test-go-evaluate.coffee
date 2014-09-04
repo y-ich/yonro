@@ -5,7 +5,7 @@ assert = require 'assert'
 testEvaluate = (kernel) ->
     ->
         { OnBoard } = require "../../#{kernel}.coffee"
-        describe 'compare', ->
+        describe.skip 'compare', ->
             it 'should return positive', ->
                 board1 = OnBoard.fromString '''
                     XXXX
@@ -20,6 +20,22 @@ testEvaluate = (kernel) ->
                      XXX
                     '''
                 assert.equal compare(board1, board2, BLACK) > 0, true
+
+        describe 'compare', ->
+            it 'should return positive', ->
+                board1 = OnBoard.fromString '''
+                    XXXX
+                     OOO
+                    OO  
+                    O OO
+                    '''
+                board2 = OnBoard.fromString '''
+                    XXXX
+                     OOO
+                    OOXX
+                    OOO 
+                    '''
+                assert.equal compare(board1, board2, WHITE) > 0, true
 
         describe "evaluate", ->
             it "両方活きの終局。0を返す", ->
