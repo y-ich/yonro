@@ -33,7 +33,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [5..33] by 2
+    for depth in [13..13] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log if result.chance?
@@ -104,6 +104,13 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
+    if board.isEqualTo '''
+            XXXX
+                
+            OXXO
+            OOOO
+            '''
+        flag = true
 
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
@@ -135,10 +142,14 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if alpha.value < MAX_SCORE and result.value > alpha.value
-                    alpha = result
-                else if isNaN result.value
-                    alpha.setChance result
+                if flag
+                    console.log 'pass'
+                    console.log result.toString()
+                if alpha.value < MAX_SCORE
+                    if result.value > alpha.value
+                        alpha = result
+                    else if isNaN result.value
+                        alpha.setChance result
                 if alpha.value >= beta.value
                     cache.add next, board, beta if isFinite(beta.value) and not beta.chance?
                     return beta
@@ -151,10 +162,11 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if beta.value > -MAX_SCORE and result.value < beta.value
-                    beta = result
-                else if isNaN result.value
-                    beta.setChance result
+                if beta.value > -MAX_SCORE
+                    if result.value < beta.value
+                        beta = result
+                    else if isNaN result.value
+                        beta.setChance result
                 if alpha.value >= beta.value
                     cache.add next, board, alpha if isFinite(alpha.value) and not alpha.chance?
                     return alpha
