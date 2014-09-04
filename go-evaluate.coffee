@@ -7,9 +7,32 @@
 
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
+cache =
+    black: []
+    white: []
+    clear: ->
+        @black = []
+        @white = []
+    add: (next, board, result) ->
+        index = result.history.indexOf board
+        array = switch next
+            when BLACK then @black
+            when WHITE then @white
+        array.push
+            board: board
+            result: new EvaluationResult result.value, result.history.slice index + 1
+    query: (next, board) ->
+        array = switch next
+            when BLACK then @black
+            when WHITE then @white
+        for e in array when e.board.isEqualTo board
+            return e.result
+        null
+
 evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
+    cache.clear()
     for depth in [5..13] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
@@ -78,6 +101,9 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 
+    c = cache.query next, board
+    return new EvaluationResult c.value, history.concat c.history if c?
+
     if depth == 0
         return new EvaluationResult NaN, history
 
@@ -107,7 +133,9 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                 if (result.value >= MAX_SCORE) or (isNaN(result.value) and alpha.value < MAX_SCORE) or alpha.value < result.value
                     alpha = result
                 if alpha.value >= beta.value
+                    cache.add next, board, beta
                     return beta
+            cache.add next, board, alpha unless isNaN alpha.value
             return alpha
         when WHITE
             for b in nodes
@@ -121,7 +149,9 @@ evalUntilDepth = (history, next, depth, alpha = { value: - Infinity, history: nu
                 if (result.value <= -MAX_SCORE) or (beta.value > -MAX_SCORE and isNaN result.value) or beta.value > result.value
                     beta = result
                 if alpha.value >= beta.value
+                    cache.add next, board, alpha
                     return alpha
+            cache.add next, board, beta unless isNaN beta.value
             return beta
 
 root = exports ? window
