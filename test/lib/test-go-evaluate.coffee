@@ -205,7 +205,6 @@ testEvaluate = (kernel) ->
                 result = evaluate [board0], BLACK
                 result = evaluate result.history[0..1].concat(board1), WHITE
                 assert.equal result.history[2].isEqualTo(board1), true
-            ###
             # 長手数問題
             it "should return ", ->
                 board = OnBoard.fromString '''
@@ -259,7 +258,6 @@ testEvaluate = (kernel) ->
                 board = new OnBoard [], []
                 console.log '\n' + board.toString()
                 assert.equal evaluate([board], BLACK).value, 0
-            ###
 
 root = exports ? window
 root.testEvaluate = testEvaluate

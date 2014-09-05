@@ -7,6 +7,14 @@
 
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
+check = (next, board) ->
+    next == BLACK and board.isEqualTo '''
+         XOO
+        XO O
+        XXOO
+        OO O
+        '''
+
 cache =
     black: []
     white: []
@@ -14,27 +22,19 @@ cache =
         @black = []
         @white = []
     add: (next, board, result) ->
-        if next is BLACK and board.isEqualTo '''
-                 XOO
-                XO O
-                XXOO
-                OO O
-                '''
-            console.log 'cache'
-            console.log result.toString()
-        index = result.history.indexOf board
         array = switch next
             when BLACK then @black
             when WHITE then @white
         array.push
             board: board
-            result: new EvaluationResult result.value, result.history.slice index + 1
+            result: result
     query: (next, board) ->
         array = switch next
             when BLACK then @black
             when WHITE then @white
         for e in array when e.board.isEqualTo board
-            return e.result
+            index = e.result.history.indexOf e.board
+            return new EvaluationResult e.result.value, e.result.history.slice index + 1
         null
 
 evaluate = (history, next) ->
@@ -112,20 +112,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-    flag = false
-    if next is BLACK and board.isEqualTo '''
-            O OO
-            XO O
-            XXOO
-              XO
-            '''
-        flag = true
+
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
-
-    c = cache.query next, board
-    return new EvaluationResult c.value, history.concat c.history if c?
-
     if depth == 0
         return new EvaluationResult NaN, history
 
@@ -135,9 +124,12 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     parity = history.length % 2
     nodes = candidates.filter (b) ->
         history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
+    notPossibleToIterate = candidates.length == nodes.length
+    c = cache.query next, board
+    return new EvaluationResult c.value, history.concat c.history if c? and notPossibleToIterate
+
     nodes.sort (a, b) -> - compare a, b, next
     nodes.push board # パスを追加
-    console.log 'nodes length', nodes.length if flag
     switch next
         when BLACK
             for b in nodes
@@ -150,20 +142,14 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if flag
-                    console.log 'pass'
-                    console.log result.value
-                    console.log alpha.value
-                    console.log beta.value
                 if alpha.value < MAX_SCORE
                     if result.value > alpha.value
                         alpha = result
                     else if isNaN result.value
                         alpha.setChance result
                 if alpha.value >= beta.value
-                    cache.add next, board, beta if isFinite(beta.value) and not beta.chance?
                     return beta
-            cache.add next, board, alpha if isFinite(alpha.value) and not alpha.chance?
+            cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and not alpha.chance? and history.every (e, i) -> e == alpha.history[i]
             return alpha
         when WHITE
             for b in nodes
@@ -178,9 +164,8 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     else if isNaN result.value
                         beta.setChance result
                 if alpha.value >= beta.value
-                    cache.add next, board, alpha if isFinite(alpha.value) and not alpha.chance?
                     return alpha
-            cache.add next, board, beta if isFinite(beta.value) and not beta.chance?
+            cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and not beta.chance? and history.every (e, i) -> e == beta.history[i]
             return beta
 
 root = exports ? window
