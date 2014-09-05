@@ -41,7 +41,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [13..13] by 2
+    for depth in [13..100] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log if result.chance?
@@ -49,7 +49,7 @@ evaluate = (history, next) ->
             else
                 result.toString()
         return result unless result.chance?
-    result
+    null
 
 compare = (a, b, stone) ->
     ###
@@ -64,14 +64,14 @@ compare = (a, b, stone) ->
     5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
     ###
 
+    opponent = opponentOf stone
+    candidates = - a.candidates(opponent).length + b.candidates(opponent).length
+    if candidates != 0
+        return candidates
+
     score = a.score() - b.score()
     if score != 0
         return if stone is BLACK then score else - score
-
-    index = if stone is BLACK then 0 else 1
-    eyes = a.eyes()[index].length - b.eyes()[index].length
-    if eyes != 0
-        return eyes
 
     [aBlack, aWhite] = a.strings()
     [bBlack, bWhite] = b.strings()
@@ -125,11 +125,13 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     nodes = candidates.filter (b) ->
         history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
     notPossibleToIterate = candidates.length == nodes.length
+
     c = cache.query next, board
     return new EvaluationResult c.value, history.concat c.history if c? and notPossibleToIterate
 
     nodes.sort (a, b) -> - compare a, b, next
     nodes.push board # パスを追加
+
     switch next
         when BLACK
             for b in nodes
