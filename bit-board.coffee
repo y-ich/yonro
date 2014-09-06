@@ -144,11 +144,7 @@ class OnBoard
 
     isLegal: ->
         ### 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) ###
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE] when not @isEmptyAt [x, y]
-                [g, d] = @stringAndLibertyAt [x, y]
-                return false if d.length == 0
-        true
+        captured(@black, @white) == 0 and captured(@white, @black) == 0
 
     isEqualTo: (board) ->
         ### 盤上が同じかどうか。 ###
@@ -352,18 +348,13 @@ class OnBoard
         c
 
     captureBy: (stone) ->
-        ### 座標に置かれた石によって取ることができる相手の石を取り上げて、取り上げた石のビットボードを返す。 ###
-        objective = switch stone
-            when BLACK then @white
-            when WHITE then @black
-        subjective = switch stone
-            when BLACK then @black
-            when WHITE then @white
-        captives = captured objective, subjective
+        ### 相手の石を取り上げて、取り上げた石のビットボードを返す。 ###
         switch stone
             when BLACK
+                captives = captured @white, @black
                 @white &= ~captives
             when WHITE
+                captives = captured @black, @white
                 @black &= ~captives
         captives
 
@@ -378,11 +369,11 @@ class OnBoard
         return false unless @isEmptyAt position
         @add stone, position
         @captureBy stone
-        [string, liberty] = @stringAndLibertyAt position
-        if countBits(liberty) == 0 # 候補を減らすために自殺手は着手禁止とする。
+        if @isLegal()
+            true
+        else
             @delete position
-            return false
-        true
+            false
 
     # 汎用メソッド
 
@@ -394,7 +385,7 @@ class OnBoard
                     when BLACK then 'X'
                     when WHITE then 'O'
                     else ' '
-            str += '\n'
+            str += '\n' unless y == BOARD_SIZE - 1
         str
 
 
