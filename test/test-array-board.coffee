@@ -16,15 +16,15 @@ describe 'array-board', ->
                      O X
                     X O 
                      O X
-
                     '''
                 board = OnBoard.fromString str
                 str0 = board.toString()
                 assert.equal board.toString(), str
         describe "toString", ->
-            it "should return a OnBoard instance", ->
-                board = new OnBoard [[1,1]], [[2,2]]
-                assert.equal board.toString(), '    \n X  \n  O \n    \n'
+            it "should return ", ->
+                str = '    \n X  \n  O \n    '
+                board = new OnBoard.fromString str
+                assert.equal board.toString(), str
         describe "stringAndLibertyAt", ->
             it "should return string and liberty", ->
                 board = new OnBoard [[0,1], [1, 0], [1, 1]], []

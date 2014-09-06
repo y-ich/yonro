@@ -325,7 +325,7 @@ class OnBoard
                     when BLACK then 'X'
                     when WHITE then 'O'
                     else ' '
-            str += '\n'
+            str += '\n' unless y == BOARD_SIZE - 1
         str
 
 root = exports ? window
