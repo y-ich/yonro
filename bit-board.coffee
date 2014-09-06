@@ -9,6 +9,12 @@ if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, BOARD_SIZE, MAX_SCORE, opponentOf, boardsToString, compare } = require './go-common.coffee'
 
 positionToBit = (position) ->
+    ###
+    positionに相当するbitboardを返す。
+    bitboardのフォーマットは四路の場合、
+    F....FF....FF....FF....F
+    でFはフレーム(枠)
+    ###
     1 << (position[0] + 1 + position[1] * BIT_BOARD_SIZE)
 
 # 初期化
@@ -130,9 +136,11 @@ class OnBoard
 
     isEmptyAt: (position) ->
         ### 座標が空点かどうか。 ###
-        switch @stateAt position
-            when BLACK, WHITE then false
-            else true
+        @_isEmptyAt positionToBit position
+
+    _isEmptyAt: (bitPos) ->
+        ### 座標が空点かどうか。 ###
+        not ((@black | @white) & bitPos)
 
     isLegalAt: (stone, position) ->
         ###
@@ -156,7 +164,9 @@ class OnBoard
 
     stateAt: (position) ->
         ### 座標の状態を返す。 ###
-        bitPos = positionToBit position
+        @_stateAt positionToBit position
+
+    _stateAt: (bitPos) ->
         if @black & bitPos
             BLACK
         else if @white & bitPos
@@ -180,6 +190,7 @@ class OnBoard
         コンストラクタの逆関数
         ###
         [bitsToPositions @black, bitsToPositions @white]
+
     score: ->
         ###
         石の数の差を返す。
@@ -192,7 +203,9 @@ class OnBoard
         石を座標にセットする。
         stateはBLACK, WHITEのいずれか。(本当はEMPTYもOK)
         ###
-        bitPos = positionToBit position
+        @_add stone, positionToBit position
+
+    _add: (stone, bitPos) ->
         switch stone
             when BLACK
                 @black |= bitPos
@@ -209,8 +222,14 @@ class OnBoard
 
     delete: (position) ->
         ### 座標の石をただ取る。 ###
-        @add EMPTY, position
+        @_delete positionToBit position
 
+    _delete: (bitPos) ->
+        @black &= ~bitPos
+        @white &= ~bitPos
+
+    each: (func) ->
+        
     candidates: (stone) ->
         ### stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。 ###
         result = []
