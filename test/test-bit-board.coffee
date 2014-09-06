@@ -16,8 +16,8 @@ describe 'bit-board', ->
             it 'should return 2', ->
                 assert.equal countBits(6), 2
         describe 'positionToBit', ->
-            it 'should return 2', ->
-                assert.equal positionToBit([0,0]), 0x02
+            it 'should return 1', ->
+                assert.equal positionToBit([0,0]), 0x01
         describe 'adjacent', ->
             it 'should return adjacent', ->
                 p = positionToBit [0, 0]

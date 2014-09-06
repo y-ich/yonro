@@ -12,19 +12,27 @@ positionToBit = (position) ->
     ###
     positionに相当するbitboardを返す。
     bitboardのフォーマットは四路の場合、
-    F....FF....FF....FF....F
+    ....F....F....F....
     でFはフレーム(枠)
     ###
-    1 << (position[0] + 1 + position[1] * BIT_BOARD_SIZE)
+    1 << (position[0] + position[1] * BIT_BOARD_SIZE)
 
 # 初期化
-BIT_BOARD_SIZE = BOARD_SIZE + 2
+BIT_BOARD_SIZE = BOARD_SIZE + 1
 throw "overflow #{BIT_BOARD_SIZE * BOARD_SIZE}" if BIT_BOARD_SIZE * BOARD_SIZE > 32
-ON_BOARD = (->
-    result = 0
+
+_BITS = (->
+    result = []
     for x in [0...BOARD_SIZE]
         for y in [0...BOARD_SIZE]
-            result |= positionToBit [x, y]
+            result.push positionToBit [x, y]
+    result
+    )()
+
+ON_BOARD = (->
+    result = 0
+    for b in _BITS
+        result |= b
     result
     )()
 
@@ -73,12 +81,8 @@ captured = (objective, subjective) ->
 decomposeToStrings = (bitBoard) ->
     ### 盤上の石をストリングに分解する。###
     result = []
-    for x in [0...BOARD_SIZE]
-        for y in [0...BOARD_SIZE]
-            position = [x, y]
-            bit = positionToBit position
-            if (bitBoard & bit) and result.every((b) -> (b & bit) == 0)
-                result.push stringOf bitBoard, bit
+    for bit in _BITS when (bitBoard & bit) and result.every((b) -> (b & bit) == 0)
+        result.push stringOf bitBoard, bit
     result
 
 bitsToString = (bitBoard, char) ->
@@ -86,7 +90,7 @@ bitsToString = (bitBoard, char) ->
     for y in [0...BOARD_SIZE]
         for x in [0...BOARD_SIZE]
             str += if bitBoard & positionToBit [x, y] then 'O' else '.'
-        str += '\n'
+        str += '\n' unless y == BOARD_SIZE - 1
     str
 
 class OnBoard
@@ -113,21 +117,23 @@ class OnBoard
     @random: ->
         ### ランダムな配置の碁盤を返す。 ###
         loop
-            blacks = []
-            whites = []
-            for x in [0...BOARD_SIZE]
-                for y in [0...BOARD_SIZE]
-                    switch Math.floor Math.random() * 3
-                        when 1 then blacks.push [x, y]
-                        when 2 then whites.push [x, y]
+            blacks = 0
+            whites = 0
+            for bitPos in _BITS
+                switch Math.floor Math.random() * 3
+                    when 1 then blacks |= bitPos
+                    when 2 then whites |= bitPos
             result = new OnBoard(blacks, whites)
             return result if result.isLegal()
 
     constructor: (blacks, whites) ->
         ### blacks, whitesは黒石/白石のある場所の座標の配列。 ###
-        if blacks? and whites?
+        if blacks instanceof Array and whites instanceof Array
             @black = positionsToBits blacks
             @white = positionsToBits whites
+        else if typeof blacks is 'number' and typeof whites is 'number'
+            @black = blacks
+            @white = whites
         else
             @black = 0
             @white = 0
@@ -228,26 +234,25 @@ class OnBoard
         @black &= ~bitPos
         @white &= ~bitPos
 
-    each: (func) ->
-        
     candidates: (stone) ->
         ### stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。 ###
         result = []
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
-                position = [x, y]
-                continue if @whoseEyeAt(position, true) is stone
-                board = @copy()
-                result.push board if board.place stone, position
+        for bitPos in _BITS
+            continue if @_whoseEyeAt(bitPos, true) is stone
+            board = @copy()
+            result.push board if board._place stone, bitPos
         result
 
     stringAt: (position) ->
-        board = switch @stateAt position
+        @_stringAt positionToBit position
+
+    _stringAt: (bitPos) ->
+        board = switch @_stateAt bitPos
             when BLACK then @black
             when WHITE then @white
             else ~ (@black | @white)
 
-        stringOf board, positionToBit position
+        stringOf board, bitPos
 
     stringAndLibertyAt: (position) ->
         ###
@@ -263,10 +268,8 @@ class OnBoard
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
         result = []
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
-                position = [x, y]
-                result.push @stringAt position if (@isEmptyAt position) and (result.every (s) -> not (s & positionToBit(position)))
+        for bitPos in _BITS
+            result.push @_stringAt bitPos if (@_isEmptyAt bitPos) and (result.every (s) -> not (s & bitPos))
         result
 
     numOfLiberties: (stone) ->
@@ -304,16 +307,25 @@ class OnBoard
             result
         unique result
 
-    whoseEyeAt: (position, genuine = false, checkings = 0) ->
+    whoseEyeAt: (position, genuine = false) ->
         ###
         座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
         眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
         checkingsは再帰用引数
         石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
         ###
-        return null if not @isEmptyAt position
+        @_whoseEyeAt positionToBit(position), genuine
 
-        adj = adjacent positionToBit position
+    _whoseEyeAt: (bitPos, genuine = false, checkings = 0) ->
+        ###
+        座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
+        眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
+        checkingsは再帰用引数
+        石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
+        ###
+        return null if not @_isEmptyAt bitPos
+
+        adj = adjacent bitPos
         if (adj & @black) is adj
             stone = BLACK
             bitBoard = @black
@@ -340,10 +352,10 @@ class OnBoard
         gds = decomposeToStrings stringOf bitBoard, adj
         if gds.length == 1 or # 眼を作っている石群が1つ
             (gds.every (gd) => # すべての連の
-                liberty = adjacent(gd) & ~positionToBit position
+                liberty = adjacent(gd) & ~bitPos
                 return true if liberty & checkings
-                bitsToPositions(liberty).some (d) => # いずれかが眼
-                    @whoseEyeAt(d, genuine, checkings | positionToBit position) is stone)
+                return true for b in _BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos) is stone
+                false)
             stone
         else
             null
@@ -351,20 +363,16 @@ class OnBoard
     eyes: ->
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         result = [[], []]
-        for x in [0...BOARD_SIZE]
-            for y in [0...BOARD_SIZE]
-                switch @whoseEyeAt [x, y]
-                    when BLACK then result[0].push [x, y]
-                    when WHITE then result[1].push [x, y]
+        for bitPos in _BITS
+            switch @_whoseEyeAt bitPos
+                when BLACK then result[0].push bitPos
+                when WHITE then result[1].push bitPos
         result
 
     # 操作メソッド
 
     copy: ->
-        c = new OnBoard()
-        c.black = @black
-        c.white = @white
-        c
+        new OnBoard(@black, @white)
 
     captureBy: (stone) ->
         ### 相手の石を取り上げて、取り上げた石のビットボードを返す。 ###
@@ -385,13 +393,16 @@ class OnBoard
         循環手か否かは未チェック。
         ###
         return true unless position? # パス
-        return false unless @isEmptyAt position
-        @add stone, position
+        @_place stone, positionToBit position
+
+    _place: (stone, bitPos) ->
+        return false unless @_isEmptyAt bitPos
+        @_add stone, bitPos
         @captureBy stone
         if @isLegal()
             true
         else
-            @delete position
+            @_delete bitPos
             false
 
     # 汎用メソッド
