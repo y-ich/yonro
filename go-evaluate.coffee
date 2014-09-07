@@ -148,6 +148,8 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     return beta if alpha.value > beta.value
                     break
                 else if result.value > alpha.value
+                    if alpha.value == -Infinity
+                        result.chance ?= alpha.chance
                     alpha = result
                 else if isNaN result.value
                     nan = result
@@ -167,6 +169,8 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     return alpha if alpha.value > beta.value
                     break
                 else if result.value < beta.value
+                    if beta.value == Infinity
+                        result.chance ?= beta.chance
                     beta = result
                 else if isNaN result.value
                     nan = result
