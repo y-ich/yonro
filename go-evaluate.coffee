@@ -41,7 +41,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [13..13] by 2
+    for depth in [10..10] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -111,8 +111,6 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-    if check next, board
-        flag = 1
 
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
@@ -147,13 +145,13 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if result.value >= MAX_SCORE
                     alpha = result
-                    return beta if alpha.value >= beta.value
+                    return beta if alpha.value > beta.value
                     break
                 else if result.value > alpha.value
                     alpha = result
                 else if isNaN result.value
                     alpha.setChance result
-                return beta if alpha.value >= beta.value
+                return beta if alpha.value > beta.value
             cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and not alpha.chance? and history.every (e, i) -> e == alpha.history[i]
             return alpha
         when WHITE
@@ -165,13 +163,13 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if result.value <= -MAX_SCORE
                     beta = result
-                    return alpha if alpha.value >= beta.value
+                    return alpha if alpha.value > beta.value
                     break
                 else if result.value < beta.value
                     beta = result
                 else if isNaN result.value
                     beta.setChance result
-                return alpha if alpha.value >= beta.value
+                return alpha if alpha.value > beta.value
             cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and not beta.chance? and history.every (e, i) -> e == beta.history[i]
             return beta
 
