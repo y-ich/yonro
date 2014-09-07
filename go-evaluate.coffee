@@ -8,11 +8,11 @@
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 check = (next, board) ->
-    next == BLACK and board.isEqualTo '''
-        O X 
-        XX X
+    next == WHITE and board.isEqualTo '''
         XXXX
-         OX 
+         OOO
+        OOX 
+        XXXX
         '''
 
 cache =
@@ -28,6 +28,7 @@ cache =
         array.push
             board: board
             result: result
+        return
     query: (next, board) ->
         array = switch next
             when BLACK then @black
@@ -41,7 +42,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 100
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [10..10] by 2
+    for depth in [1..10] by 1
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -62,7 +63,6 @@ compare = (a, b, stone) ->
     ###
 
     opponent = opponentOf stone
-    
     candidates = - a.candidates(opponent).length + b.candidates(opponent).length
     if candidates != 0
         return candidates
@@ -111,10 +111,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
-    if depth == 0
+    if depth <= 0
         return new EvaluationResult NaN, history
 
     opponent = opponentOf next
@@ -131,6 +130,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     nodes.sort (a, b) -> - compare a, b, next
     nodes.push board # パスを追加
 
+    nan = null
     switch next
         when BLACK
             for b in nodes
@@ -150,8 +150,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 else if result.value > alpha.value
                     alpha = result
                 else if isNaN result.value
-                    alpha.setChance result
+                    nan = result
                 return beta if alpha.value > beta.value
+            alpha.setChance nan if nan? and alpha.value < MAX_SCORE
             cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and not alpha.chance? and history.every (e, i) -> e == alpha.history[i]
             return alpha
         when WHITE
@@ -168,8 +169,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 else if result.value < beta.value
                     beta = result
                 else if isNaN result.value
-                    beta.setChance result
+                    nan = result
                 return alpha if alpha.value > beta.value
+            beta.setChance nan if nan? and beta.value > -MAX_SCORE
             cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and not beta.chance? and history.every (e, i) -> e == beta.history[i]
             return beta
 
