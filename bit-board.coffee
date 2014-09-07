@@ -28,6 +28,9 @@ _BITS = (->
             result.push positionToBit [x, y]
     result
     )()
+###
+_BITSは位置を示すビットパターンすべての配列。
+###
 
 ON_BOARD = (->
     result = 0
@@ -35,8 +38,14 @@ ON_BOARD = (->
         result |= b
     result
     )()
+###
+ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
+###
 
 countBits = (x) ->
+    ###
+    32bit整数の1の数を返す。
+    ###
     x -= ((x >>> 1) & 0x55555555)
     x = (x & 0x33333333) + ((x >>> 2) & 0x33333333)
     x = (x + (x >>> 4)) & 0x0F0F0F0F
@@ -45,12 +54,18 @@ countBits = (x) ->
     x & 0x0000003F
 
 positionsToBits = (positions) ->
+    ###
+    positions配列の位置に1を立てたビットボードを返す。
+    ###
     bits = 0
     for e in positions
         bits |= positionToBit e
     bits
 
 bitsToPositions = (bitBoard) ->
+    ###
+    ビットボード上の1の位置の配列を返す
+    ###
     positions = []
     for x in [0...BOARD_SIZE]
         for y in [0...BOARD_SIZE]
@@ -259,11 +274,12 @@ class OnBoard
         座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
         接続した石の集団を連(ストリング)と呼ぶ。
         ###
-        opponent = switch @stateAt position
-            when BLACK then @white
-            when WHITE then @black
         s = @stringAt(position)
-        [s, adjacent(s) & ~ opponent]
+        [s, @_libertyOf s]
+
+    _libertyOf: (string) ->
+        opponent = if @black & string then @white else @black
+        adjacent(string) & ~ opponent
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
@@ -334,10 +350,10 @@ class OnBoard
             bitBoard = @white
         else if not genuine and (adj & (@black | @white)) is adj
             strings = decomposeToStrings(stringOf @white, (adj & @white))
-            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @black) == 1 and decomposeToStrings(stringOf @black, (adj & @black)).length == 1
+            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @black) == 1 and decomposeToStrings(stringOf @black, (adj & @black)).map((e) => countBits @_libertyOf(e)).every((e) -> e > 1)
                 return BLACK
             strings = decomposeToStrings(stringOf @black, (adj & @black))
-            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @white) == 1 and decomposeToStrings(stringOf @white, (adj & @white)).length == 1
+            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @white) == 1 and decomposeToStrings(stringOf @white, (adj & @white)).map((e) => countBits @_libertyOf(e)).every((e) -> e > 1)
                 return WHITE
             stone = null
             bitBoard = null

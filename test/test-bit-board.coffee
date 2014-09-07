@@ -69,16 +69,25 @@ describe 'bit-board', ->
                 assert.equal board.stringAndLibertyAt([0,3])[1], 0
 
         describe "whoseEyeAt", ->
-            it "should returns BLACK", ->
+            it "should return BLACK", ->
                 board = new OnBoard [[0,1], [1, 0], [1, 1]], []
                 assert.equal board.whoseEyeAt([0,0]), BLACK
-            it "should returns null", ->
+            it "should return null", ->
                 board = new OnBoard [[0,1], [1, 0]], []
                 assert.equal board.whoseEyeAt([0,0]), null
-            it "should returns BLACK", ->
+            it "should return BLACK", ->
                 board = new OnBoard [[1,0], [2, 0], [3, 1], [3, 2], [1, 3], [2, 3], [0, 1], [0, 2]], []
                 assert.equal board.whoseEyeAt([0,0]), BLACK
-            it "should returns null", ->
+            it "should return BLACK", ->
+                console.log 'problem'
+                board = new OnBoard.fromString '''
+                     XX 
+                    XX X
+                    OOOX
+                    OXXX
+                    '''
+                assert.equal board.whoseEyeAt([2, 1]), BLACK
+            it "should return null", ->
                 board = new OnBoard [[1,0], [2, 0], [3, 1], [3, 2], [1, 3], [2, 3]], []
                 assert.equal board.whoseEyeAt([0,0]), null
             it "should return no eyes yet", ->
@@ -89,14 +98,13 @@ describe 'bit-board', ->
                     XXXX
                     """
                 assert.equal board.whoseEyeAt([1, 2]), null
-
         describe "candidates", ->
-            it "should returns candidates", ->
+            it "should return candidates", ->
                 board = OnBoard.random()
                 candidates = board.candidates BLACK
                 assert.ok candidates instanceof Array
 
-            it "should returns 14", ->
+            it "should return 14", ->
                 board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[0,1],[2,1],[2,2],[0,3],[1,3],[2,3],[3,3]], []
                 candidates = board.candidates BLACK
                 assert.ok candidates instanceof Array
@@ -120,15 +128,15 @@ describe 'bit-board', ->
                 assert.equal candidates.length, 2
 
         describe "eyes", ->
-            it "should returns 14", ->
+            it "should return 14", ->
                 board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
                 assert.equal board.eyes()[0].length, 1
 
         describe "place", ->
-            it "should returns true", ->
+            it "should return true", ->
                 board = new OnBoard [], []
                 assert.equal board.place(BLACK, [0,0]), true
-            it "should returns false", ->
+            it "should return false", ->
                 board = new OnBoard [[1,0],[0,1]], []
                 assert.equal board.place(WHITE, [0,0]), false
 
@@ -160,11 +168,12 @@ describe 'bit-board', ->
     describe 'combination', ->
         it "should return", ->
             board = OnBoard.fromString '''
-                X O 
-                OOOO
-                OO O
-                O   
+                 XX 
+                XX X
+                OOOX
+                OXXX
                 '''
             eyes = board.eyes()
             console.log eyes
-            assert.equal eyes[1].length >= 2 and board.numOfLiberties(BLACK) <= 1, true
+            console.log board.numOfLiberties(WHITE)
+            assert.equal eyes[0].length >= 2 and board.numOfLiberties(WHITE) <= 1, true
