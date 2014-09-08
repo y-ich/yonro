@@ -21,7 +21,7 @@ BLACK = 1
 WHITE = 2
 
 boardsToString = (history) ->
-    history.map((e) -> e.toString()).join '\n'
+    history.map((e, i) -> "##{i}\n#{e.toString()}").join '\n'
 
 opponentOf = (stone) ->
     ### 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 ###

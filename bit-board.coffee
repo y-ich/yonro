@@ -281,6 +281,9 @@ class OnBoard
         opponent = if @black & string then @white else @black
         adjacent(string) & ~ opponent
 
+    numOfEmpties: ->
+        countBits ON_BOARD & ~ (@black | @white)
+
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
         result = []
