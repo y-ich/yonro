@@ -36,7 +36,7 @@ testEvaluate = (kernel) ->
                 assert.equal compare(board1, board2, WHITE) > 0, true
 
         describe "evaluate", ->
-            it "両方活きの終局。0を返す", ->
+            it.only "両方活きの終局。0を返す", ->
                 board = OnBoard.fromString """
                     XXOO
                      XO 
