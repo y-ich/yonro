@@ -8,11 +8,11 @@
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 check = (next, board) ->
-    next == WHITE and board.isEqualTo '''
-         XOO
-        X XO
-        XXOO
-        OO O
+    next == BLACK and board.isEqualTo '''
+        XXXX
+         O O
+        OOX 
+          XX
         '''
 
 cache =
@@ -132,7 +132,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [2..13] by 1
+    for depth in [4..13] by 1
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -234,9 +234,6 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     if onlySuicide nodes, next, board
         nodes.push board # パスを追加
 
-    if flag
-        console.log 'nodes'
-        console.log boardsToString nodes
     nan = null
     updated = false
     switch next
@@ -251,22 +248,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if checkHistory result.history
-                    console.log 'board'
-                    console.log board.toString()
-                    console.log result.toString()
-                if flag
-                    console.log "b#{i}"
-                    console.log result.toString()
-                if result.value >= MAX_SCORE
+                if (result.value > alpha.value) or (result.value == alpha.value and (result.chance? or (not alpha.chance? and result.history.length < alpha.history.length)))
                     alpha = result
                     updated = true
-                    return beta if alpha.value > beta.value
-                    break
-                else if result.value > alpha.value
-                    if alpha.value == -Infinity
-                        result.chance ?= alpha.chance
-                    alpha = result
                 else if isNaN result.value
                     nan = result
                 return beta if alpha.value > beta.value
@@ -282,18 +266,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
-                if flag
-                    console.log "b#{i}"
-                    console.log result.toString()
-                if result.value <= -MAX_SCORE
+                if (result.value < beta.value) or (result.value == beta.value and (result.chance? or (not beta.chance? and result.history.length < beta.history.length)))
                     beta = result
                     updated = true
-                    return alpha if alpha.value > beta.value
-                    break
-                else if result.value < beta.value
-                    if beta.value == Infinity
-                        result.chance ?= beta.chance
-                    beta = result
                 else if isNaN result.value
                     nan = result
                 return alpha if alpha.value > beta.value
