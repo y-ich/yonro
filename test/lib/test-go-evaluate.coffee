@@ -126,7 +126,7 @@ testEvaluate = (kernel) ->
                     XXOO
                        O
                     """
-                assert.equal evaluate([board], WHITE).value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+                assert.equal evaluate([board], WHITE).value - board.score() > 0, true
             it "セキ", ->
                 board = OnBoard.fromString """
                     X XX
@@ -143,7 +143,7 @@ testEvaluate = (kernel) ->
                     OXXO
                       XO
                     """
-                assert.equal evaluate([board], BLACK).value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
             it "黒猫のヨンロ2", ->
                 board = OnBoard.fromString """
                     XXXX
@@ -152,7 +152,7 @@ testEvaluate = (kernel) ->
                     OOOO
                     """
                 result = evaluate([board], BLACK)
-                assert.equal result.value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+                assert.equal result.value - board.score() > 0, true
             it "黒猫のヨンロ3", ->
                 board = OnBoard.fromString """
                      O O
@@ -161,7 +161,7 @@ testEvaluate = (kernel) ->
                     OO O
                     """
                 result = evaluate([board], BLACK)
-                assert.equal result.value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+                assert.equal result.value - board.score() > 0, true
             it "黒猫のヨンロ4", ->
                 board = OnBoard.fromString """
                      XXO
@@ -169,7 +169,7 @@ testEvaluate = (kernel) ->
                        O
                     OO O
                     """
-                assert.equal evaluate([board], BLACK).value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
             it "黒猫のヨンロ5", ->
                 board = OnBoard.fromString """
                     X XO
@@ -177,7 +177,7 @@ testEvaluate = (kernel) ->
                     OOXO
                       OO
                     """
-                assert.equal evaluate([board], BLACK).value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
             it "黒猫のヨンロ6", ->
                 board = OnBoard.fromString """
                      XOO
@@ -185,7 +185,7 @@ testEvaluate = (kernel) ->
                     XXOO
                        O
                     """
-                assert.equal evaluate([board], BLACK).value - (board.numOf(BLACK) - board.numOf(WHITE)) > 0, true
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
             it "黒猫のヨンロ7", ->
                 board = OnBoard.fromString " XX \n XO \n XO \n OO "
                 assert.equal evaluate([board], BLACK).value, 1
