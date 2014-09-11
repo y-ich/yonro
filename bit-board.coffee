@@ -281,6 +281,9 @@ class OnBoard
         opponent = if @black & string then @white else @black
         adjacent(string) & ~ opponent
 
+    _numOfLibertiesOf: (string) ->
+        countBits @_libertyOf string
+
     numOfEmpties: ->
         countBits ON_BOARD & ~ (@black | @white)
 

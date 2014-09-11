@@ -85,7 +85,7 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], BLACK
                 assert.equal result.value, -MAX_SCORE
-            it.only "should return 5", ->
+            it "should return 5", ->
                 board = OnBoard.fromString """
                     XXXX
                      O O
