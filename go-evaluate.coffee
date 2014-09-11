@@ -8,11 +8,11 @@
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 check = (next, board) ->
-    next == BLACK and board.isEqualTo '''
-        XXXX
-         O O
-        OOX 
-          XX
+    next == WHITE and board.isEqualTo '''
+         XOO
+        X XO
+        XXOO
+        OO O
         '''
 
 cache =
@@ -38,15 +38,105 @@ cache =
             return new EvaluationResult e.result.value, e.result.history.slice index + 1
         null
 
+checkHistory = (history) ->
+    historyStrings = [
+        '''
+         XOO
+        XO O
+        XXOO
+           O
+        '''
+        '''
+         XOO
+        XO O
+        XXOO
+         O O
+        '''
+        '''
+         XOO
+        X XO
+        XXOO
+         O O
+        '''
+        '''
+         XOO
+        X XO
+        XXOO
+        OO O
+        '''
+        '''
+         XOO
+        XXXO
+        XXOO
+        OO O
+        '''
+        '''
+        O OO
+           O
+          OO
+        OO O
+        '''
+        '''
+        O OO
+         X O
+          OO
+        OO O
+        '''
+        '''
+        OOOO
+         X O
+          OO
+        OO O
+        '''
+        '''
+        OOOO
+         X O
+         XOO
+        OO O
+        '''
+        '''
+        OOOO
+        OX O
+         XOO
+        OO O
+        '''
+        '''
+        OOOO
+        OX O
+        XXOO
+        OO O
+        '''
+        '''
+        OOOO
+        OX O
+        XXOO
+        OOOO
+        '''
+        '''
+            
+         XX 
+        XX  
+            
+        '''
+        '''
+            
+         XX 
+        XX  
+           O
+        '''
+    ]
+    history.every (e, i) ->
+        e.isEqualTo historyStrings[i]
+
 evaluate = (history, next) ->
-    # return evalUntilDepth history, next, 100
+    # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [2..11] by 1
+    for depth in [2..13] by 1
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
-        return result unless result.chance?
+        return result unless isNaN(result.value) or result.chance?
     new EvaluationResult NaN, result.history
 
 compare = (a, b, stone) ->
@@ -144,11 +234,14 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     if onlySuicide nodes, next, board
         nodes.push board # パスを追加
 
+    if flag
+        console.log 'nodes'
+        console.log boardsToString nodes
     nan = null
     updated = false
     switch next
         when BLACK
-            for b in nodes
+            for b, i in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
                 eyes = b.eyes()
@@ -158,6 +251,13 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                if checkHistory result.history
+                    console.log 'board'
+                    console.log board.toString()
+                    console.log result.toString()
+                if flag
+                    console.log "b#{i}"
+                    console.log result.toString()
                 if result.value >= MAX_SCORE
                     alpha = result
                     updated = true
@@ -170,11 +270,11 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 else if isNaN result.value
                     nan = result
                 return beta if alpha.value > beta.value
-            alpha.setChance nan if (alpha.value == -Infinity or updated) and nan? and alpha.value < MAX_SCORE
+            alpha.setChance nan if updated and nan? and alpha.value < MAX_SCORE
             cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and not alpha.chance? and history.every (e, i) -> e == alpha.history[i]
-            return alpha
+            return if alpha.value == -Infinity then nan else alpha
         when WHITE
-            for b in nodes
+            for b, i in nodes
                 eyes = b.eyes()
                 result = if eyes[0].length == b.numOfEmpties()
                         new EvaluationResult MAX_SCORE, history.concat b
@@ -182,6 +282,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                         new EvaluationResult -MAX_SCORE, history.concat b
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                if flag
+                    console.log "b#{i}"
+                    console.log result.toString()
                 if result.value <= -MAX_SCORE
                     beta = result
                     updated = true
@@ -194,9 +297,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 else if isNaN result.value
                     nan = result
                 return alpha if alpha.value > beta.value
-            beta.setChance nan if (beta.value == Infinity or updated) and nan? and beta.value > -MAX_SCORE
+            beta.setChance nan if updated and nan? and beta.value > -MAX_SCORE
             cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and not beta.chance? and history.every (e, i) -> e == beta.history[i]
-            return beta
+            return if beta.value == Infinity then nan else beta
 
 root = exports ? window
 for e in ['compare', 'evaluate']
