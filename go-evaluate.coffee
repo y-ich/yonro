@@ -8,11 +8,11 @@
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 check = (next, board) ->
-    next == BLACK and board.isEqualTo '''
-         XOO
-        XO O
-        XXOO
-        OO O
+    next == WHITE and board.isEqualTo '''
+        O X 
+        XXXO
+        OOXX
+          X 
         '''
 
 cache =
@@ -132,7 +132,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [6..22] by 1
+    for depth in [9..9] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -215,7 +215,6 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     if check next, board
         flag = true
         console.log "alpha#{alpha.value}, beta#{beta.value}"
-
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
     if depth <= 0
@@ -235,6 +234,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     nodes.sort (a, b) -> - compare a, b, next
     if onlySuicide nodes, next, board
         nodes.push board # パスを追加
+    if flag
+        console.log 'nodes'
+        console.log boardsToString nodes
 
     nan = null
     updated = false
@@ -257,16 +259,19 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
                     console.log b.toString()
                     console.log result.toString()
+                    console.log result.value == alpha.value 
+                    console.log result.chance?
                 if (result.value > alpha.value) or (result.value == alpha.value and (result.chance? or (not alpha.chance? and result.history.length < alpha.history.length)))
+                    console.log 'pass' if flag
                     alpha = result
                 else if isNaN result.value
                     nan = result
-                return beta if alpha.value >= beta.value
+                return beta if alpha.value > beta.value
+                if alpha.value == beta.value
+                    return alpha unless alpha.chance?
+                    return beta unless beta.chance?
             alpha.setChance nan if nan? and alpha.value < MAX_SCORE
             cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and not alpha.chance? and history.every (e, i) -> e == alpha.history[i]
-            if flag
-                console.log 'alpha'
-                console.log alpha.toString()
             return if alpha.value == -Infinity then nan else alpha
         when WHITE
             for b, i in nodes
@@ -282,16 +287,19 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
                     console.log b.toString()
                     console.log result.toString()
+                    console.log result.value == alpha.value 
+                    console.log result.chance?
                 if (result.value < beta.value) or (result.value == beta.value and (result.chance? or (not beta.chance? and result.history.length < beta.history.length)))
+                    console.log 'pass' if flag
                     beta = result
                 else if isNaN result.value
                     nan = result
-                return alpha if alpha.value >= beta.value
+                return alpha if alpha.value > beta.value
+                if alpha.value == beta.value
+                    return alpha unless alpha.chance?
+                    return beta unless beta.chance?
             beta.setChance nan if nan? and beta.value > -MAX_SCORE
             cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and not beta.chance? and history.every (e, i) -> e == beta.history[i]
-            if flag
-                console.log 'beta'
-                console.log beta.toString()
             return if beta.value == Infinity then nan else beta
 
 root = exports ? window
