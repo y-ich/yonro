@@ -7,6 +7,9 @@
 
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
+DEBUG = false
+strict = false
+
 check = (next, board) ->
     next == BLACK and board.isEqualTo '''
         O X 
@@ -132,12 +135,16 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [11..11] by 2
-        console.log "depth: #{depth}"
+    for depth in [1..10] by 1
+        console.log "depth: #{depth}" if DEBUG
         result = evalUntilDepth history, next, depth
-        console.log result.toString()
+        console.log result.toString() if DEBUG
         return result unless isNaN(result.value) or result.chance?
-    new EvaluationResult NaN, result.history
+    if strict
+        console.log 'give'
+        new EvaluationResult NaN, result.history
+    else
+        result
 
 compare = (a, b, stone) ->
     ###
@@ -198,6 +205,9 @@ class EvaluationResult
         ###
         もしalphaもしくはbetaの比較値としてNaNが現れたら、@chanceに登録する。@chanceはもっと良い値でである可能性。
         ###
+    copy: ->
+        new EvaluationResult @value, @history, @chance
+
     toString: ->
         "value: #{@value}\n" +
         'history:\n' + boardsToString(@history) + '\n' +
@@ -270,7 +280,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 if alpha.value == beta.value
                     return alpha unless alpha.chance?
                     return beta unless beta.chance?
-            alpha.setChance nan if nan? and alpha.value < MAX_SCORE
+            if nan? and alpha.value < MAX_SCORE
+                alpha = alpha.copy()
+                alpha.setChance nan
             cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and not alpha.chance? and history.every (e, i) -> e == alpha.history[i]
             return if alpha.value == -Infinity then nan else alpha
         when WHITE
@@ -298,7 +310,9 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 if alpha.value == beta.value
                     return alpha unless alpha.chance?
                     return beta unless beta.chance?
-            beta.setChance nan if nan? and beta.value > -MAX_SCORE
+            if nan? and beta.value > -MAX_SCORE
+                beta = beta.copy()
+                beta.setChance nan
             cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and not beta.chance? and history.every (e, i) -> e == beta.history[i]
             return if beta.value == Infinity then nan else beta
 
