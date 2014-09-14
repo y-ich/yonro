@@ -103,7 +103,7 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], WHITE
                 assert.equal result.value, -MAX_SCORE
-            it "should return ", ->
+            it.only "should return ", ->
                 board = OnBoard.fromString """
                     O X 
                     XX  

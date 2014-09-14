@@ -8,10 +8,10 @@
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 check = (next, board) ->
-    next == WHITE and board.isEqualTo '''
+    next == BLACK and board.isEqualTo '''
         O X 
-        XXXO
-        OOXX
+        XX  
+         O X
           X 
         '''
 
@@ -132,7 +132,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [9..9] by 2
+    for depth in [11..11] by 2
         console.log "depth: #{depth}"
         result = evalUntilDepth history, next, depth
         console.log result.toString()
@@ -255,7 +255,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if flag
-                    console.log "b#{i}"
+                    console.log "b#{i} depth#{depth}"
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
                     console.log b.toString()
                     console.log result.toString()
@@ -283,7 +283,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     else
                         evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if flag
-                    console.log "b#{i}"
+                    console.log "b#{i} depth#{depth}"
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
                     console.log b.toString()
                     console.log result.toString()
