@@ -12,10 +12,10 @@ strict = true
 
 check = (next, board) ->
     next == WHITE and board.isEqualTo '''
-         XOO
-        X XO
-        XXOO
-        OO O
+        XXXX
+        XOX 
+        OOXX
+         OXX
         '''
 
 cache =
@@ -232,7 +232,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
         # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
         return new EvaluationResult MAX_SCORE, history
-    if eyes[1].length == empties
+    if eyes[1].length == empties or (board.numOf(BLACK) == 0 and eyes[1].length > 0)
         # 空点がすべて白の眼なら-MAX_SCORE
         return new EvaluationResult -MAX_SCORE, history
     if depth <= 0
