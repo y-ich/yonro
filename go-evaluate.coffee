@@ -7,15 +7,15 @@
 
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
-DEBUG = false
-strict = false
+DEBUG = true
+strict = true
 
 check = (next, board) ->
-    next == BLACK and board.isEqualTo '''
-        O X 
-        XX  
-         O X
-          X 
+    next == WHITE and board.isEqualTo '''
+         XOO
+        X XO
+        XXOO
+        OO O
         '''
 
 cache =
@@ -135,7 +135,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [1..10] by 1
+    for depth in [6..30] by 1
         console.log "depth: #{depth}" if DEBUG
         result = evalUntilDepth history, next, depth
         console.log result.toString() if DEBUG
@@ -224,9 +224,17 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     board = history[history.length - 1]
     if check next, board
         flag = true
-        console.log "alpha#{alpha.value}, beta#{beta.value}"
+        console.log "depth#{depth}, alpha#{alpha.value}, beta#{beta.value}"
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
+    eyes = board.eyes()
+    empties = board.numOfEmpties()
+    if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
+        # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
+        return new EvaluationResult MAX_SCORE, history
+    if eyes[1].length == empties
+        # 空点がすべて白の眼なら-MAX_SCORE
+        return new EvaluationResult -MAX_SCORE, history
     if depth <= 0
         return new EvaluationResult NaN, history
 
@@ -255,15 +263,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
             for b, i in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
-                eyes = b.eyes()
-                result = if eyes[0].length == b.numOfEmpties() or (b.numOf(WHITE) == 0 and eyes[0].length > 0)
-                        # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
-                        new EvaluationResult MAX_SCORE, history.concat b
-                    else if eyes[1].length == b.numOfEmpties()
-                        # 空点がすべて白の眼なら-MAX_SCORE
-                        new EvaluationResult -MAX_SCORE, history.concat b
-                    else
-                        evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if flag
                     console.log "b#{i} depth#{depth}"
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
@@ -288,12 +288,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
         when WHITE
             for b, i in nodes
                 eyes = b.eyes()
-                result = if eyes[0].length == b.numOfEmpties()
-                        new EvaluationResult MAX_SCORE, history.concat b
-                    else if eyes[1].length == b.numOfEmpties() or (b.numOf(BLACK) == 0 and eyes[1].length > 0)
-                        new EvaluationResult -MAX_SCORE, history.concat b
-                    else
-                        evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
                 if flag
                     console.log "b#{i} depth#{depth}"
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
