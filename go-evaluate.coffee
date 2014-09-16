@@ -272,7 +272,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 return beta if alpha.value >= beta.value
             if nan? and alpha.value < MAX_SCORE
                 return nan
-            cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and history.every (e, i) -> e == alpha.history[i]
+            cache.add next, board, alpha if notPossibleToIterate and history.every (e, i) -> e == alpha.history[i]
             return if alpha.value == -Infinity then nan else alpha
         when WHITE
             for b, i in nodes
@@ -291,7 +291,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                 return alpha if alpha.value >= beta.value
             if nan? and beta.value > -MAX_SCORE
                 return nan
-            cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and history.every (e, i) -> e == beta.history[i]
+            cache.add next, board, beta if notPossibleToIterate and history.every (e, i) -> e == beta.history[i]
             return if beta.value == Infinity then nan else beta
 
 root = exports ? window
