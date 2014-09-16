@@ -7,15 +7,15 @@
 
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
-DEBUG = true
+DEBUG = false
 strict = true
 
 check = (next, board) ->
-    next == WHITE and board.isEqualTo '''
-        XXXX
-        XOX 
-        OOXX
-         OXX
+    next == BLACK and board.isEqualTo '''
+         X  
+        X X 
+        XXOO
+         OX 
         '''
 
 cache =
@@ -135,11 +135,11 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [6..30] by 1
+    for depth in [2..15] by 1
         console.log "depth: #{depth}" if DEBUG
         result = evalUntilDepth history, next, depth
         console.log result.toString() if DEBUG
-        return result unless isNaN(result.value) or result.chance?
+        return result unless isNaN result.value
     if strict
         console.log 'give'
         new EvaluationResult NaN, result.history
@@ -200,18 +200,13 @@ onlySuicide = (nodes, next, board) ->
 
 
 class EvaluationResult
-    constructor: (@value, @history, @chance = null) ->
-    setChance: (@chance) ->
-        ###
-        もしalphaもしくはbetaの比較値としてNaNが現れたら、@chanceに登録する。@chanceはもっと良い値でである可能性。
-        ###
+    constructor: (@value, @history) ->
     copy: ->
-        new EvaluationResult @value, @history, @chance
+        new EvaluationResult @value, @history
 
     toString: ->
         "value: #{@value}\n" +
-        'history:\n' + boardsToString(@history) + '\n' +
-        if @chance then 'chance:\n' + @chance.toString() else ''
+        'history:\n' + boardsToString @history
 
 evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity, []), beta = new EvaluationResult(Infinity, [])) ->
     ###
@@ -222,7 +217,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     alpha, betaはαβ枝狩りパラメータ
     ###
     board = history[history.length - 1]
-    if check next, board
+    if DEBUG and check next, board
         flag = true
         console.log "depth#{depth}, alpha#{alpha.value}, beta#{beta.value}"
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
@@ -269,21 +264,15 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
                     console.log b.toString()
                     console.log result.toString()
-                    console.log result.value == alpha.value 
-                    console.log result.chance?
-                if (result.value > alpha.value) or (result.value == alpha.value and (result.chance? or (not alpha.chance? and result.history.length < alpha.history.length)))
-                    console.log 'pass' if flag
+                    console.log result.value == alpha.value
+                if (result.value > alpha.value) or (result.value == alpha.value and result.history.length < alpha.history.length)
                     alpha = result
                 else if isNaN result.value
-                    nan = result
-                return beta if alpha.value > beta.value
-                if alpha.value == beta.value
-                    return alpha unless alpha.chance?
-                    return beta unless beta.chance?
+                    nan ?= result
+                return beta if alpha.value >= beta.value
             if nan? and alpha.value < MAX_SCORE
-                alpha = alpha.copy()
-                alpha.setChance nan
-            cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and not alpha.chance? and history.every (e, i) -> e == alpha.history[i]
+                return nan
+            cache.add next, board, alpha if notPossibleToIterate and isFinite(alpha.value) and history.every (e, i) -> e == alpha.history[i]
             return if alpha.value == -Infinity then nan else alpha
         when WHITE
             for b, i in nodes
@@ -294,21 +283,15 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
                     console.log b.toString()
                     console.log result.toString()
-                    console.log result.value == alpha.value 
-                    console.log result.chance?
-                if (result.value < beta.value) or (result.value == beta.value and (result.chance? or (not beta.chance? and result.history.length < beta.history.length)))
-                    console.log 'pass' if flag
+                    console.log result.value == beta.value
+                if (result.value < beta.value) or (result.value == beta.value and result.history.length < beta.history.length)
                     beta = result
                 else if isNaN result.value
-                    nan = result
-                return alpha if alpha.value > beta.value
-                if alpha.value == beta.value
-                    return alpha unless alpha.chance?
-                    return beta unless beta.chance?
+                    nan ?= result
+                return alpha if alpha.value >= beta.value
             if nan? and beta.value > -MAX_SCORE
-                beta = beta.copy()
-                beta.setChance nan
-            cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and not beta.chance? and history.every (e, i) -> e == beta.history[i]
+                return nan
+            cache.add next, board, beta if notPossibleToIterate and isFinite(beta.value) and history.every (e, i) -> e == beta.history[i]
             return if beta.value == Infinity then nan else beta
 
 root = exports ? window
