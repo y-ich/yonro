@@ -135,7 +135,7 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [2..15] by 1
+    for depth in [2..23] by 1
         console.log "depth: #{depth}" if DEBUG
         result = evalUntilDepth history, next, depth
         console.log result.toString() if DEBUG

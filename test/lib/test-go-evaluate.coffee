@@ -103,14 +103,6 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], WHITE
                 assert.equal result.value, -MAX_SCORE
-            it.only "should return ", ->
-                board = OnBoard.fromString """
-                    O X 
-                    XX  
-                        
-                      X 
-                    """
-                assert.equal evaluate([board], WHITE).value, MAX_SCORE
             it "should return -5", ->
                 board = OnBoard.fromString """
                     O XO
@@ -119,7 +111,7 @@ testEvaluate = (kernel) ->
                     OO O
                     """
                 assert.equal evaluate([board], BLACK).value, -5
-            it "白先でも黒勝ち", ->
+            it "白先でも黒勝ち", -> # 15 depth 165065ms
                 board = OnBoard.fromString """
                      XOO
                     XO O
@@ -206,6 +198,14 @@ testEvaluate = (kernel) ->
                 result = evaluate result.history[0..1].concat(board1), WHITE
                 assert.equal result.history[2].isEqualTo(board1), true
             # 長手数問題
+            it "should return ", ->
+                board = OnBoard.fromString """
+                    O X 
+                    XX  
+                        
+                      X 
+                    """
+                assert.equal evaluate([board], WHITE).value, MAX_SCORE
             it "should return ", ->
                 board = OnBoard.fromString '''
                      XOX

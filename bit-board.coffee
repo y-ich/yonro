@@ -347,7 +347,7 @@ class OnBoard
         ###
         return null if not @_isEmptyAt bitPos
 
-        adj = adjacent bitPos
+        adj = adjacent @_stringAt bitPos
         if (adj & @black) is adj
             stone = BLACK
             bitBoard = @black
