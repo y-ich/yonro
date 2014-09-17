@@ -347,8 +347,13 @@ class OnBoard
         ###
         return null if not @_isEmptyAt bitPos
 
-        adj = adjacent @_stringAt bitPos
-        if (adj & @black) is adj
+        emptyString = @_stringAt bitPos
+        return null if countBits(emptyString) >= 8 # 8は最小限の生きがある大きさ
+
+        adj = adjacent emptyString
+        if adj == 0
+            stone = null
+        else if (adj & @black) is adj
             stone = BLACK
             bitBoard = @black
         else if (adj & @white) is adj
