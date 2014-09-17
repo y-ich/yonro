@@ -7,7 +7,7 @@
 
 { BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
-DEBUG = true
+DEBUG = false
 strict = true
 
 check = (next, board) ->
