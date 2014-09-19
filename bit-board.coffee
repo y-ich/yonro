@@ -82,11 +82,12 @@ adjacent = (bitBoard) ->
 
 stringOf = (bitBoard, seed) ->
     return 0 unless bitBoard & seed
-    expanded = seed | (adjacent seed) & bitBoard
-    if expanded == seed
-        seed
-    else
-        stringOf bitBoard, expanded
+
+    loop
+        expanded = (seed | (seed << BIT_BOARD_SIZE) | (seed << 1) | (seed >>> 1) | (seed >>> BIT_BOARD_SIZE)) & bitBoard
+        if expanded == seed
+            return expanded
+        seed = expanded
 
 captured = (objective, subjective) ->
     l = adjacent(objective) & ~ subjective
@@ -265,7 +266,7 @@ class OnBoard
         board = switch @_stateAt bitPos
             when BLACK then @black
             when WHITE then @white
-            else ~ (@black | @white)
+            else @_empties()
 
         stringOf board, bitPos
 
@@ -284,8 +285,11 @@ class OnBoard
     _numOfLibertiesOf: (string) ->
         countBits @_libertyOf string
 
+    _empties: ->
+        ON_BOARD & ~ (@black | @white)
+
     numOfEmpties: ->
-        countBits ON_BOARD & ~ (@black | @white)
+        countBits @_empties()
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
