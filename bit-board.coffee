@@ -390,10 +390,10 @@ class OnBoard
     eyes: ->
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         result = [[], []]
-        for bitPos in _BITS
-            switch @_whoseEyeAt bitPos
-                when BLACK then result[0].push bitPos
-                when WHITE then result[1].push bitPos
+        for b in @emptyStrings()
+            switch @_whoseEyeAt b
+                when BLACK then result[0].push b
+                when WHITE then result[1].push b
         result
 
     # 操作メソッド
@@ -449,5 +449,5 @@ class OnBoard
 root = exports ? window
 root.OnBoard = OnBoard
 if exports?
-    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare']
+    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString']
         root[e] = eval e if exports?
