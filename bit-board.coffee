@@ -43,9 +43,7 @@ ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
 ###
 
 countBits = (x) ->
-    ###
-    32bit整数の1の数を返す。
-    ###
+    ### 32bit整数の1の数を返す ###
     x -= ((x >>> 1) & 0x55555555)
     x = (x & 0x33333333) + ((x >>> 2) & 0x33333333)
     x = (x + (x >>> 4)) & 0x0F0F0F0F
@@ -54,18 +52,14 @@ countBits = (x) ->
     x & 0x0000003F
 
 positionsToBits = (positions) ->
-    ###
-    positions配列の位置に1を立てたビットボードを返す。
-    ###
+    ### positions配列の位置に1を立てたビットボードを返す。 ###
     bits = 0
     for e in positions
         bits |= positionToBit e
     bits
 
 bitsToPositions = (bitBoard) ->
-    ###
-    ビットボード上の1の位置の配列を返す
-    ###
+    ### ビットボード上の1の位置の配列を返す。 ###
     positions = []
     for x in [0...BOARD_SIZE]
         for y in [0...BOARD_SIZE]
@@ -74,6 +68,7 @@ bitsToPositions = (bitBoard) ->
     positions
 
 adjacent = (bitBoard) ->
+    ### 呼吸点を返す。 ###
     expanded = bitBoard << BIT_BOARD_SIZE
     expanded |= bitBoard << 1
     expanded |= bitBoard >>> 1
@@ -81,6 +76,7 @@ adjacent = (bitBoard) ->
     expanded & (~ bitBoard) & ON_BOARD
 
 stringOf = (bitBoard, seed) ->
+    ### seedを含む連を返す。 ###
     return 0 unless bitBoard & seed
 
     loop
@@ -90,8 +86,9 @@ stringOf = (bitBoard, seed) ->
         seed = expanded
 
 captured = (objective, subjective) ->
-    l = adjacent(objective) & ~ subjective
-    breaths = objective & adjacent l
+    ### subjectiveで囲まれたobjectiveの部分を返す。 ###
+    liberty = adjacent(objective) & ~ subjective
+    breaths = objective & adjacent liberty
     objective & (~ stringOf objective, breaths)
 
 decomposeToStrings = (bitBoard) ->
@@ -101,7 +98,8 @@ decomposeToStrings = (bitBoard) ->
         result.push stringOf bitBoard, bit
     result
 
-bitsToString = (bitBoard, char) ->
+bitsToString = (bitBoard) ->
+    ### bitBoardを文字列にする ###
     str = ''
     for y in [0...BOARD_SIZE]
         for x in [0...BOARD_SIZE]
@@ -197,11 +195,10 @@ class OnBoard
             EMPTY
 
     numOf: (stone) ->
-        switch stone
-            when BLACK
-                countBits @black
-            when WHITE
-                countBits @white
+        countBits switch stone
+            when EMPTY then @_empties()
+            when BLACK then @black
+            when WHITE then @white
             else
                 throw 'numOf'
                 0
@@ -287,9 +284,6 @@ class OnBoard
 
     _empties: ->
         ON_BOARD & ~ (@black | @white)
-
-    numOfEmpties: ->
-        countBits @_empties()
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###

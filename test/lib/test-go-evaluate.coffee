@@ -214,16 +214,6 @@ testEvaluate = (kernel) ->
                     '''
                 result = evaluate [board], BLACK
                 assert.equal result.value, 4
-            # 長手数問題
-            it "3. should return ", -> #解けない
-                board = OnBoard.fromString '''
-                      X 
-                     XOX
-                    OXO 
-                     O  
-                    '''
-                result = evaluate [board], BLACK
-                assert.equal result.value, 2
             it "4. should return ", ->
                 board = OnBoard.fromString '''
                     OXO 
@@ -241,29 +231,24 @@ testEvaluate = (kernel) ->
                     OXXO
                     '''
                 assert.equal evaluate([board], BLACK).value, MAX_SCORE
-            it.only "6. should return ", -> #解けない
+            # 長手数問題
+            it "3. should return ", -> #解けない
                 board = OnBoard.fromString '''
                       X 
-                     XO 
-                     XO 
+                     XOX
+                    OXO 
                      O  
                     '''
+                result = evaluate [board], BLACK
+                assert.equal result.value, 2
+            it "6. should return ", -> #解けない
+                board = OnBoard.fromString '  X \n XO \n XO \n O  '
                 assert.equal evaluate([board], BLACK).value, 0
-            it "7. should return ", ->
-                board = OnBoard.fromString '''
-                     X  
-                     XO 
-                     XO 
-                      O 
-                    '''
+            it.only "7. should return ", ->
+                board = OnBoard.fromString ' X  \n XO \n XO \n  O '
                 assert.equal evaluate([board], BLACK).value, 0
             it "8. should return ", ->
-                board = OnBoard.fromString '''
-                     X  
-                     XO 
-                     XO 
-                     O  
-                    '''
+                board = OnBoard.fromString ' X  \n XO \n XO \n O  '
                 assert.equal evaluate([board], BLACK).value, 0
             it "9. should return ", ->
                 board = OnBoard.fromString '    \n XO \n XO \n    '

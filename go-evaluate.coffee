@@ -5,7 +5,7 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
-{ BLACK, WHITE, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
+{ BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 DEBUG = false
 strict = true
@@ -135,11 +135,13 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [2..23] by 1
+    for depth in [2..30] by 1
         console.log "depth: #{depth}" if DEBUG
         result = evalUntilDepth history, next, depth
         console.log result.toString() if DEBUG
-        return result unless isNaN result.value
+        unless isNaN result.value
+            console.log "depth: #{depth}"
+            return result
     if strict
         console.log 'give'
         new EvaluationResult NaN, result.history
@@ -223,7 +225,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
     eyes = board.eyes()
-    empties = board.numOfEmpties()
+    empties = board.numOf(EMPTY)
     if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
         # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
         return new EvaluationResult MAX_SCORE, history

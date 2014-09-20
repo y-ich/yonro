@@ -1,6 +1,6 @@
 assert = require 'assert'
 { BLACK, WHITE, EMPTY, boardsToString } = require '../go-common.coffee'
-{ OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured, decomposeToStrings } = require '../bit-board.coffee'
+{ OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured, decomposeToStrings, bitsToString } = require '../bit-board.coffee'
 
 comparePosition = (a, b) ->
     dx = a[0] - b[0]
@@ -128,9 +128,14 @@ describe 'bit-board', ->
                 assert.equal candidates.length, 2
 
         describe "eyes", ->
-            it "should return 14", ->
-                board = new OnBoard [[0,0],[1,0],[2,0],[3,0],[2,1],[1,2],[2,2],[3,2],[2,3],[3,3]], []
-                assert.equal board.eyes()[0].length, 1
+            it "should return 2", ->
+                board = OnBoard.fromString '''
+                    XXXX
+                      X 
+                     XXX
+                      XX
+                    '''
+                assert.equal board.eyes()[0].length, 2
 
         describe "place", ->
             it "should return true", ->
