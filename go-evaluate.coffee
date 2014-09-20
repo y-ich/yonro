@@ -217,6 +217,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     nextは次の手番。
     depthは最大深度。反復進化パラメータ
     alpha, betaはαβ枝狩りパラメータ
+    外部関数compareが肝。
     ###
     board = history[history.length - 1]
     if DEBUG and check next, board
@@ -225,12 +226,11 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
     eyes = board.eyes()
-    empties = board.numOf(EMPTY)
+    empties = board.numOf EMPTY
     if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
         # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
         return new EvaluationResult MAX_SCORE, history
     if eyes[1].length == empties or (board.numOf(BLACK) == 0 and eyes[1].length > 0)
-        # 空点がすべて白の眼なら-MAX_SCORE
         return new EvaluationResult -MAX_SCORE, history
     if depth <= 0
         return new EvaluationResult NaN, history
