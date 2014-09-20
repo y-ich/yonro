@@ -195,6 +195,7 @@ class OnBoard
             EMPTY
 
     numOf: (stone) ->
+        ### 盤上の石または空点の数を返す。 ###
         countBits switch stone
             when EMPTY then @_empties()
             when BLACK then @black
@@ -287,10 +288,7 @@ class OnBoard
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
-        result = []
-        for bitPos in _BITS
-            result.push @_stringAt bitPos if (@_isEmptyAt bitPos) and (result.every (s) -> not (s & bitPos))
-        result
+        decomposeToStrings @_empties()
 
     numOfLiberties: (stone) ->
         switch stone
