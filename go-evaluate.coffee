@@ -166,10 +166,6 @@ compare = (a, b, stone) ->
     if candidates != 0
         return candidates
 
-    score = a.score() - b.score()
-    if score != 0
-        return if stone is BLACK then score else - score
-
     [aBlack, aWhite] = a.strings()
     [bBlack, bWhite] = b.strings()
     switch stone
@@ -180,7 +176,10 @@ compare = (a, b, stone) ->
             return strings if strings != 0
             aBlack = a.stringsToContacts aBlack
             bBlack = b.stringsToContacts bBlack
-            return bBlack.length - aBlack.length
+            diff = bBlack.length - aBlack.length
+            return diff if diff != 0
+            score = a.score() - b.score()
+            return score
         when WHITE
             dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK))
             return dame if dame != 0
@@ -188,7 +187,10 @@ compare = (a, b, stone) ->
             return strings if strings != 0
             aWhite = a.stringsToContacts aWhite
             bWhite = b.stringsToContacts bWhite
-            return bWhite.length - aWhite.length
+            diff = bWhite.length - aWhite.length
+            return diff if diff != 0
+            score = b.score() - a.score()
+            return score
 
 onlySuicide = (nodes, next, board) ->
     [blacks, whites] = board.strings()
