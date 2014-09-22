@@ -85,6 +85,13 @@ stringOf = (bitBoard, seed) ->
             return expanded
         seed = expanded
 
+interiorOf = (region) ->
+    ### 領域の内部を返す ###
+    region & (region << BIT_BOARD_SIZE) & (region << 1) & (region >>> 1) & (region >>> BIT_BOARD_SIZE)
+
+borderOf = (region) ->
+    region & ~ interiorOf region
+
 captured = (objective, subjective) ->
     ### subjectiveで囲まれたobjectiveの部分を返す。 ###
     liberty = adjacent(objective) & ~ subjective
@@ -391,6 +398,20 @@ class OnBoard
                 when BLACK then result[0].push b
                 when WHITE then result[1].push b
         result
+
+    enclosedResionsOf: (stone) ->
+        switch stone
+            when BLACK
+                self = @black
+                opponent = @white
+            when WHITE
+                self = @white
+                opponent = @black
+        regions = decomposeToStrings ~self & ON_BOARD
+        regions.filter (r) ->
+            i = interiorOf r
+            (i & opponent) == i
+
 
     # 操作メソッド
 
