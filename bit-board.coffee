@@ -393,7 +393,7 @@ class OnBoard
                 when WHITE then result[1].push b
         result
 
-    enclosedResionsOf: (stone) ->
+    enclosedRegionsOf: (stone) ->
         switch stone
             when BLACK
                 self = @black
