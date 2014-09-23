@@ -5,7 +5,8 @@
 # 作者: 市川雄二
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
-{ BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
+if exports?
+    { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 DEBUG = false
 strict = true
@@ -298,6 +299,6 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
             cache.add next, board, beta if notPossibleToIterate and history.every (e, i) -> e == beta.history[i]
             return if beta.value == Infinity then nan else beta
 
-root = exports ? window
+root = exports ? if window? then window else {} # Node.jsかブラウザかワーカーか
 for e in ['compare', 'evaluate']
     root[e] = eval e

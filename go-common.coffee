@@ -40,6 +40,6 @@ adjacenciesAt = (position) ->
         result.push [x, y] if 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
     result
 
-root = exports ? window
+root = exports ? if window? then window else {} # Node.jsかブラウザかワーカーか
 for e in ['BLACK', 'WHITE', 'EMPTY', 'BOARD_SIZE', 'MAX_SCORE', 'opponentOf', 'adjacenciesAt', 'boardsToString']
     root[e] = eval e

@@ -67,7 +67,7 @@
     return result;
   };
 
-  root = typeof exports !== "undefined" && exports !== null ? exports : window;
+  root = typeof exports !== "undefined" && exports !== null ? exports : typeof window !== "undefined" && window !== null ? window : {};
 
   _ref = ['BLACK', 'WHITE', 'EMPTY', 'BOARD_SIZE', 'MAX_SCORE', 'opponentOf', 'adjacenciesAt', 'boardsToString'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {

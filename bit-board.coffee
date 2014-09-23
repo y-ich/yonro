@@ -457,7 +457,7 @@ class OnBoard
         str
 
 
-root = exports ? window
+root = exports ? if window? then window else {}
 root.OnBoard = OnBoard
 if exports?
     for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString']

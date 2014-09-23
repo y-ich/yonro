@@ -338,5 +338,5 @@ class OnBoard
             str += '\n' unless y == BOARD_SIZE - 1
         str
 
-root = exports ? window
+root = exports ? if window? then window else {} # Node.jsかブラウザかワーカーか
 root.OnBoard = OnBoard
