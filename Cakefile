@@ -7,7 +7,7 @@ task 'app', 'build app', ->
     worker = spawn 'coffee', ['-wcj', 'go-worker.js', 'bit-board.coffee', 'go-evaluate.coffee', 'go-worker.coffee']
     worker.stdout.on 'data', (data) -> console.log data.toString().trim()
 
-    app = spawn 'coffee', ['-wcj', 'yonro.js', 'bit-board.coffee', 'common.coffee', 'yonro.coffee']
+    app = spawn 'coffee', ['-wcj', 'yonro.js', 'go-common.coffee', 'bit-board.coffee', 'common.coffee', 'yonro.coffee']
     app.stdout.on 'data', (data) -> console.log data.toString().trim()
 
     app2 = spawn 'coffee', ['-wcj', 'solver.js', 'go-common.coffee', 'common.coffee', 'solver.coffee']
