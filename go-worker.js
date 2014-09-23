@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bitsToPositions, bitsToString, boardsToString, borderOf, cache, captured, check, checkHistory, compare, countBits, decomposeToStrings, e, evalUntilDepth, evaluate, interiorOf, onlySuicide, opponentOf, positionToBit, positionsToBits, root, strict, stringOf, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
+  var BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bitsToPositions, bitsToString, boardsToString, borderOf, cache, captured, check, checkHistory, compare, countBits, decomposeToStrings, e, evalUntilDepth, evaluate, interiorOf, onlySuicide, opponentOf, positionToBit, positionsToBits, root, stringOf, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -810,8 +810,6 @@
 
   DEBUG = false;
 
-  strict = true;
-
   check = function(next, board) {
     return next === BLACK && board.isEqualTo(' X  \nX X \nXXOO\n OX ');
   };
@@ -880,16 +878,10 @@
         console.log(result.toString());
       }
       if (!isNaN(result.value)) {
-        console.log("depth: " + depth);
         return result;
       }
     }
-    if (strict) {
-      console.log('give');
-      return new EvaluationResult(NaN, result.history);
-    } else {
-      return result;
-    }
+    return result;
   };
 
   compare = function(a, b, stone) {

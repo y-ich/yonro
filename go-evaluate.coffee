@@ -9,7 +9,6 @@ if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
 DEBUG = false
-strict = true
 
 check = (next, board) ->
     next == BLACK and board.isEqualTo '''
@@ -141,13 +140,8 @@ evaluate = (history, next) ->
         result = evalUntilDepth history, next, depth
         console.log result.toString() if DEBUG
         unless isNaN result.value
-            console.log "depth: #{depth}"
             return result
-    if strict
-        console.log 'give'
-        new EvaluationResult NaN, result.history
-    else
-        result
+    result
 
 compare = (a, b, stone) ->
     ###
