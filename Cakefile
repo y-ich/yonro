@@ -4,10 +4,10 @@ bitBoardTest = ['tests/testBitBoard.coffee', 'bit-board.coffee']
 goEvaluateTest = ['tests/test-go-evaluate.coffee', 'go-common.coffee', 'go-evaluate.coffee']
 
 task 'app', 'build app', ->
-    worker = spawn 'coffee', ['-wcj', 'go-worker.js', 'bit-board.coffee', 'go-evaluate.coffee', 'go-worker.coffee']
+    worker = spawn 'coffee', ['-wcj', 'go-worker.js', 'go-common.coffee', 'bit-board.coffee', 'go-evaluate.coffee', 'go-worker.coffee']
     worker.stdout.on 'data', (data) -> console.log data.toString().trim()
 
-    app = spawn 'coffee', ['-wcj', 'yonro.js', 'go-common.coffee', 'bit-board.coffee', 'common.coffee', 'yonro.coffee']
+    app = spawn 'coffee', ['-wcj', 'yonro.js', 'go-common.coffee', 'bit-board.coffee', 'go-evaluate.coffee', 'common.coffee', 'yonro.coffee']
     app.stdout.on 'data', (data) -> console.log data.toString().trim()
 
     app2 = spawn 'coffee', ['-wcj', 'solver.js', 'go-common.coffee', 'common.coffee', 'solver.coffee']
