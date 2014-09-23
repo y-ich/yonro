@@ -199,7 +199,7 @@ onlySuicide = (nodes, next, board) ->
         when WHITE then whites
 
     suicides = nodes.filter (b) ->
-        strings.some (e) -> board._numOfLibertiesOf(e) > 1 and b._numOfLibertiesOf(b._stringAt e) == 1
+        strings.some (e) -> board.numOfLibertiesOf(e) > 1 and b.numOfLibertiesOf(b.stringOf e) == 1
     suicides.length == nodes.length
 
 

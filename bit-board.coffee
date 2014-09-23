@@ -265,9 +265,9 @@ class OnBoard
         result
 
     stringAt: (position) ->
-        @_stringAt positionToBit position
+        @stringOf positionToBit position
 
-    _stringAt: (bitPos) ->
+    stringOf: (bitPos) ->
         board = switch @_stateAt bitPos
             when BLACK then @black
             when WHITE then @white
@@ -287,7 +287,7 @@ class OnBoard
         opponent = if @black & string then @white else @black
         adjacent(string) & ~ opponent
 
-    _numOfLibertiesOf: (string) ->
+    numOfLibertiesOf: (string) ->
         countBits @_libertyOf string
 
     _empties: ->
@@ -350,7 +350,7 @@ class OnBoard
         ###
         return null if not @_isEmptyAt bitPos
 
-        emptyString = @_stringAt bitPos
+        emptyString = @stringOf bitPos
         return null if countBits(emptyString) >= 8 # 8は最小限の生きがある大きさ
 
         adj = adjacent emptyString

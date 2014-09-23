@@ -163,6 +163,13 @@ class OnBoard
 
         aux [position], [position], []
 
+    stringOf: (stones) ->
+        ###
+        stonesのフォーマットはstringAndlibertyAtの戻り値。
+        stones[0]を含むstringAndlibertyを返す
+        ###
+        @stringAndLibertyAt stones[0][0]
+
     emptyStringAt: (position) ->
         ### 座標の空点と接続した空点の座標の配列を返す。 ###
         return null unless @isEmptyAt position
@@ -188,6 +195,9 @@ class OnBoard
                 if (@isEmptyAt position) and (result.every (s) -> s.every (e) -> not e.isEqualTo position)
                     result.push @emptyStringAt position
         result
+
+    numOfLibertiesOf: (string) ->
+        string[1].length
 
     numOfLiberties: (stone) ->
         positions = []
