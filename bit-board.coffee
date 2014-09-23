@@ -216,7 +216,7 @@ class OnBoard
         現在の配置を返す。
         コンストラクタの逆関数
         ###
-        [bitsToPositions @black, bitsToPositions @white]
+        [bitsToPositions(@black), bitsToPositions(@white)]
 
     score: ->
         ###
