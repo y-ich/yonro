@@ -333,12 +333,6 @@ class OnBoard
         unique result
 
     whoseEyeAt: (position, genuine = false) ->
-        ###
-        座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
-        眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
-        checkingsは再帰用引数
-        石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
-        ###
         @_whoseEyeAt positionToBit(position), genuine
 
     _whoseEyeAt: (bitPos, genuine = false, checkings = 0) ->
@@ -362,7 +356,7 @@ class OnBoard
         else if (adj & @white) is adj
             stone = WHITE
             bitBoard = @white
-        else if not genuine and (adj & (@black | @white)) is adj
+        else if not genuine
             strings = decomposeToStrings(stringOf @white, (adj & @white))
             if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @black) == 1 and decomposeToStrings(stringOf @black, (adj & @black)).map((e) => countBits @_libertyOf(e)).every((e) -> e > 1)
                 return BLACK
