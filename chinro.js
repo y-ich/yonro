@@ -222,7 +222,7 @@
   wEvaluate = function(history, next, success, error, timeout) {
     var timeid, worker;
     if (timeout == null) {
-      timeout = 10000;
+      timeout = 30000;
     }
 
     /*
@@ -237,8 +237,11 @@
       $('#evaluating').css('display', 'none');
       clearTimeout(timeid);
       if (event.data.error != null) {
+        console.log(event.data.error);
         return error(event.data.error);
       } else {
+        console.log(event.data.value);
+        console.log(event.data.history);
         return success({
           value: event.data.value,
           history: event.data.history.map(function(e) {
@@ -256,6 +259,7 @@
     return timeid = setTimeout((function() {
       $('#evaluating').css('display', 'none');
       worker.terminate();
+      console.log('timeout');
       return error({
         message: 'timeout'
       });
@@ -340,7 +344,7 @@
               return function() {
                 return $intersection.addClass('rise');
               };
-            })($intersection), 0);
+            })($intersection), 100);
           } else {
             $intersection.removeClass('white black half-opacity beat');
           }

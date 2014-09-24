@@ -152,7 +152,6 @@ userPlayAndResponse = (position) ->
             waitForUserPlay()
         else
             showOnBoard board, true, ->
-                console.log 'pass1'
                 currentIndex += 1
                 computerPlay board
     else

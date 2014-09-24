@@ -7,7 +7,7 @@
 responseInterval = 2000
 
 
-wEvaluate = (history, next, success, error, timeout = 10000) ->
+wEvaluate = (history, next, success, error, timeout = 30000) ->
     ###
     (web workerを使って)局面を評価する。
 
@@ -23,8 +23,11 @@ wEvaluate = (history, next, success, error, timeout = 10000) ->
         $('#evaluating').css 'display', 'none'
         clearTimeout timeid
         if event.data.error?
+            console.log event.data.error
             error event.data.error
         else
+            console.log event.data.value
+            console.log event.data.history
             success
                 value: event.data.value
                 history: event.data.history.map (e) -> OnBoard.fromString e
@@ -35,6 +38,7 @@ wEvaluate = (history, next, success, error, timeout = 10000) ->
     timeid = setTimeout (->
             $('#evaluating').css 'display', 'none'
             worker.terminate()
+            console.log 'timeout'
             error
                 message: 'timeout'
         ), timeout
@@ -90,7 +94,7 @@ showOnBoard = (board, effect = false, callback = ->) ->
                             $(this).removeClass 'black white rise'
                             deferred.resolve()
                     )(deferred)
-                    setTimeout (($intersection) -> -> $intersection.addClass 'rise')($intersection), 0 # beatを取ってからすぐriseを入れるとtransitionが起こらない。
+                    setTimeout (($intersection) -> -> $intersection.addClass 'rise')($intersection), 100 # beatを取ってからすぐriseを入れるとtransitionが起こらない。
                 else
                     $intersection.removeClass 'white black half-opacity beat'
     $.when.apply(window, deferredes).done callback if effect
