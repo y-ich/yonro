@@ -709,6 +709,23 @@
       });
     };
 
+    OnBoard.prototype.atari = function() {
+      return bitsToPositions(this._atari());
+    };
+
+    OnBoard.prototype._atari = function() {
+      var result, s, strings, _j, _len1;
+      result = 0;
+      strings = [].concat.apply([], this.strings());
+      for (_j = 0, _len1 = strings.length; _j < _len1; _j++) {
+        s = strings[_j];
+        if (this.numOfLibertiesOf(s) === 1) {
+          result |= s;
+        }
+      }
+      return result;
+    };
+
     OnBoard.prototype.copy = function() {
       return new OnBoard(this.black, this.white);
     };
@@ -1177,7 +1194,7 @@
   };
 
   showOnBoard = function(board, effect, callback) {
-    var $intersection, blacks, deferred, deferredes, p, place, whites, x, y, _l, _m, _ref5;
+    var $intersection, ataris, blacks, deferred, deferredes, p, place, whites, x, y, _l, _m, _ref5;
     if (effect == null) {
       effect = false;
     }
@@ -1191,50 +1208,72 @@
     effectをtrueにすると、今の状態からエフェクト入りで盤を変更。
      */
     if (board == null) {
-      $('.intersection').removeClass('black white half-opacity');
+      $('.intersection').removeClass('black white half-opacity beat');
       return;
     }
     _ref5 = board.deployment(), blacks = _ref5[0], whites = _ref5[1];
+    ataris = board.atari();
     deferredes = [];
     for (x = _l = 0; 0 <= BOARD_SIZE ? _l < BOARD_SIZE : _l > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_l : --_l) {
       for (y = _m = 0; 0 <= BOARD_SIZE ? _m < BOARD_SIZE : _m > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_m : --_m) {
         p = [x, y];
         $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * BOARD_SIZE) + ")");
-        place = function(blackOrWhite) {
+        place = function(blackOrWhite, beat) {
           var deferred;
           if (effect && ((!$intersection.hasClass(blackOrWhite)) || ($intersection.hasClass('half-opacity')))) {
             deferred = $.Deferred();
             deferredes.push(deferred);
             $intersection.one($s.vendor.animationend, function() {
-              $(this).removeClass('shake');
+              var $this;
+              $this = $(this);
+              $this.removeClass('shake');
+              if (beat) {
+                $this.addClass('beat');
+              } else {
+                $this.removeClass('beat');
+              }
               return deferred.resolve();
             });
             return $intersection.removeClass('half-opacity').addClass("" + blackOrWhite + " shake");
           } else {
-            return $intersection.removeClass('white half-opacity').addClass(blackOrWhite);
+            $intersection.removeClass('black white half-opacity').addClass(blackOrWhite);
+            if (beat) {
+              return $intersection.addClass('beat');
+            } else {
+              return $intersection.removeClass('beat');
+            }
           }
         };
         if (blacks.some(function(e) {
           return e.isEqualTo(p);
         })) {
-          place('black');
+          place('black', ataris.some(function(e) {
+            return e.isEqualTo(p);
+          }));
         } else if (whites.some(function(e) {
           return e.isEqualTo(p);
         })) {
-          place('white');
+          place('white', ataris.some(function(e) {
+            return e.isEqualTo(p);
+          }));
         } else {
           if (effect && ($intersection.hasClass('black') || ($intersection.hasClass('white')))) {
             deferred = $.Deferred();
             deferredes.push(deferred);
+            $intersection.removeClass('beat');
             $intersection.one($s.vendor.transitionend, (function(deferred) {
               return function() {
                 $(this).removeClass('black white rise');
                 return deferred.resolve();
               };
             })(deferred));
-            $intersection.addClass('rise');
+            setTimeout((function($intersection) {
+              return function() {
+                return $intersection.addClass('rise');
+              };
+            })($intersection), 0);
           } else {
-            $intersection.removeClass('white black half-opacity');
+            $intersection.removeClass('white black half-opacity beat');
           }
         }
       }
@@ -1460,6 +1499,7 @@
         return waitForUserPlay();
       } else {
         return showOnBoard(board, true, function() {
+          console.log('pass1');
           currentIndex += 1;
           return computerPlay(board);
         });
@@ -1552,7 +1592,7 @@
     showOnBoard(expected.history[currentIndex]);
     return setTimeout((function() {
       return $('#select-modal').modal('show');
-    }), 3000);
+    }), 0);
   });
 
   $('#play-white, #play-black').on('click', function() {

@@ -33,6 +33,25 @@
 }
 @-webkit-keyframes blink { .blink() }
 
+.beat() {
+     0% {
+       -webkit-transform: scale(1.1);
+       transform: scale(1.1);
+     }
+     50% {
+       -webkit-transform: scale(0.8);
+       transform: scale(0.8);
+     }
+     100% {
+       -webkit-transform: scale(1);
+       transform: scale(1);
+     }
+}
+
+@-webkit-keyframes beat { .beat() }
+@keyframes beat { .beat() }
+
+
 /* modifying bootstrap */
 .modal {
 	width: (@width * 540 / 640);
@@ -126,14 +145,18 @@ h1 {
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: contain;
-    .animation-duration(0.5s);
-    .animation-iteration-count(1);
-    .animation-timing-function(linear);
 	.transform(translateY(0%));
 }
 
 .intersection.shake {
+    .animation-duration(0.5s);
+    .animation-iteration-count(1);
+    .animation-timing-function(linear);
     .animation-name(shake);
+}
+
+.intersection.beat {
+    .animation(beat 1s linear infinite);
 }
 
 .intersection.rise {
@@ -148,12 +171,51 @@ h1 {
 	opacity: 0.5
 }
 
-.intersection.black {
-	background-image: url('images/black.png');
+.intersection.black, .intersection.white {
+    position: relative;
+    opacity: 0.8;
+}
+.intersection.black:before, .intersection.black:after, .intersection.white:before, .intersection.white:after {
+    position: absolute;
+    content: "";
+    left: 50%;
+    top: 20%;
+    width: 50%;
+    height: 72%;
+    background: red;
+    -moz-border-radius: 50% 50% 0 0;
+    border-radius: 50% 50% 0 0;
+    border: solid 1px black;
+    border-left: none;
+    -webkit-transform: rotate(-45deg);
+       -moz-transform: rotate(-45deg);
+        -ms-transform: rotate(-45deg);
+         -o-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+    -webkit-transform-origin: 0 100%;
+       -moz-transform-origin: 0 100%;
+        -ms-transform-origin: 0 100%;
+         -o-transform-origin: 0 100%;
+            transform-origin: 0 100%;
+}
+.intersection.black:after, .intersection.white:after {
+    left: 0;
+    -webkit-transform: rotate(45deg);
+       -moz-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+         -o-transform: rotate(45deg);
+            transform: rotate(45deg);
+    -webkit-transform-origin: 100% 100%;
+       -moz-transform-origin: 100% 100%;
+        -ms-transform-origin: 100% 100%;
+         -o-transform-origin: 100% 100%;
+            transform-origin :100% 100%;
 }
 
-.intersection.white {
-	background-image: url('images/white.png');
+.intersection.white:before, .intersection.white:after {
+    background: pink;
+    border: solid 1px white;
+    border-left: none;
 }
 
 #manual {

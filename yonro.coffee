@@ -151,6 +151,7 @@ userPlayAndResponse = (position) ->
             waitForUserPlay()
         else
             showOnBoard board, true, ->
+                console.log 'pass1'
                 currentIndex += 1
                 computerPlay board
     else
@@ -225,7 +226,7 @@ $('#start-stop').on 'click', ->
         history: [board]
     currentIndex = 0
     showOnBoard expected.history[currentIndex]
-    setTimeout (-> $('#select-modal').modal 'show'), 3000
+    setTimeout (-> $('#select-modal').modal 'show'), 0, #3000
 
 $('#play-white, #play-black').on 'click', ->
     $('#start-stop').attr 'disabled', 'disabled'

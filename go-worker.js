@@ -709,6 +709,23 @@
       });
     };
 
+    OnBoard.prototype.atari = function() {
+      return bitsToPositions(this._atari());
+    };
+
+    OnBoard.prototype._atari = function() {
+      var result, s, strings, _j, _len1;
+      result = 0;
+      strings = [].concat.apply([], this.strings());
+      for (_j = 0, _len1 = strings.length; _j < _len1; _j++) {
+        s = strings[_j];
+        if (this.numOfLibertiesOf(s) === 1) {
+          result |= s;
+        }
+      }
+      return result;
+    };
+
     OnBoard.prototype.copy = function() {
       return new OnBoard(this.black, this.white);
     };

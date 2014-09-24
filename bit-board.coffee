@@ -406,6 +406,14 @@ class OnBoard
             i = interiorOf r
             (i & opponent) == i
 
+    atari: ->
+        bitsToPositions @_atari()
+
+    _atari: ->
+        result = 0
+        strings = [].concat.apply [], @strings()
+        result |= s for s in strings when @numOfLibertiesOf(s) == 1
+        result
 
     # 操作メソッド
 
