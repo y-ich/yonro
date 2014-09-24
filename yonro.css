@@ -238,7 +238,6 @@ h1 {
 }
 .intersection.black,
 .intersection.white {
-  position: relative;
   opacity: 0.8;
 }
 .intersection.black:before,
@@ -252,6 +251,7 @@ h1 {
   width: 50%;
   height: 72%;
   background: red;
+  background: -webkit-gradient(linear, left top, left center, from(#ffffff), to(#ff0000));
   -moz-border-radius: 50% 50% 0 0;
   border-radius: 50% 50% 0 0;
   border: solid 1px black;
@@ -284,7 +284,8 @@ h1 {
 .intersection.white:before,
 .intersection.white:after {
   background: pink;
-  border: solid 1px white;
+  background: -webkit-gradient(linear, left top, left center, from(#ffffff), to(#ffc0cb));
+  border: solid 2px pink;
   border-left: none;
 }
 #manual {
