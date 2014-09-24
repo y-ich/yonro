@@ -7,6 +7,14 @@ userStone = BLACK
 expected = null
 currentIndex = 0
 
+if localStorage['yonro']?
+    settings = JSON.parse localStorage['yonro']
+    $('#music-off').prop 'checked', settings['music-off']
+
+saveSettings = ->
+    localStorage['yonro'] = JSON.stringify
+        'music-off': $('#music-off').prop 'checked'
+
 try
     document.createEvent("TouchEvent");
     if window.Touch? and (typeof window.ontouchstart) != 'undefined'
@@ -26,6 +34,7 @@ bgm =
     element: $('#bgm')[0]
     state: 'stop'
     play: ->
+        return if $('#music-off').prop('checked')
         bgm.element.volume = 0.1
         bgm.element.play()
         bgm.state = 'play'
@@ -251,3 +260,10 @@ $('#resign').on 'click', ->
     openAndCloseModal 'end-modal', ->
         $('#start-stop').removeAttr 'disabled'
         $('#pass, #resign').attr 'disabled', 'disabled'
+
+$('#music-off').on 'change', ->
+    if $(this).prop('checked')
+        bgm.pause()
+    else if $('#start-stop').prop 'disabled'
+        bgm.play()
+    saveSettings()

@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bgm, bitsToPositions, bitsToString, boardsToString, borderOf, cache, cancelWaiting, captured, check, checkHistory, compare, computerPlay, countBits, currentIndex, decomposeToStrings, e, endGame, evalUntilDepth, evaluate, expected, interiorOf, onlySuicide, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, root, showOnBoard, stringOf, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
+  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bgm, bitsToPositions, bitsToString, boardsToString, borderOf, cache, cancelWaiting, captured, check, checkHistory, compare, computerPlay, countBits, currentIndex, decomposeToStrings, e, endGame, evalUntilDepth, evaluate, expected, interiorOf, onlySuicide, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, root, saveSettings, settings, showOnBoard, stringOf, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -1314,6 +1314,17 @@
 
   currentIndex = 0;
 
+  if (localStorage['yonro'] != null) {
+    settings = JSON.parse(localStorage['yonro']);
+    $('#music-off').prop('checked', settings['music-off']);
+  }
+
+  saveSettings = function() {
+    return localStorage['yonro'] = JSON.stringify({
+      'music-off': $('#music-off').prop('checked')
+    });
+  };
+
   try {
     document.createEvent("TouchEvent");
     if ((window.Touch != null) && (typeof window.ontouchstart) !== 'undefined') {
@@ -1336,6 +1347,9 @@
     element: $('#bgm')[0],
     state: 'stop',
     play: function() {
+      if ($('#music-off').prop('checked')) {
+        return;
+      }
       bgm.element.volume = 0.1;
       bgm.element.play();
       return bgm.state = 'play';
@@ -1634,6 +1648,15 @@
       $('#start-stop').removeAttr('disabled');
       return $('#pass, #resign').attr('disabled', 'disabled');
     });
+  });
+
+  $('#music-off').on('change', function() {
+    if ($(this).prop('checked')) {
+      bgm.pause();
+    } else if ($('#start-stop').prop('disabled')) {
+      bgm.play();
+    }
+    return saveSettings();
   });
 
 }).call(this);
