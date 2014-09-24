@@ -1332,6 +1332,8 @@
     element: $('#bgm')[0],
     state: 'stop',
     play: function() {
+      bgm.element.volume = 0.1;
+      bgm.element.play();
       return bgm.state = 'play';
     },
     pause: function() {
@@ -1592,7 +1594,7 @@
     showOnBoard(expected.history[currentIndex]);
     return setTimeout((function() {
       return $('#select-modal').modal('show');
-    }), 0);
+    }), 3000);
   });
 
   $('#play-white, #play-black').on('click', function() {

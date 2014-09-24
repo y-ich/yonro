@@ -26,7 +26,8 @@ bgm =
     element: $('#bgm')[0]
     state: 'stop'
     play: ->
-        # bgm.element.play()
+        bgm.element.volume = 0.1
+        bgm.element.play()
         bgm.state = 'play'
     pause: ->
         bgm.element.pause()
