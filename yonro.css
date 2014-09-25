@@ -256,8 +256,14 @@ h1 {
   height: 72%;
   background: red;
   background: -webkit-gradient(linear, left top, left center, from(#ffffff), to(#ff0000));
+  background: -moz-linear-gradient(top, #ffffff 0%, #ff0000 50%);
+  background: linear-gradient(to bottom, #ffffff 0%, #ff0000 50%);
+  -webkit-border-radius: 50% 50% 0 0;
   -moz-border-radius: 50% 50% 0 0;
   border-radius: 50% 50% 0 0;
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
   border: solid 1px black;
   border-left: none;
   -webkit-transform: rotate(-45deg);
@@ -289,6 +295,8 @@ h1 {
 .intersection.white:after {
   background: pink;
   background: -webkit-gradient(linear, left top, left center, from(#ffffff), to(#ffc0cb));
+  background: -moz-linear-gradient(top, #ffffff 0%, #ffc0cb 50%);
+  background: linear-gradient(to bottom, #ffffff 0%, #ffc0cb 50%);
   border: solid 2px pink;
   border-left: none;
 }

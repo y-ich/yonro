@@ -179,6 +179,7 @@ h1 {
 .intersection.black, .intersection.white {
     opacity: 0.8;
 }
+
 .intersection.black:before, .intersection.black:after, .intersection.white:before, .intersection.white:after {
     position: absolute;
     content: "";
@@ -188,38 +189,26 @@ h1 {
     height: 72%;
     background: red;
     background: -webkit-gradient(linear, left top, left center, from(white), to(red));
-    -moz-border-radius: 50% 50% 0 0;
-    border-radius: 50% 50% 0 0;
+    background: -moz-linear-gradient(top, white 0%, red 50%);
+    background: linear-gradient(to bottom, white 0%, red 50%);
+    .border-radius(50% 50% 0 0);
     border: solid 1px black;
     border-left: none;
-    -webkit-transform: rotate(-45deg);
-       -moz-transform: rotate(-45deg);
-        -ms-transform: rotate(-45deg);
-         -o-transform: rotate(-45deg);
-            transform: rotate(-45deg);
-    -webkit-transform-origin: 0 100%;
-       -moz-transform-origin: 0 100%;
-        -ms-transform-origin: 0 100%;
-         -o-transform-origin: 0 100%;
-            transform-origin: 0 100%;
+    .transform(rotate(-45deg));
+    .transform-origin(0 100%);
 }
+
 .intersection.black:after, .intersection.white:after {
     left: 0;
-    -webkit-transform: rotate(45deg);
-       -moz-transform: rotate(45deg);
-        -ms-transform: rotate(45deg);
-         -o-transform: rotate(45deg);
-            transform: rotate(45deg);
-    -webkit-transform-origin: 100% 100%;
-       -moz-transform-origin: 100% 100%;
-        -ms-transform-origin: 100% 100%;
-         -o-transform-origin: 100% 100%;
-            transform-origin :100% 100%;
+    .transform(rotate(45deg));
+    .transform-origin(100% 100%);
 }
 
 .intersection.white:before, .intersection.white:after {
     background: pink;
     background: -webkit-gradient(linear, left top, left center, from(white), to(pink));
+    background: -moz-linear-gradient(top, white 0%, pink 50%);
+    background: linear-gradient(to bottom, white 0%, pink 50%);
     border: solid 2px pink;
     border-left: none;
 }
