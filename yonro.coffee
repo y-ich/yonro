@@ -39,8 +39,9 @@ bgm =
         bgm.element.play()
         bgm.state = 'play'
     pause: ->
-        bgm.element.pause()
-        bgm.state = 'pause'
+        if bgm.state is 'play'
+            bgm.element.pause()
+            bgm.state = 'pause'
     stop: ->
         bgm.element.pause()
         bgm.state = 'stop'

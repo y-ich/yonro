@@ -1355,8 +1355,10 @@
       return bgm.state = 'play';
     },
     pause: function() {
-      bgm.element.pause();
-      return bgm.state = 'pause';
+      if (bgm.state === 'play') {
+        bgm.element.pause();
+        return bgm.state = 'pause';
+      }
     },
     stop: function() {
       bgm.element.pause();

@@ -19,9 +19,12 @@
         <button type="button" id="start-stop" class="btn">スタート</button>
         <button type="button" id="pass" class="btn" disabled>パス</button>
         <button type="button" id="resign" class="btn" disabled>投了</button>
-        <div id="evaluating">考え中</div>
+        <label>
+              <input type="checkbox" id="music-off">音楽をオフ
+        </label>
     </div>
     <div class="container">
+        <div id="evaluating">考え中</div>
         <div class="board-bg">
             <div id="board" class="board">
                 <div class="intersection"></div>
@@ -41,9 +44,6 @@
                 <div class="intersection"></div>
                 <div class="intersection"></div>
             </div>
-        </div>
-        <div style="text-align: right;">
-              <input type="checkbox" id="music-off">音楽をオフ
         </div>
     </div>
     <div id="select-modal" class="modal hide fade">
