@@ -171,6 +171,10 @@ h1 {
   font-size: 15px;
   line-height: 15px;
 }
+.container {
+  position: relative;
+  width: 320px;
+}
 .board-bg {
   background-image: url('images/heartLamigoBan.png');
   background-size: contain;
