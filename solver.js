@@ -85,7 +85,7 @@
   wEvaluate = function(history, next, success, error, timeout) {
     var timeid, worker;
     if (timeout == null) {
-      timeout = 30000;
+      timeout = 10000;
     }
 
     /*

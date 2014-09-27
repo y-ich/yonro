@@ -7,7 +7,7 @@
 responseInterval = 2000
 
 
-wEvaluate = (history, next, success, error, timeout = 30000) ->
+wEvaluate = (history, next, success, error, timeout = 10000) ->
     ###
     (web workerを使って)局面を評価する。
 
