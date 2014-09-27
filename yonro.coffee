@@ -26,9 +26,7 @@ catch
 window.printExpected = ->
     # 最初からの手順と読み筋を表示する
     # デバッグ用関数
-    console.log expected.history.map((e)->e.toString()).join('\n')
-    console.log expected.value
-
+    console.log expected.toString()
 
 bgm =
     element: $('#bgm')[0]

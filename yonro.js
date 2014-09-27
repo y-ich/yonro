@@ -1165,20 +1165,18 @@
     timeid = null;
     worker = new Worker('go-worker.js');
     worker.onmessage = function(event) {
+      var result;
       $('#evaluating').css('display', 'none');
       clearTimeout(timeid);
       if (event.data.error != null) {
         console.log(event.data.error);
         return error(event.data.error);
       } else {
-        console.log(event.data.value);
-        console.log(event.data.history);
-        return success({
-          value: event.data.value,
-          history: event.data.history.map(function(e) {
-            return OnBoard.fromString(e);
-          })
-        });
+        result = new EvaluationResult(event.data.value, event.data.history.map(function(e) {
+          return OnBoard.fromString(e);
+        }));
+        console.log(result.toString());
+        return success(result);
       }
     };
     worker.postMessage({
@@ -1337,10 +1335,7 @@
   }
 
   window.printExpected = function() {
-    console.log(expected.history.map(function(e) {
-      return e.toString();
-    }).join('\n'));
-    return console.log(expected.value);
+    return console.log(expected.toString());
   };
 
   bgm = {

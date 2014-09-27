@@ -26,11 +26,9 @@ wEvaluate = (history, next, success, error, timeout = 30000) ->
             console.log event.data.error
             error event.data.error
         else
-            console.log event.data.value
-            console.log event.data.history
-            success
-                value: event.data.value
-                history: event.data.history.map (e) -> OnBoard.fromString e
+            result = new EvaluationResult event.data.value, event.data.history.map (e) -> OnBoard.fromString e
+            console.log result.toString()
+            success result
     worker.postMessage
         history: history.map (e) -> e.toString()
         next: next

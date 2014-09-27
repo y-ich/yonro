@@ -258,9 +258,9 @@ h1 {
   background: -webkit-gradient(linear, left top, left center, from(#ffffff), to(#ff0000));
   background: -moz-linear-gradient(top, #ffffff 0%, #ff0000 50%);
   background: linear-gradient(to bottom, #ffffff 0%, #ff0000 50%);
-  -webkit-border-radius: 50% 50% 0 0;
-  -moz-border-radius: 50% 50% 0 0;
-  border-radius: 50% 50% 0 0;
+  -webkit-border-radius: 35px 35px 0 0;
+  -moz-border-radius: 35px 35px 0 0;
+  border-radius: 35px 35px 0 0;
   -webkit-background-clip: padding-box;
   -moz-background-clip: padding;
   background-clip: padding-box;
