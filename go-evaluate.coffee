@@ -41,96 +41,6 @@ cache =
             return new EvaluationResult e.result.value, e.result.history.slice index + 1
         null
 
-checkHistory = (history) ->
-    historyStrings = [
-        '''
-         XOO
-        XO O
-        XXOO
-           O
-        '''
-        '''
-         XOO
-        XO O
-        XXOO
-         O O
-        '''
-        '''
-         XOO
-        X XO
-        XXOO
-         O O
-        '''
-        '''
-         XOO
-        X XO
-        XXOO
-        OO O
-        '''
-        '''
-         XOO
-        XXXO
-        XXOO
-        OO O
-        '''
-        '''
-        O OO
-           O
-          OO
-        OO O
-        '''
-        '''
-        O OO
-         X O
-          OO
-        OO O
-        '''
-        '''
-        OOOO
-         X O
-          OO
-        OO O
-        '''
-        '''
-        OOOO
-         X O
-         XOO
-        OO O
-        '''
-        '''
-        OOOO
-        OX O
-         XOO
-        OO O
-        '''
-        '''
-        OOOO
-        OX O
-        XXOO
-        OO O
-        '''
-        '''
-        OOOO
-        OX O
-        XXOO
-        OOOO
-        '''
-        '''
-            
-         XX 
-        XX  
-            
-        '''
-        '''
-            
-         XX 
-        XX  
-           O
-        '''
-    ]
-    history.every (e, i) ->
-        e.isEqualTo historyStrings[i]
-
 evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
@@ -140,6 +50,7 @@ evaluate = (history, next) ->
         result = evalUntilDepth history, next, depth
         console.log result.toString() if DEBUG
         unless isNaN result.value
+            console.log "depth: #{depth}"
             return result
     result
 
@@ -157,10 +68,11 @@ compare = (a, b, stone) ->
     ###
 
     opponent = opponentOf stone
+    ###
     candidates = - a.candidates(opponent).length + b.candidates(opponent).length
     if candidates != 0
         return candidates
-
+    ###
     [aBlack, aWhite] = a.strings()
     [bBlack, bWhite] = b.strings()
     switch stone

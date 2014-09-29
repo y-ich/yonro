@@ -128,59 +128,6 @@ testEvaluate = (kernel) ->
                     """
                 result = evaluate [board], WHITE
                 assert.equal result.value, 2
-            it "黒猫のヨンロ1", ->
-                board = OnBoard.fromString """
-                     O O
-                     O O
-                    OXXO
-                      XO
-                    """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
-            it "黒猫のヨンロ2", ->
-                board = OnBoard.fromString """
-                    XXXX
-                        
-                    OX O
-                    OOOO
-                    """
-                result = evaluate([board], BLACK)
-                assert.equal result.value - board.score() > 0, true
-            it "黒猫のヨンロ3", ->
-                board = OnBoard.fromString """
-                     O O
-                    OO  
-                    O X 
-                    OO O
-                    """
-                result = evaluate([board], BLACK)
-                assert.equal result.value - board.score() > 0, true
-            it "黒猫のヨンロ4", ->
-                board = OnBoard.fromString """
-                     XXO
-                    OOX 
-                       O
-                    OO O
-                    """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
-            it "黒猫のヨンロ5", ->
-                board = OnBoard.fromString """
-                    X XO
-                    OX O
-                    OOXO
-                      OO
-                    """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
-            it "黒猫のヨンロ6", ->
-                board = OnBoard.fromString """
-                     XOO
-                     O O
-                    XXOO
-                       O
-                    """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
-            it "黒猫のヨンロ7", ->
-                board = OnBoard.fromString " XX \n XO \n XO \n OO "
-                assert.equal evaluate([board], BLACK).value, 1
             it "メモ化の際のバグ確認", ->
                 board0 = OnBoard.fromString """
                      XO 
@@ -231,6 +178,60 @@ testEvaluate = (kernel) ->
                     OXXO
                     '''
                 assert.equal evaluate([board], BLACK).value, MAX_SCORE
+        describe.only '黒猫のヨンロ', ->
+            it "1", ->
+                board = OnBoard.fromString """
+                     O O
+                     O O
+                    OXXO
+                      XO
+                    """
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+            it "2", ->
+                board = OnBoard.fromString """
+                    XXXX
+                        
+                    OX O
+                    OOOO
+                    """
+                result = evaluate([board], BLACK)
+                assert.equal result.value - board.score() > 0, true
+            it "3", ->
+                board = OnBoard.fromString """
+                     O O
+                    OO  
+                    O X 
+                    OO O
+                    """
+                result = evaluate([board], BLACK)
+                assert.equal result.value - board.score() > 0, true
+            it "4", ->
+                board = OnBoard.fromString """
+                     XXO
+                    OOX 
+                       O
+                    OO O
+                    """
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+            it "5", ->
+                board = OnBoard.fromString """
+                    X XO
+                    OX O
+                    OOXO
+                      OO
+                    """
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+            it "6", ->
+                board = OnBoard.fromString """
+                     XOO
+                     O O
+                    XXOO
+                       O
+                    """
+                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+            it "7", ->
+                board = OnBoard.fromString " XX \n XO \n XO \n OO "
+                assert.equal evaluate([board], BLACK).value, 1
         describe.skip "長手数問題", ->
             it "3. should return ", -> #解けない
                 board = OnBoard.fromString '''

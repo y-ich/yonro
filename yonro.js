@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bgm, bitsToPositions, bitsToString, boardsToString, borderOf, cache, cancelWaiting, captured, check, checkHistory, compare, computerPlay, countBits, currentIndex, decomposeToStrings, e, endGame, evalUntilDepth, evaluate, expected, interiorOf, onlySuicide, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, root, saveSettings, settings, showOnBoard, stringOf, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
+  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bgm, bitsToPositions, bitsToString, boardsToString, borderOf, cache, cancelWaiting, captured, check, compare, computerPlay, countBits, currentIndex, decomposeToStrings, e, endGame, evalUntilDepth, evaluate, expected, interiorOf, onlySuicide, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, root, saveSettings, settings, showOnBoard, stringOf, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -875,14 +875,6 @@
     }
   };
 
-  checkHistory = function(history) {
-    var historyStrings;
-    historyStrings = [' XOO\nXO O\nXXOO\n   O', ' XOO\nXO O\nXXOO\n O O', ' XOO\nX XO\nXXOO\n O O', ' XOO\nX XO\nXXOO\nOO O', ' XOO\nXXXO\nXXOO\nOO O', 'O OO\n   O\n  OO\nOO O', 'O OO\n X O\n  OO\nOO O', 'OOOO\n X O\n  OO\nOO O', 'OOOO\n X O\n XOO\nOO O', 'OOOO\nOX O\n XOO\nOO O', 'OOOO\nOX O\nXXOO\nOO O', 'OOOO\nOX O\nXXOO\nOOOO', '    \n XX \nXX  \n    ', '    \n XX \nXX  \n   O'];
-    return history.every(function(e, i) {
-      return e.isEqualTo(historyStrings[i]);
-    });
-  };
-
   evaluate = function(history, next) {
     var depth, result, _k;
     cache.clear();
@@ -895,6 +887,7 @@
         console.log(result.toString());
       }
       if (!isNaN(result.value)) {
+        console.log("depth: " + depth);
         return result;
       }
     }
@@ -914,12 +907,14 @@
     4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
     5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
      */
-    var aBlack, aWhite, bBlack, bWhite, candidates, dame, diff, opponent, score, strings, _ref4, _ref5;
+    var aBlack, aWhite, bBlack, bWhite, dame, diff, opponent, score, strings, _ref4, _ref5;
     opponent = opponentOf(stone);
-    candidates = -a.candidates(opponent).length + b.candidates(opponent).length;
-    if (candidates !== 0) {
-      return candidates;
-    }
+
+    /*
+    candidates = - a.candidates(opponent).length + b.candidates(opponent).length
+    if candidates != 0
+        return candidates
+     */
     _ref4 = a.strings(), aBlack = _ref4[0], aWhite = _ref4[1];
     _ref5 = b.strings(), bBlack = _ref5[0], bWhite = _ref5[1];
     switch (stone) {
