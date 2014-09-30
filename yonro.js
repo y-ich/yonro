@@ -221,15 +221,17 @@
   decomposeToStrings = function(bitBoard) {
 
     /* 盤上の石をストリングに分解する。 */
-    var bit, result, _j, _len1;
+    var bit, checked, result, string, _j, _len1;
     result = [];
+    checked = 0;
     for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
       bit = _BITS[_j];
-      if ((bitBoard & bit) && result.every(function(b) {
-        return (b & bit) === 0;
-      })) {
-        result.push(stringOf(bitBoard, bit));
+      if (!(bitBoard & ~checked & bit)) {
+        continue;
       }
+      string = stringOf(bitBoard, bit);
+      result.push(string);
+      checked |= string;
     }
     return result;
   };

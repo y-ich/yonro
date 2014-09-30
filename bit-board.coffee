@@ -101,8 +101,11 @@ captured = (objective, subjective) ->
 decomposeToStrings = (bitBoard) ->
     ### 盤上の石をストリングに分解する。###
     result = []
-    for bit in _BITS when (bitBoard & bit) and result.every((b) -> (b & bit) == 0)
-        result.push stringOf bitBoard, bit
+    checked = 0
+    for bit in _BITS when bitBoard & ~ checked & bit
+        string = stringOf bitBoard, bit
+        result.push string
+        checked |= string
     result
 
 bitsToString = (bitBoard) ->
