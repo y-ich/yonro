@@ -77,7 +77,7 @@
 
 
   /*
-  碁カーネル(ビッとボードバージョン)
+  碁カーネル(ビットボードバージョン)
   中国ルールを採用。ただし自殺手は着手禁止とする。
    */
 
@@ -457,8 +457,11 @@
 
     OnBoard.prototype.candidates = function(stone) {
 
-      /* stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。 */
-      var bitPos, board, result, _j, _len1;
+      /*
+      stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。
+      合法かつ自分の眼ではない座標がない場合、生きている石の目を埋める。
+       */
+      var bitPos, board, c, closures, enclosedRegion, eyes, result, _j, _k, _l, _len1, _len2, _len3;
       result = [];
       for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
         bitPos = _BITS[_j];
@@ -468,6 +471,24 @@
         board = this.copy();
         if (board._place(stone, bitPos)) {
           result.push(board);
+        }
+      }
+      if (result.length > 0) {
+        return result;
+      }
+      closures = this.closureAndRegionsOf(stone);
+      enclosedRegion = this.enclosedRegionOf(stone);
+      for (_k = 0, _len2 = closures.length; _k < _len2; _k++) {
+        c = closures[_k];
+        eyes = decomposeToStrings(c & enclosedRegion);
+        if (eyes.length > 2) {
+          for (_l = 0, _len3 = eyes.length; _l < _len3; _l++) {
+            e = eyes[_l];
+            board = this.copy();
+            if (board._place(stone, e)) {
+              result.push(board);
+            }
+          }
         }
       }
       return result;
@@ -541,7 +562,18 @@
     OnBoard.prototype.strings = function() {
 
       /* 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 */
-      return [decomposeToStrings(this.black), decomposeToStrings(this.white)];
+      return [this.stringsOf(BLACK), this.stringsOf(WHITE)];
+    };
+
+    OnBoard.prototype.stringsOf = function(stone) {
+      return decomposeToStrings((function() {
+        switch (stone) {
+          case BLACK:
+            return this.black;
+          case WHITE:
+            return this.white;
+        }
+      }).call(this));
     };
 
     OnBoard.prototype.isTouchedBetween = function(a, b) {
@@ -690,8 +722,8 @@
       return result;
     };
 
-    OnBoard.prototype.enclosedRegionsOf = function(stone) {
-      var opponent, regions, self;
+    OnBoard.prototype.enclosedRegionOf = function(stone) {
+      var interiors, opponent, regions, self;
       switch (stone) {
         case BLACK:
           self = this.black;
@@ -701,12 +733,23 @@
           self = this.white;
           opponent = this.black;
       }
-      regions = decomposeToStrings(~self & ON_BOARD);
-      return regions.filter(function(r) {
-        var i;
-        i = interiorOf(r);
-        return (i & opponent) === i;
-      });
+      regions = ~self & ON_BOARD;
+      interiors = interiorOf(regions);
+      return regions & ~stringOf(regions, interiors & ~opponent);
+    };
+
+    OnBoard.prototype.closureAndRegionsOf = function(stone) {
+      var neighoring, region;
+      region = this.enclosedRegionOf(stone);
+      neighoring = stringOf(((function() {
+        switch (stone) {
+          case BLACK:
+            return this.black;
+          case WHITE:
+            return this.white;
+        }
+      }).call(this)), adjacent(region));
+      return decomposeToStrings(neighoring | region);
     };
 
     OnBoard.prototype.atari = function() {
@@ -825,7 +868,7 @@
     _ref3 = require('./go-common.coffee'), BLACK = _ref3.BLACK, WHITE = _ref3.WHITE, EMPTY = _ref3.EMPTY, MAX_SCORE = _ref3.MAX_SCORE, opponentOf = _ref3.opponentOf, boardsToString = _ref3.boardsToString;
   }
 
-  DEBUG = false;
+  DEBUG = true;
 
   check = function(next, board) {
     return next === BLACK && board.isEqualTo(' X  \nX X \nXXOO\n OX ');
@@ -876,13 +919,15 @@
   };
 
   evaluate = function(history, next) {
-    var depth, result, _k;
+    var depth, result, trueEnd, _k, _ref4;
     cache.clear();
-    for (depth = _k = 2; _k <= 30; depth = _k += 1) {
+    result = evalUntilDepth(history, next, 0);
+    trueEnd = !isNaN(result.value);
+    for (depth = _k = _ref4 = (trueEnd ? 30 : 2); _k <= 30; depth = _k += 1) {
       if (DEBUG) {
         console.log("depth: " + depth);
       }
-      result = evalUntilDepth(history, next, depth);
+      result = evalUntilDepth(history, next, depth, trueEnd);
       if (DEBUG) {
         console.log(result.toString());
       }
@@ -992,8 +1037,11 @@
 
   })();
 
-  evalUntilDepth = function(history, next, depth, alpha, beta) {
+  evalUntilDepth = function(history, next, depth, trueEnd, alpha, beta) {
     var b, board, c, candidates, empties, eyes, flag, i, nan, nodes, notPossibleToIterate, opponent, parity, result, updated, _k, _l, _len2, _len3;
+    if (trueEnd == null) {
+      trueEnd = false;
+    }
     if (alpha == null) {
       alpha = new EvaluationResult(-Infinity, []);
     }
@@ -1017,13 +1065,15 @@
     if ((board === history[history.length - 2]) && (board === history[history.length - 3])) {
       return new EvaluationResult(board.score(), history);
     }
-    eyes = board.eyes();
-    empties = board.numOf(EMPTY);
-    if (eyes[0].length === empties || (board.numOf(WHITE) === 0 && eyes[0].length > 0)) {
-      return new EvaluationResult(MAX_SCORE, history);
-    }
-    if (eyes[1].length === empties || (board.numOf(BLACK) === 0 && eyes[1].length > 0)) {
-      return new EvaluationResult(-MAX_SCORE, history);
+    if (!trueEnd) {
+      eyes = board.eyes();
+      empties = board.numOf(EMPTY);
+      if (eyes[0].length === empties || (board.numOf(WHITE) === 0 && eyes[0].length > 0)) {
+        return new EvaluationResult(MAX_SCORE, history);
+      }
+      if (eyes[1].length === empties || (board.numOf(BLACK) === 0 && eyes[1].length > 0)) {
+        return new EvaluationResult(-MAX_SCORE, history);
+      }
     }
     if (depth <= 0) {
       return new EvaluationResult(NaN, history);
@@ -1059,7 +1109,7 @@
       case BLACK:
         for (i = _k = 0, _len2 = nodes.length; _k < _len2; i = ++_k) {
           b = nodes[i];
-          result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
+          result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
           if (flag) {
             console.log("b" + i + " depth" + depth);
             console.log("alpha" + alpha.value + ", beta" + beta.value);
@@ -1095,7 +1145,7 @@
         for (i = _l = 0, _len3 = nodes.length; _l < _len3; i = ++_l) {
           b = nodes[i];
           eyes = b.eyes();
-          result = evalUntilDepth(history.concat(b), opponent, depth - 1, alpha, beta);
+          result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
           if (flag) {
             console.log("b" + i + " depth" + depth);
             console.log("alpha" + alpha.value + ", beta" + beta.value);
