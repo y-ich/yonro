@@ -54,7 +54,7 @@ window.onpageshow = -> bgm.play() if bgm.state is 'pause'
 
 endGame = ->
     bgm.stop()
-    score = expected.value - expected.history[0].score()
+    score = expected.value
     alert if score == 0
             '引き分け'
         else if score > 0
@@ -85,11 +85,11 @@ computerPlay = (board) ->
     if expected.history[currentIndex]?.isEqualTo board # 読み筋通りなら
         if expected.history.length - 1 > currentIndex # 続きがあれば
             if not expected.history[currentIndex - 1]?.isEqualTo board # パスでない
-                score = expected.value - expected.history[0].score()
+                score = expected.value
                 score = if userStone is BLACK then -score else score
                 if score > 0
                     openAndCloseModal 'expect-modal', behaveNext
-                else if (if userStone is BLACK then -expected.value else expected.value) == -MAX_SCORE
+                else if score < 0
                     openAndCloseModal 'pessimistic-modal', behaveNext
                 else
                     setTimeout (->

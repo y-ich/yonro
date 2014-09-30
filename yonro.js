@@ -1427,7 +1427,7 @@
   endGame = function() {
     var score;
     bgm.stop();
-    score = expected.value - expected.history[0].score();
+    score = expected.value;
     alert(score === 0 ? '引き分け' : score > 0 ? "黒" + score + "目勝ち" : "白" + (-score) + "目勝ち");
     return $('#start-stop').removeAttr('disabled');
   };
@@ -1457,11 +1457,11 @@
     if ((_ref5 = expected.history[currentIndex]) != null ? _ref5.isEqualTo(board) : void 0) {
       if (expected.history.length - 1 > currentIndex) {
         if (!((_ref6 = expected.history[currentIndex - 1]) != null ? _ref6.isEqualTo(board) : void 0)) {
-          score = expected.value - expected.history[0].score();
+          score = expected.value;
           score = userStone === BLACK ? -score : score;
           if (score > 0) {
             return openAndCloseModal('expect-modal', behaveNext);
-          } else if ((userStone === BLACK ? -expected.value : expected.value) === -MAX_SCORE) {
+          } else if (score < 0) {
             return openAndCloseModal('pessimistic-modal', behaveNext);
           } else {
             return setTimeout((function() {
