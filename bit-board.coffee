@@ -256,12 +256,26 @@ class OnBoard
         @white &= ~bitPos
 
     candidates: (stone) ->
-        ### stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。 ###
+        ###
+        stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。
+        合法かつ自分の眼ではない座標がない場合、生きている石の目を埋める。
+        ###
         result = []
         for bitPos in _BITS
             continue if @_whoseEyeAt(bitPos, true) is stone
             board = @copy()
             result.push board if board._place stone, bitPos
+        return result if result.length > 0
+
+        closures = @closureAndRegionsOf stone
+        enclosedRegion = @enclosedRegionOf stone
+        for c in closures
+            eyes = decomposeToStrings c & enclosedRegion
+            if eyes.length > 2
+                # ここではeyesのそれぞれは1bitのはず。
+                for e in eyes
+                    board = @copy()
+                    result.push board if board._place stone, e
         result
 
     stringAt: (position) ->
@@ -310,7 +324,12 @@ class OnBoard
 
     strings: ->
         ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
-        [decomposeToStrings(@black), decomposeToStrings(@white)]
+        [@stringsOf(BLACK), @stringsOf(WHITE)]
+
+    stringsOf: (stone) ->
+        decomposeToStrings switch stone
+            when BLACK then @black
+            when WHITE then @white
 
     isTouchedBetween: (a, b) ->
         ### ストリングa, bが接触しているかどうか。 ###
@@ -393,7 +412,7 @@ class OnBoard
                 when WHITE then result[1].push b
         result
 
-    enclosedRegionsOf: (stone) ->
+    enclosedRegionOf: (stone) ->
         switch stone
             when BLACK
                 self = @black
@@ -401,10 +420,16 @@ class OnBoard
             when WHITE
                 self = @white
                 opponent = @black
-        regions = decomposeToStrings ~self & ON_BOARD
-        regions.filter (r) ->
-            i = interiorOf r
-            (i & opponent) == i
+        regions = ~self & ON_BOARD
+        interiors = interiorOf regions
+        regions & ~stringOf regions, interiors & ~opponent
+
+    closureAndRegionsOf: (stone) ->
+        region = @enclosedRegionOf stone
+        neighoring = stringOf (switch stone
+            when BLACK then @black
+            when WHITE then @white), adjacent region
+        decomposeToStrings neighoring | region
 
     atari: ->
         bitsToPositions @_atari()

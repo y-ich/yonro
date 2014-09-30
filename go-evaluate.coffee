@@ -8,7 +8,7 @@
 if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
 
-DEBUG = false
+DEBUG = true
 
 check = (next, board) ->
     next == BLACK and board.isEqualTo '''
@@ -45,9 +45,11 @@ evaluate = (history, next) ->
     # return evalUntilDepth history, next, 7
     # 32は盤を二回埋める深さ
     cache.clear()
-    for depth in [2..30] by 1
+    result = evalUntilDepth history, next, 0
+    trueEnd = not isNaN result.value
+    for depth in [(if trueEnd then 30 else 2)..30] by 1
         console.log "depth: #{depth}" if DEBUG
-        result = evalUntilDepth history, next, depth
+        result = evalUntilDepth history, next, depth, trueEnd
         console.log result.toString() if DEBUG
         unless isNaN result.value
             console.log "depth: #{depth}"
@@ -119,7 +121,7 @@ class EvaluationResult
         "value: #{@value}\n" +
         'history:\n' + boardsToString @history
 
-evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity, []), beta = new EvaluationResult(Infinity, [])) ->
+evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationResult(- Infinity, []), beta = new EvaluationResult(Infinity, [])) ->
     ###
     historyはOnBoardインスタンスの配列
     historyの最終局面の評価値と評価値に至る手順を返す。
@@ -134,13 +136,15 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
         console.log "depth#{depth}, alpha#{alpha.value}, beta#{beta.value}"
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
-    eyes = board.eyes()
-    empties = board.numOf EMPTY
-    if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
-        # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
-        return new EvaluationResult MAX_SCORE, history
-    if eyes[1].length == empties or (board.numOf(BLACK) == 0 and eyes[1].length > 0)
-        return new EvaluationResult -MAX_SCORE, history
+
+    if not trueEnd
+        eyes = board.eyes()
+        empties = board.numOf EMPTY
+        if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
+            # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
+            return new EvaluationResult MAX_SCORE, history
+        if eyes[1].length == empties or (board.numOf(BLACK) == 0 and eyes[1].length > 0)
+            return new EvaluationResult -MAX_SCORE, history
     if depth <= 0
         return new EvaluationResult NaN, history
 
@@ -169,7 +173,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
             for b, i in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
-                result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                result = evalUntilDepth history.concat(b), opponent, (if b is board then depth else depth - 1), trueEnd, alpha, beta
                 if flag
                     console.log "b#{i} depth#{depth}"
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
@@ -188,7 +192,7 @@ evalUntilDepth = (history, next, depth, alpha = new EvaluationResult(- Infinity,
         when WHITE
             for b, i in nodes
                 eyes = b.eyes()
-                result = evalUntilDepth history.concat(b), opponent, depth - 1, alpha, beta
+                result = evalUntilDepth history.concat(b), opponent, (if b is board then depth else depth - 1), trueEnd, alpha, beta
                 if flag
                     console.log "b#{i} depth#{depth}"
                     console.log "alpha#{alpha.value}, beta#{beta.value}"
