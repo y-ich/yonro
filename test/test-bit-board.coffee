@@ -1,6 +1,6 @@
 assert = require 'assert'
 { BLACK, WHITE, EMPTY, boardsToString } = require '../go-common.coffee'
-{ OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured, decomposeToStrings, bitsToString } = require '../bit-board.coffee'
+{ OnBoard, countBits, positionToBit, positionsToBits, adjacent, stringOf, captured, decomposeToStrings, bitsToString, interiorOf} = require '../bit-board.coffee'
 
 comparePosition = (a, b) ->
     dx = a[0] - b[0]
@@ -37,6 +37,10 @@ describe 'bit-board', ->
             it 'should return one string', ->
                 p = positionsToBits [[0, 1], [1, 0], [1,1]]
                 assert.deepEqual decomposeToStrings(stringOf p, positionsToBits [[0, 1], [1, 0]]), [p]
+        describe 'interiorOf', ->
+            it 'should return interior', ->
+                interior = interiorOf positionsToBits [[2, 0], [3, 0], [2, 1], [3, 1], [2, 2], [3, 2], [2, 3], [3, 3]]
+                assert.equal interior, positionsToBits [[3, 0], [3, 1], [3, 2], [3, 3]]
 
     describe "OnBoard", ->
         describe "constructors", ->
@@ -79,7 +83,6 @@ describe 'bit-board', ->
                 board = new OnBoard [[1,0], [2, 0], [3, 1], [3, 2], [1, 3], [2, 3], [0, 1], [0, 2]], []
                 assert.equal board.whoseEyeAt([0,0]), BLACK
             it "should return BLACK", ->
-                console.log 'problem'
                 board = new OnBoard.fromString '''
                      XX 
                     XX X
@@ -88,16 +91,24 @@ describe 'bit-board', ->
                     '''
                 assert.equal board.whoseEyeAt([2, 1]), BLACK
             it "should return null", ->
-                board = new OnBoard [[1,0], [2, 0], [3, 1], [3, 2], [1, 3], [2, 3]], []
+                board = OnBoard.fromString ' XX \n   X\n   X\n XX '
                 assert.equal board.whoseEyeAt([0,0]), null
-            it "should return no eyes yet", ->
+            it "should return black", ->
                 board = OnBoard.fromString """
                     XXXX
                     X OX
                     O XX
                     XXXX
                     """
-                assert.equal board.whoseEyeAt([1, 2]), null
+                assert.equal board.whoseEyeAt([1, 2]), BLACK
+            it.only "should return no eyes", ->
+                board = OnBoard.fromString """
+                    XXXX
+                     O O
+                    OOX 
+                     XXX
+                    """
+                assert.equal board.whoseEyeAt([0, 1]), null
         describe "candidates", ->
             it "should return candidates", ->
                 board = OnBoard.random()
@@ -135,7 +146,7 @@ describe 'bit-board', ->
                      XXX
                       XX
                     '''
-                assert.equal board.eyes()[0].length, 2
+                assert.equal board.eyes()[0].length, 1
 
         describe "place", ->
             it "should return true", ->
@@ -169,6 +180,28 @@ describe 'bit-board', ->
                         
                     '''
                 assert.equal board.isLegal(), false
+
+        describe 'enclosedRegionOf', ->
+            it "should return black enclosed region", ->
+                board = OnBoard.fromString """
+                    XXOO
+                     XO 
+                    XXOO
+                     XO 
+                    """
+                region = board.enclosedRegionOf BLACK
+                assert.equal region, positionsToBits [[0, 1], [0, 3]]
+
+        describe 'closureAndRegionsOf', ->
+            it "should return no candidates", ->
+                board = OnBoard.fromString """
+                    XXOO
+                     XO 
+                    XXOO
+                     XO 
+                    """
+                closure = board.closureAndRegionsOf BLACK
+                assert.equal closure, positionsToBits [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2], [1, 2], [0, 3], [1, 3]]
 
     describe 'combination', ->
         it "should return", ->

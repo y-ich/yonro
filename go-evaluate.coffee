@@ -7,7 +7,7 @@
 
 if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
-
+    { bitsToString } = require './bit-board.coffee'
 DEBUG = false
 
 cache =
@@ -122,7 +122,6 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
     外部関数compareが肝。
     ###
     board = history[history.length - 1]
-
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 

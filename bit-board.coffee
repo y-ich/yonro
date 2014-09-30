@@ -42,6 +42,14 @@ ON_BOARD = (->
 ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
 ###
 
+UPPER_BOARD = 0
+LOWER_BOARD = 0
+(->
+    for x in [0...BOARD_SIZE]
+        UPPER_BOARD |= positionToBit [x, 0]
+        LOWER_BOARD |= positionToBit [x, BOARD_SIZE - 1]
+)()
+
 countBits = (x) ->
     ### 32bit整数の1の数を返す ###
     x -= ((x >>> 1) & 0x55555555)
@@ -87,7 +95,8 @@ stringOf = (bitBoard, seed) ->
 
 interiorOf = (region) ->
     ### 領域の内部を返す ###
-    region & (region << BIT_BOARD_SIZE) & (region << 1) & (region >>> 1) & (region >>> BIT_BOARD_SIZE)
+    regionAndFrame = region | ~ON_BOARD
+    region & ((region << BIT_BOARD_SIZE) | UPPER_BOARD) & (regionAndFrame << 1) & (regionAndFrame >>> 1) & ((region >>> BIT_BOARD_SIZE) | LOWER_BOARD)
 
 borderOf = (region) ->
     region & ~ interiorOf region
@@ -357,7 +366,7 @@ class OnBoard
     whoseEyeAt: (position, genuine = false) ->
         @_whoseEyeAt positionToBit(position), genuine
 
-    _whoseEyeAt: (bitPos, genuine = false, checkings = 0) ->
+    _whoseEyeAt: (bitPos, genuine = false, checkings = 0, bEnclosed = null, wEnclosed = null) ->
         ###
         座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
         眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
@@ -366,44 +375,31 @@ class OnBoard
         ###
         return null if not @_isEmptyAt bitPos
 
-        emptyString = @stringOf bitPos
-        num = countBits emptyString
-        if (genuine and num > 1) or num >= 8 # 8は最小限の生きがある大きさ
-            return null
-
-        adj = adjacent emptyString
-        if adj == 0
-            stone = null
-        else if (adj & @black) is adj
+        bEnclosed ?= @enclosedRegionOf BLACK
+        if bEnclosed & bitPos
             stone = BLACK
             bitBoard = @black
-        else if (adj & @white) is adj
-            stone = WHITE
-            bitBoard = @white
-        else if not genuine
-            strings = decomposeToStrings(stringOf @white, (adj & @white))
-            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @black) == 1 and decomposeToStrings(stringOf @black, (adj & @black)).map((e) => countBits @_libertyOf(e)).every((e) -> e > 1)
-                # 囲ってる連が1つで、アタリになっていて、囲んでいる石の連がすべてアタリになっていないこと
-                return BLACK
-            strings = decomposeToStrings(stringOf @black, (adj & @black))
-            if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @white) == 1 and decomposeToStrings(stringOf @white, (adj & @white)).map((e) => countBits @_libertyOf(e)).every((e) -> e > 1)
-                return WHITE
-            stone = null
-            bitBoard = null
+            region = stringOf bEnclosed, bitPos
         else
-            stone = null
-            bitBoard = null
-        return null unless stone?
+            wEnclosed ?= @enclosedRegionOf WHITE
+            if wEnclosed & bitPos
+                stone = WHITE
+                bitBoard = @white
+                region = stringOf wEnclosed, bitPos
+            else
+                return null
+
+        return null if genuine and countBits(region) > 1
 
         # アルゴリズム
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
-        gds = decomposeToStrings stringOf bitBoard, adj
+        gds = decomposeToStrings stringOf bitBoard, adjacent region
         if gds.length == 1 or # 眼を作っている石群が1つ
-            (gds.every (gd) => # すべての連の
-                liberty = adjacent(gd) & ~bitPos
+            (gds.every (gd) =>
+                liberty = adjacent(gd) & ~region
                 return true if liberty & checkings
-                return true for b in _BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos) is stone
+                return true for b in _BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) is stone
                 false)
             stone
         else
@@ -499,5 +495,5 @@ class OnBoard
 root = exports ? if window? then window else {}
 root.OnBoard = OnBoard
 if exports?
-    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString']
+    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString', 'interiorOf']
         root[e] = eval e if exports?
