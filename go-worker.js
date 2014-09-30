@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bitsToPositions, bitsToString, boardsToString, borderOf, cache, captured, compare, countBits, decomposeToStrings, e, evalUntilDepth, evaluate, interiorOf, onlySuicide, opponentOf, positionToBit, positionsToBits, root, stringOf, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
+  var BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, LOWER_BOARD, MAX_SCORE, ON_BOARD, OnBoard, UPPER_BOARD, WHITE, adjacenciesAt, adjacent, bitsToPositions, bitsToString, boardsToString, borderOf, cache, captured, compare, countBits, decomposeToStrings, e, evalUntilDepth, evaluate, interiorOf, onlySuicide, opponentOf, positionToBit, positionsToBits, root, stringOf, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -133,6 +133,20 @@
   ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
    */
 
+  UPPER_BOARD = 0;
+
+  LOWER_BOARD = 0;
+
+  (function() {
+    var x, _j, _results;
+    _results = [];
+    for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
+      UPPER_BOARD |= positionToBit([x, 0]);
+      _results.push(LOWER_BOARD |= positionToBit([x, BOARD_SIZE - 1]));
+    }
+    return _results;
+  })();
+
   countBits = function(x) {
 
     /* 32bit整数の1の数を返す */
@@ -202,7 +216,9 @@
   interiorOf = function(region) {
 
     /* 領域の内部を返す */
-    return region & (region << BIT_BOARD_SIZE) & (region << 1) & (region >>> 1) & (region >>> BIT_BOARD_SIZE);
+    var regionAndFrame;
+    regionAndFrame = region | ~ON_BOARD;
+    return region & ((region << BIT_BOARD_SIZE) | UPPER_BOARD) & (regionAndFrame << 1) & (regionAndFrame >>> 1) & ((region >>> BIT_BOARD_SIZE) | LOWER_BOARD);
   };
 
   borderOf = function(region) {
@@ -621,13 +637,19 @@
       return this._whoseEyeAt(positionToBit(position), genuine);
     };
 
-    OnBoard.prototype._whoseEyeAt = function(bitPos, genuine, checkings) {
-      var adj, bitBoard, emptyString, gds, num, stone, strings;
+    OnBoard.prototype._whoseEyeAt = function(bitPos, genuine, checkings, bEnclosed, wEnclosed) {
+      var bitBoard, gds, region, stone;
       if (genuine == null) {
         genuine = false;
       }
       if (checkings == null) {
         checkings = 0;
+      }
+      if (bEnclosed == null) {
+        bEnclosed = null;
+      }
+      if (wEnclosed == null) {
+        wEnclosed = null;
       }
 
       /*
@@ -639,61 +661,39 @@
       if (!this._isEmptyAt(bitPos)) {
         return null;
       }
-      emptyString = this.stringOf(bitPos);
-      num = countBits(emptyString);
-      if ((genuine && num > 1) || num >= 8) {
-        return null;
+      if (bEnclosed == null) {
+        bEnclosed = this.enclosedRegionOf(BLACK);
       }
-      adj = adjacent(emptyString);
-      if (adj === 0) {
-        stone = null;
-      } else if ((adj & this.black) === adj) {
+      if (bEnclosed & bitPos) {
         stone = BLACK;
         bitBoard = this.black;
-      } else if ((adj & this.white) === adj) {
-        stone = WHITE;
-        bitBoard = this.white;
-      } else if (!genuine) {
-        strings = decomposeToStrings(stringOf(this.white, adj & this.white));
-        if (strings.length === 1 && countBits(adjacent(strings[0]) & ~this.black) === 1 && decomposeToStrings(stringOf(this.black, adj & this.black)).map((function(_this) {
-          return function(e) {
-            return countBits(_this._libertyOf(e));
-          };
-        })(this)).every(function(e) {
-          return e > 1;
-        })) {
-          return BLACK;
-        }
-        strings = decomposeToStrings(stringOf(this.black, adj & this.black));
-        if (strings.length === 1 && countBits(adjacent(strings[0]) & ~this.white) === 1 && decomposeToStrings(stringOf(this.white, adj & this.white)).map((function(_this) {
-          return function(e) {
-            return countBits(_this._libertyOf(e));
-          };
-        })(this)).every(function(e) {
-          return e > 1;
-        })) {
-          return WHITE;
-        }
-        stone = null;
-        bitBoard = null;
+        region = stringOf(bEnclosed, bitPos);
       } else {
-        stone = null;
-        bitBoard = null;
+        if (wEnclosed == null) {
+          wEnclosed = this.enclosedRegionOf(WHITE);
+        }
+        if (wEnclosed & bitPos) {
+          stone = WHITE;
+          bitBoard = this.white;
+          region = stringOf(wEnclosed, bitPos);
+        } else {
+          return null;
+        }
       }
-      if (stone == null) {
+      if (genuine && countBits(region) > 1) {
         return null;
       }
-      gds = decomposeToStrings(stringOf(bitBoard, adj));
+      gds = decomposeToStrings(stringOf(bitBoard, adjacent(region)));
       if (gds.length === 1 || (gds.every((function(_this) {
         return function(gd) {
           var b, liberty, _j, _len1;
-          liberty = adjacent(gd) & ~bitPos;
+          liberty = adjacent(gd) & ~region;
           if (liberty & checkings) {
             return true;
           }
           for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
             b = _BITS[_j];
-            if ((b & liberty) && _this._whoseEyeAt(b, genuine, checkings | bitPos) === stone) {
+            if ((b & liberty) && _this._whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) === stone) {
               return true;
             }
           }
@@ -852,7 +852,7 @@
   root.OnBoard = OnBoard;
 
   if (typeof exports !== "undefined" && exports !== null) {
-    _ref2 = ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString'];
+    _ref2 = ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString', 'interiorOf'];
     for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
       e = _ref2[_j];
       if (typeof exports !== "undefined" && exports !== null) {
@@ -869,6 +869,7 @@
 
   if (typeof exports !== "undefined" && exports !== null) {
     _ref3 = require('./go-common.coffee'), BLACK = _ref3.BLACK, WHITE = _ref3.WHITE, EMPTY = _ref3.EMPTY, MAX_SCORE = _ref3.MAX_SCORE, opponentOf = _ref3.opponentOf, boardsToString = _ref3.boardsToString;
+    bitsToString = require('./bit-board.coffee').bitsToString;
   }
 
   DEBUG = false;
