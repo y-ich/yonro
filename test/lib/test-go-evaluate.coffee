@@ -76,7 +76,7 @@ testEvaluate = (kernel) ->
                     XX O
                     """
                 assert.equal evaluate([board], BLACK).value, 1
-            it.only "黒全滅", ->
+            it "黒全滅", ->
                 board = OnBoard.fromString """
                     XXXX
                      OOO
@@ -178,6 +178,14 @@ testEvaluate = (kernel) ->
                     OXXO
                     '''
                 assert.equal evaluate([board], BLACK).value, MAX_SCORE
+            it "終局 ", ->
+                board = OnBoard.fromString '''
+                    OOOO
+                    OOOO
+                    OOO 
+                      O 
+                    '''
+                assert.equal evaluate([board, board], WHITE).value, -MAX_SCORE
         describe.skip '黒猫のヨンロ', ->
             it "1", ->
                 board = OnBoard.fromString """

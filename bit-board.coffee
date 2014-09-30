@@ -364,7 +364,9 @@ class OnBoard
         return null if not @_isEmptyAt bitPos
 
         emptyString = @stringOf bitPos
-        return null if countBits(emptyString) >= 8 # 8は最小限の生きがある大きさ
+        num = countBits emptyString
+        if (genuine and num > 1) or num >= 8 # 8は最小限の生きがある大きさ
+            return null
 
         adj = adjacent emptyString
         if adj == 0

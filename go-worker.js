@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bitsToPositions, bitsToString, boardsToString, borderOf, cache, captured, check, compare, countBits, decomposeToStrings, e, evalUntilDepth, evaluate, interiorOf, onlySuicide, opponentOf, positionToBit, positionsToBits, root, stringOf, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
+  var BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, MAX_SCORE, ON_BOARD, OnBoard, WHITE, adjacenciesAt, adjacent, bitsToPositions, bitsToString, boardsToString, borderOf, cache, captured, compare, countBits, decomposeToStrings, e, evalUntilDepth, evaluate, interiorOf, onlySuicide, opponentOf, positionToBit, positionsToBits, root, stringOf, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -620,7 +620,7 @@
     };
 
     OnBoard.prototype._whoseEyeAt = function(bitPos, genuine, checkings) {
-      var adj, bitBoard, emptyString, gds, stone, strings;
+      var adj, bitBoard, emptyString, gds, num, stone, strings;
       if (genuine == null) {
         genuine = false;
       }
@@ -638,7 +638,8 @@
         return null;
       }
       emptyString = this.stringOf(bitPos);
-      if (countBits(emptyString) >= 8) {
+      num = countBits(emptyString);
+      if ((genuine && num > 1) || num >= 8) {
         return null;
       }
       adj = adjacent(emptyString);
@@ -868,11 +869,7 @@
     _ref3 = require('./go-common.coffee'), BLACK = _ref3.BLACK, WHITE = _ref3.WHITE, EMPTY = _ref3.EMPTY, MAX_SCORE = _ref3.MAX_SCORE, opponentOf = _ref3.opponentOf, boardsToString = _ref3.boardsToString;
   }
 
-  DEBUG = true;
-
-  check = function(next, board) {
-    return next === BLACK && board.isEqualTo(' X  \nX X \nXXOO\n OX ');
-  };
+  DEBUG = false;
 
   cache = {
     black: [],
@@ -932,7 +929,6 @@
         console.log(result.toString());
       }
       if (!isNaN(result.value)) {
-        console.log("depth: " + depth);
         return result;
       }
     }
@@ -1038,7 +1034,7 @@
   })();
 
   evalUntilDepth = function(history, next, depth, trueEnd, alpha, beta) {
-    var b, board, c, candidates, empties, eyes, flag, i, nan, nodes, notPossibleToIterate, opponent, parity, result, updated, _k, _l, _len2, _len3;
+    var b, board, c, candidates, empties, eyes, i, nan, nodes, notPossibleToIterate, opponent, parity, result, updated, _k, _l, _len2, _len3;
     if (trueEnd == null) {
       trueEnd = false;
     }
@@ -1058,10 +1054,6 @@
     外部関数compareが肝。
      */
     board = history[history.length - 1];
-    if (DEBUG && check(next, board)) {
-      flag = true;
-      console.log("depth" + depth + ", alpha" + alpha.value + ", beta" + beta.value);
-    }
     if ((board === history[history.length - 2]) && (board === history[history.length - 3])) {
       return new EvaluationResult(board.score(), history);
     }
@@ -1099,10 +1091,6 @@
     if (onlySuicide(nodes, next, board)) {
       nodes.push(board);
     }
-    if (flag) {
-      console.log('nodes');
-      console.log(boardsToString(nodes));
-    }
     nan = null;
     updated = false;
     switch (next) {
@@ -1110,13 +1098,6 @@
         for (i = _k = 0, _len2 = nodes.length; _k < _len2; i = ++_k) {
           b = nodes[i];
           result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
-          if (flag) {
-            console.log("b" + i + " depth" + depth);
-            console.log("alpha" + alpha.value + ", beta" + beta.value);
-            console.log(b.toString());
-            console.log(result.toString());
-            console.log(result.value === alpha.value);
-          }
           if ((result.value > alpha.value) || (result.value === alpha.value && result.history.length < alpha.history.length)) {
             alpha = result;
           } else if (isNaN(result.value)) {
@@ -1146,13 +1127,6 @@
           b = nodes[i];
           eyes = b.eyes();
           result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
-          if (flag) {
-            console.log("b" + i + " depth" + depth);
-            console.log("alpha" + alpha.value + ", beta" + beta.value);
-            console.log(b.toString());
-            console.log(result.toString());
-            console.log(result.value === beta.value);
-          }
           if ((result.value < beta.value) || (result.value === beta.value && result.history.length < beta.history.length)) {
             beta = result;
           } else if (isNaN(result.value)) {
