@@ -383,6 +383,7 @@ class OnBoard
         else if not genuine
             strings = decomposeToStrings(stringOf @white, (adj & @white))
             if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @black) == 1 and decomposeToStrings(stringOf @black, (adj & @black)).map((e) => countBits @_libertyOf(e)).every((e) -> e > 1)
+                # 囲ってる連が1つで、アタリになっていて、囲んでいる石の連がすべてアタリになっていないこと
                 return BLACK
             strings = decomposeToStrings(stringOf @black, (adj & @black))
             if strings.length == 1 and countBits(adjacent(strings[0]) & ~ @white) == 1 and decomposeToStrings(stringOf @white, (adj & @white)).map((e) => countBits @_libertyOf(e)).every((e) -> e > 1)
