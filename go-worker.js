@@ -706,23 +706,36 @@
       }
     };
 
-    OnBoard.prototype.eyes = function() {
-
-      /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
-      var b, result, _j, _len1, _ref2;
-      result = [[], []];
-      _ref2 = this.emptyStrings();
-      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-        b = _ref2[_j];
-        switch (this._whoseEyeAt(b)) {
+    OnBoard.prototype.eyesOf = function(stone) {
+      var bEnclosed, bitBoard, empties, r, regions, result, strings, _j, _len1;
+      result = [];
+      bEnclosed = this.enclosedRegionOf(stone);
+      regions = decomposeToStrings(bEnclosed);
+      bitBoard = (function() {
+        switch (stone) {
           case BLACK:
-            result[0].push(b);
-            break;
+            return this.black;
           case WHITE:
-            result[1].push(b);
+            return this.white;
+        }
+      }).call(this);
+      for (_j = 0, _len1 = regions.length; _j < _len1; _j++) {
+        r = regions[_j];
+        strings = decomposeToStrings(stringOf(bitBoard, adjacent(r)));
+        empties = r & this._empties();
+        if (strings.every(function(s) {
+          return (empties & adjacent(s)) === empties;
+        })) {
+          result.push(r);
         }
       }
       return result;
+    };
+
+    OnBoard.prototype.eyes = function() {
+
+      /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
+      return [this.eyesOf(BLACK), this.eyesOf(WHITE)];
     };
 
     OnBoard.prototype.enclosedRegionOf = function(stone) {
@@ -872,7 +885,7 @@
     bitsToString = require('./bit-board.coffee').bitsToString;
   }
 
-  DEBUG = false;
+  DEBUG = true;
 
   cache = {
     black: [],
@@ -1037,7 +1050,7 @@
   })();
 
   evalUntilDepth = function(history, next, depth, trueEnd, alpha, beta) {
-    var b, board, c, candidates, empties, eyes, i, nan, nodes, notPossibleToIterate, opponent, parity, result, updated, _k, _l, _len2, _len3;
+    var b, board, c, candidates, empty, eyeBoard, i, nan, nodes, notPossibleToIterate, opponent, parity, result, updated, _k, _l, _len2, _len3;
     if (trueEnd == null) {
       trueEnd = false;
     }
@@ -1061,12 +1074,17 @@
       return new EvaluationResult(board.score(), history);
     }
     if (!trueEnd) {
-      eyes = board.eyes();
-      empties = board.numOf(EMPTY);
-      if (eyes[0].length === empties || (board.numOf(WHITE) === 0 && eyes[0].length > 0)) {
+      empty = board._empties();
+      eyeBoard = board.eyesOf(BLACK).reduce((function(x, y) {
+        return x | y;
+      }), 0);
+      if ((empty & eyeBoard) === empty || (board.numOf(WHITE) === 0 && eyeBoard !== 0)) {
         return new EvaluationResult(MAX_SCORE, history);
       }
-      if (eyes[1].length === empties || (board.numOf(BLACK) === 0 && eyes[1].length > 0)) {
+      eyeBoard = board.eyesOf(WHITE).reduce((function(x, y) {
+        return x | y;
+      }), 0);
+      if ((empty & eyeBoard) === empty || (board.numOf(BLACK) === 0 && eyeBoard !== 0)) {
         return new EvaluationResult(-MAX_SCORE, history);
       }
     }
@@ -1128,7 +1146,6 @@
       case WHITE:
         for (i = _l = 0, _len3 = nodes.length; _l < _len3; i = ++_l) {
           b = nodes[i];
-          eyes = b.eyes();
           result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
           if ((result.value < beta.value) || (result.value === beta.value && result.history.length < beta.history.length)) {
             beta = result;
