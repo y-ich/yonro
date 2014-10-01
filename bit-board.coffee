@@ -405,11 +405,11 @@ class OnBoard
         else
             null
 
-    eyes: ->
+    eyes: (genuine) ->
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         result = [[], []]
         for b in @emptyStrings()
-            switch @_whoseEyeAt b
+            switch @_whoseEyeAt b, genuine
                 when BLACK then result[0].push b
                 when WHITE then result[1].push b
         result

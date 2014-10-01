@@ -126,7 +126,7 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
         return new EvaluationResult board.score(), history
 
     if not trueEnd
-        eyes = board.eyes()
+        eyes = board.eyes true
         empties = board.numOf EMPTY
         if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
             # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE

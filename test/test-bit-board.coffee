@@ -147,6 +147,15 @@ describe 'bit-board', ->
                       XX
                     '''
                 assert.equal board.eyes()[0].length, 1
+            it.only "0", ->
+                board = OnBoard.fromString """
+                    X XX
+                     XOX
+                    OXOX
+                    OOO 
+                    """
+                result = board.eyes(true)
+                assert.equal result[0].length, 0
 
         describe "place", ->
             it "should return true", ->
