@@ -8,7 +8,7 @@
 if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
     { bitsToString } = require './bit-board.coffee'
-DEBUG = false
+DEBUG = true
 
 cache =
     black: []
@@ -126,12 +126,13 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
         return new EvaluationResult board.score(), history
 
     if not trueEnd
-        eyes = board.eyes true
-        empties = board.numOf EMPTY
-        if eyes[0].length == empties or (board.numOf(WHITE) == 0 and eyes[0].length > 0)
+        empty = board._empties()
+        eyeBoard = board.eyesOf(BLACK).reduce ((x, y) -> x | y), 0
+        if (empty & eyeBoard) is empty or (board.numOf(WHITE) == 0 and eyeBoard != 0)
             # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
             return new EvaluationResult MAX_SCORE, history
-        if eyes[1].length == empties or (board.numOf(BLACK) == 0 and eyes[1].length > 0)
+        eyeBoard = board.eyesOf(WHITE).reduce ((x, y) -> x | y), 0
+        if (empty & eyeBoard) is empty or (board.numOf(BLACK) == 0 and eyeBoard != 0)
             return new EvaluationResult -MAX_SCORE, history
     if depth <= 0
         return new EvaluationResult NaN, history
@@ -169,7 +170,6 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
             return if alpha.value == -Infinity then nan else alpha
         when WHITE
             for b, i in nodes
-                eyes = b.eyes()
                 result = evalUntilDepth history.concat(b), opponent, (if b is board then depth else depth - 1), trueEnd, alpha, beta
                 if (result.value < beta.value) or (result.value == beta.value and result.history.length < beta.history.length)
                     beta = result

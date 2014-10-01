@@ -405,14 +405,23 @@ class OnBoard
         else
             null
 
-    eyes: (genuine) ->
-        ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
-        result = [[], []]
-        for b in @emptyStrings()
-            switch @_whoseEyeAt b, genuine
-                when BLACK then result[0].push b
-                when WHITE then result[1].push b
+    eyesOf: (stone) ->
+        result = []
+        bEnclosed = @enclosedRegionOf stone
+        regions = decomposeToStrings bEnclosed
+        bitBoard = switch stone
+                when BLACK then @black
+                when WHITE then @white
+        for r in regions
+            strings = decomposeToStrings stringOf bitBoard, adjacent r
+            empties = r &  @_empties()
+            if strings.every((s) -> (empties & adjacent s) is empties)
+                result.push r
         result
+
+    eyes: ->
+        ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
+        [@eyesOf(BLACK), @eyesOf(WHITE)]
 
     enclosedRegionOf: (stone) ->
         switch stone
