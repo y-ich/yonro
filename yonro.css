@@ -264,18 +264,18 @@ h1 {
   -webkit-background-clip: padding-box;
   -moz-background-clip: padding;
   background-clip: padding-box;
-  border: solid 1px black;
+  border: solid 2px red;
   border-left: none;
   -webkit-transform: rotate(-45deg);
   -moz-transform: rotate(-45deg);
   -ms-transform: rotate(-45deg);
   -o-transform: rotate(-45deg);
   transform: rotate(-45deg);
-  -webkit-transform-origin: 0 100%;
-  -moz-transform-origin: 0 100%;
-  -ms-transform-origin: 0 100%;
-  -o-transform-origin: 0 100%;
-  transform-origin: 0 100%;
+  -webkit-transform-origin: 0 96%;
+  -moz-transform-origin: 0 96%;
+  -ms-transform-origin: 0 96%;
+  -o-transform-origin: 0 96%;
+  transform-origin: 0 96%;
 }
 .intersection.black:after,
 .intersection.white:after {
