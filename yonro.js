@@ -1099,13 +1099,13 @@
       eyeBoard = eyes[0].reduce((function(x, y) {
         return x | y;
       }), 0);
-      if ((empty & eyeBoard) === empty || (board.numOf(WHITE) === 0 && eyeBoard !== 0)) {
+      if ((empty & eyeBoard) === empty || (board.numOf(WHITE) === 0 && (eyes[0].length >= 2 || board.numOf(EMPTY) > 6))) {
         return new EvaluationResult(MAX_SCORE, history);
       }
       eyeBoard = eyes[1].reduce((function(x, y) {
         return x | y;
       }), 0);
-      if ((empty & eyeBoard) === empty || (board.numOf(BLACK) === 0 && eyeBoard !== 0)) {
+      if ((empty & eyeBoard) === empty || (board.numOf(BLACK) === 0 && (eyes[1].length >= 2 || board.numOf(EMPTY) > 6))) {
         return new EvaluationResult(-MAX_SCORE, history);
       }
     }

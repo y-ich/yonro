@@ -8,7 +8,7 @@
 if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
     { bitsToString } = require './bit-board.coffee'
-DEBUG = true
+DEBUG = false
 
 check = (board, next) ->
     (not next? or next is BLACK) and board.isEqualTo '''
@@ -42,7 +42,7 @@ cache =
         null
 
 evaluate = (history, next) ->
-    # return evalUntilDepth history, next, 16
+    # return evalUntilDepth history, next, 19
     # 32は盤を二回埋める深さ
     cache.clear()
     result = evalUntilDepth history, next, 0
