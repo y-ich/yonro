@@ -186,7 +186,7 @@ testEvaluate = (kernel) ->
                       O 
                     '''
                 assert.equal evaluate([board, board], WHITE).value, -MAX_SCORE
-        describe.only '黒猫のヨンロ', ->
+        describe '黒猫のヨンロ', ->
             it "1", ->
                 board = OnBoard.fromString """
                      O O
@@ -240,7 +240,7 @@ testEvaluate = (kernel) ->
             it "7", ->
                 board = OnBoard.fromString " XX \n XO \n XO \n OO "
                 assert.equal evaluate([board], BLACK).value, 1
-        describe "長手数問題", ->
+        describe.only "長手数問題", ->
             it "3. should return ", -> #解けない
                 board = OnBoard.fromString '''
                       X 

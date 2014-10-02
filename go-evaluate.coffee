@@ -8,7 +8,7 @@
 if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
     { bitsToString } = require './bit-board.coffee'
-DEBUG = false
+DEBUG = true
 
 check = (board, next) ->
     (not next? or next is BLACK) and board.isEqualTo '''
@@ -42,7 +42,7 @@ cache =
         null
 
 evaluate = (history, next) ->
-    # return evalUntilDepth history, next, 12
+    # return evalUntilDepth history, next, 16
     # 32は盤を二回埋める深さ
     cache.clear()
     result = evalUntilDepth history, next, 0
@@ -139,11 +139,11 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
         empty = board._empties()
         eyes = board.eyes()
         eyeBoard = eyes[0].reduce ((x, y) -> x | y), 0
-        if (empty & eyeBoard) is empty or (board.numOf(WHITE) == 0 and eyeBoard != 0)
+        if (empty & eyeBoard) is empty or (board.numOf(WHITE) == 0 and (eyes[0].length >= 2 or board.numOf(EMPTY) > 6)) # 6は最大の中手
             # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
             return new EvaluationResult MAX_SCORE, history
         eyeBoard = eyes[1].reduce ((x, y) -> x | y), 0
-        if (empty & eyeBoard) is empty or (board.numOf(BLACK) == 0 and eyeBoard != 0)
+        if (empty & eyeBoard) is empty or (board.numOf(BLACK) == 0 and (eyes[1].length >= 2 or board.numOf(EMPTY) > 6))
             return new EvaluationResult -MAX_SCORE, history
     if depth <= 0
         return new EvaluationResult NaN, history
