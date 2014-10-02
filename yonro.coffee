@@ -89,12 +89,24 @@ computerPlay = (board) ->
                 score = if userStone is BLACK then -score else score
                 if score > 0
                     openAndCloseModal 'expect-modal', behaveNext
+                else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE) and expected.history[expected.history.length - 1].numOf(opponentOf userStone) == 0
+                    bgm.stop()
+                    setTimeout (->
+                        alert '負けました…'
+                        $('#start-stop').removeAttr 'disabled'
+                    ), responseInterval
                 else if score < 0
                     openAndCloseModal 'pessimistic-modal', behaveNext
                 else
                     setTimeout (->
                         behaveNext()
                     ), responseInterval
+            else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE) and expected.history[expected.history.length - 1].numOf(opponentOf userStone) == 0
+                bgm.stop()
+                setTimeout (->
+                    alert '負けました…'
+                    $('#start-stop').removeAttr 'disabled'
+                ), responseInterval
             else
                 setTimeout (->
                     behaveNext()
@@ -109,7 +121,14 @@ computerPlay = (board) ->
             $('#unexpected-modal').modal 'show'
             wEvaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
                 expected = result
-                behaveNext()
+                if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE) and expected.history[expected.history.length - 1].numOf(opponentOf userStone) == 0
+                    bgm.stop()
+                    setTimeout (->
+                        alert '負けました…'
+                        $('#start-stop').removeAttr 'disabled'
+                    ), responseInterval
+                else
+                    behaveNext()
             ),
             ((error) ->
                 $('#evaluate-modal').modal 'hide'

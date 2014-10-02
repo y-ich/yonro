@@ -1486,6 +1486,12 @@
           score = userStone === BLACK ? -score : score;
           if (score > 0) {
             return openAndCloseModal('expect-modal', behaveNext);
+          } else if (expected.value === (userStone === BLACK ? MAX_SCORE : -MAX_SCORE) && expected.history[expected.history.length - 1].numOf(opponentOf(userStone)) === 0) {
+            bgm.stop();
+            return setTimeout((function() {
+              alert('負けました…');
+              return $('#start-stop').removeAttr('disabled');
+            }), responseInterval);
           } else if (score < 0) {
             return openAndCloseModal('pessimistic-modal', behaveNext);
           } else {
@@ -1493,6 +1499,12 @@
               return behaveNext();
             }), responseInterval);
           }
+        } else if (expected.value === (userStone === BLACK ? MAX_SCORE : -MAX_SCORE) && expected.history[expected.history.length - 1].numOf(opponentOf(userStone)) === 0) {
+          bgm.stop();
+          return setTimeout((function() {
+            alert('負けました…');
+            return $('#start-stop').removeAttr('disabled');
+          }), responseInterval);
         } else {
           return setTimeout((function() {
             return behaveNext();
@@ -1508,7 +1520,15 @@
         $('#unexpected-modal').modal('show');
         return wEvaluate(expected.history.slice(0, currentIndex).concat(board), opponentOf(userStone), (function(result) {
           expected = result;
-          return behaveNext();
+          if (expected.value === (userStone === BLACK ? MAX_SCORE : -MAX_SCORE) && expected.history[expected.history.length - 1].numOf(opponentOf(userStone)) === 0) {
+            bgm.stop();
+            return setTimeout((function() {
+              alert('負けました…');
+              return $('#start-stop').removeAttr('disabled');
+            }), responseInterval);
+          } else {
+            return behaveNext();
+          }
         }), (function(error) {
           var b, candidates, computerStone, nodes, parity, _l, _len3;
           $('#evaluate-modal').modal('hide');
