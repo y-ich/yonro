@@ -8,7 +8,7 @@
 if exports?
     { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
     { bitsToString } = require './bit-board.coffee'
-DEBUG = true
+DEBUG = false
 
 cache =
     black: []

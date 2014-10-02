@@ -885,7 +885,7 @@
     bitsToString = require('./bit-board.coffee').bitsToString;
   }
 
-  DEBUG = true;
+  DEBUG = false;
 
   cache = {
     black: [],

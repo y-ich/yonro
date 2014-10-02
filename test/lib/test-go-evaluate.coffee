@@ -237,10 +237,10 @@ testEvaluate = (kernel) ->
                        O
                     """
                 assert.equal evaluate([board], BLACK).value - board.score() > 0, true
-            it.only "7", ->
+            it "7", ->
                 board = OnBoard.fromString " XX \n XO \n XO \n OO "
                 assert.equal evaluate([board], BLACK).value, 1
-        describe.skip "長手数問題", ->
+        describe.only "長手数問題", ->
             it "3. should return ", -> #解けない
                 board = OnBoard.fromString '''
                       X 
