@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, LOWER_BOARD, MAX_SCORE, ON_BOARD, OnBoard, UPPER_BOARD, WHITE, adjacenciesAt, adjacent, bgm, bitsToPositions, bitsToString, boardsToString, borderOf, cache, cancelWaiting, captured, compare, computerPlay, countBits, currentIndex, decomposeToStrings, e, endGame, evalUntilDepth, evaluate, expected, interiorOf, onlySuicide, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, root, saveSettings, settings, showOnBoard, stringOf, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
+  var $board, BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, LOWER_BOARD, MAX_SCORE, ON_BOARD, OnBoard, UPPER_BOARD, WHITE, adjacenciesAt, adjacent, bgm, bitsToPositions, bitsToString, boardsToString, borderOf, cache, cancelWaiting, captured, check, compare, computerPlay, countBits, currentIndex, decomposeToStrings, e, endGame, evalUntilDepth, evaluate, expected, interiorOf, onlySuicide, openAndCloseModal, opponentOf, positionToBit, positionsToBits, responseInterval, root, saveSettings, settings, showOnBoard, stringOf, touchDevice, userPlayAndResponse, userStone, wEvaluate, waitForUserPlay, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -735,7 +735,20 @@
     OnBoard.prototype.eyes = function() {
 
       /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
-      return [this.eyesOf(BLACK), this.eyesOf(WHITE)];
+      var blacks, whites;
+      blacks = this.eyesOf(BLACK);
+      whites = this.eyesOf(WHITE);
+      return [
+        blacks.filter(function(b) {
+          return whites.every(function(w) {
+            return (w & b) === 0;
+          });
+        }), whites.filter(function(w) {
+          return blacks.every(function(b) {
+            return (b & w) === 0;
+          });
+        })
+      ];
     };
 
     OnBoard.prototype.enclosedRegionOf = function(stone) {
@@ -886,6 +899,10 @@
   }
 
   DEBUG = false;
+
+  check = function(board, next) {
+    return ((next == null) || next === BLACK) && board.isEqualTo(' XXX\nOXOX\nOXOX\nOOO ');
+  };
 
   cache = {
     black: [],
@@ -1050,7 +1067,7 @@
   })();
 
   evalUntilDepth = function(history, next, depth, trueEnd, alpha, beta) {
-    var b, board, c, candidates, empty, eyeBoard, i, nan, nodes, notPossibleToIterate, opponent, parity, result, updated, _k, _l, _len2, _len3;
+    var b, board, c, candidates, empty, eyeBoard, eyes, flag, i, nan, nodes, notPossibleToIterate, opponent, parity, result, updated, _k, _l, _len2, _len3;
     if (trueEnd == null) {
       trueEnd = false;
     }
@@ -1070,18 +1087,22 @@
     外部関数compareが肝。
      */
     board = history[history.length - 1];
+    if (DEBUG && check(board, next)) {
+      flag = true;
+    }
     if ((board === history[history.length - 2]) && (board === history[history.length - 3])) {
       return new EvaluationResult(board.score(), history);
     }
     if (!trueEnd) {
       empty = board._empties();
-      eyeBoard = board.eyesOf(BLACK).reduce((function(x, y) {
+      eyes = board.eyes();
+      eyeBoard = eyes[0].reduce((function(x, y) {
         return x | y;
       }), 0);
       if ((empty & eyeBoard) === empty || (board.numOf(WHITE) === 0 && eyeBoard !== 0)) {
         return new EvaluationResult(MAX_SCORE, history);
       }
-      eyeBoard = board.eyesOf(WHITE).reduce((function(x, y) {
+      eyeBoard = eyes[1].reduce((function(x, y) {
         return x | y;
       }), 0);
       if ((empty & eyeBoard) === empty || (board.numOf(BLACK) === 0 && eyeBoard !== 0)) {
@@ -1119,6 +1140,11 @@
         for (i = _k = 0, _len2 = nodes.length; _k < _len2; i = ++_k) {
           b = nodes[i];
           result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
+          if (flag) {
+            console.log('nodes');
+            console.log(b.toString());
+            console.log(result.toString());
+          }
           if ((result.value > alpha.value) || (result.value === alpha.value && result.history.length < alpha.history.length)) {
             alpha = result;
           } else if (isNaN(result.value)) {
@@ -1147,6 +1173,11 @@
         for (i = _l = 0, _len3 = nodes.length; _l < _len3; i = ++_l) {
           b = nodes[i];
           result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
+          if (flag) {
+            console.log('nodes');
+            console.log(b.toString());
+            console.log(result.toString());
+          }
           if ((result.value < beta.value) || (result.value === beta.value && result.history.length < beta.history.length)) {
             beta = result;
           } else if (isNaN(result.value)) {

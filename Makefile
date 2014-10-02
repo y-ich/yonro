@@ -26,6 +26,6 @@ clean:
 test: test/test-array-board.coffee test/test-bit-board.coffee test/test-go-evaluate-bit-board.coffee go-common.coffee array-board.coffee bit-board.coffee go-evaluate.coffee
 	mocha -b --compilers coffee:coffee-script/register --timeout 10000
 
-profile:
+profile: profile.coffee go-common.coffee bit-board.coffee go-evaluate.coffee
 	time coffee --nodejs --prof profile.coffee
 	node-tick-processor > profile

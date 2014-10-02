@@ -10,6 +10,14 @@ if exports?
     { bitsToString } = require './bit-board.coffee'
 DEBUG = false
 
+check = (board, next) ->
+    (not next? or next is BLACK) and board.isEqualTo '''
+             XXX
+            OXOX
+            OXOX
+            OOO 
+            '''
+
 cache =
     black: []
     white: []
@@ -34,7 +42,7 @@ cache =
         null
 
 evaluate = (history, next) ->
-    # return evalUntilDepth history, next, 7
+    # return evalUntilDepth history, next, 12
     # 32は盤を二回埋める深さ
     cache.clear()
     result = evalUntilDepth history, next, 0
@@ -122,16 +130,19 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
     外部関数compareが肝。
     ###
     board = history[history.length - 1]
+    flag = true if DEBUG and check board, next
+
     if (board is history[history.length - 2]) and (board is history[history.length - 3]) # 両者パス
         return new EvaluationResult board.score(), history
 
     if not trueEnd
         empty = board._empties()
-        eyeBoard = board.eyesOf(BLACK).reduce ((x, y) -> x | y), 0
+        eyes = board.eyes()
+        eyeBoard = eyes[0].reduce ((x, y) -> x | y), 0
         if (empty & eyeBoard) is empty or (board.numOf(WHITE) == 0 and eyeBoard != 0)
             # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
             return new EvaluationResult MAX_SCORE, history
-        eyeBoard = board.eyesOf(WHITE).reduce ((x, y) -> x | y), 0
+        eyeBoard = eyes[1].reduce ((x, y) -> x | y), 0
         if (empty & eyeBoard) is empty or (board.numOf(BLACK) == 0 and eyeBoard != 0)
             return new EvaluationResult -MAX_SCORE, history
     if depth <= 0
@@ -159,6 +170,10 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
                 result = evalUntilDepth history.concat(b), opponent, (if b is board then depth else depth - 1), trueEnd, alpha, beta
+                if flag
+                    console.log 'nodes'
+                    console.log b.toString()
+                    console.log result.toString()
                 if (result.value > alpha.value) or (result.value == alpha.value and result.history.length < alpha.history.length)
                     alpha = result
                 else if isNaN result.value
@@ -171,6 +186,10 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
         when WHITE
             for b, i in nodes
                 result = evalUntilDepth history.concat(b), opponent, (if b is board then depth else depth - 1), trueEnd, alpha, beta
+                if flag
+                    console.log 'nodes'
+                    console.log b.toString()
+                    console.log result.toString()
                 if (result.value < beta.value) or (result.value == beta.value and result.history.length < beta.history.length)
                     beta = result
                 else if isNaN result.value
