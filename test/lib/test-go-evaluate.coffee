@@ -241,7 +241,7 @@ testEvaluate = (kernel) ->
                 board = OnBoard.fromString " XX \n XO \n XO \n OO "
                 assert.equal evaluate([board], BLACK).value, 1
         describe.only "長手数問題", ->
-            it "3. should return ", -> #解けない
+            it "3. should return ", -> # 2014/10/02 187747ms
                 board = OnBoard.fromString '''
                       X 
                      XOX
