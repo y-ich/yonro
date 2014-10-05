@@ -3,7 +3,8 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 ###
 
-userStone = BLACK
+userStone = null
+base = new BitBoardBase 4
 expected = null
 currentIndex = 0
 
@@ -86,10 +87,10 @@ computerPlay = (board) ->
         if expected.history.length - 1 > currentIndex # 続きがあれば
             if not expected.history[currentIndex - 1]?.isEqualTo board # パスでない
                 score = expected.value
-                score = if userStone is BLACK then -score else score
+                score = if userStone is base.BLACK then -score else score
                 if score > 0
                     openAndCloseModal 'expect-modal', behaveNext
-                else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE) and expected.history[expected.history.length - 1].numOf(opponentOf userStone) == 0
+                else if expected.value is (if userStone is base.BLACK then base.MAX_SCORE else -base.MAX_SCORE) and expected.history[expected.history.length - 1].numOf(base. opponentOf userStone) == 0
                     bgm.stop()
                     setTimeout (->
                         alert '負けました…'
@@ -101,7 +102,7 @@ computerPlay = (board) ->
                     setTimeout (->
                         behaveNext()
                     ), responseInterval
-            else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE) and expected.history[expected.history.length - 1].numOf(opponentOf userStone) == 0
+            else if expected.value is (if userStone is base.BLACK then base.MAX_SCORE else -base.MAX_SCORE) and expected.history[expected.history.length - 1].numOf(base. opponentOf userStone) == 0
                 bgm.stop()
                 setTimeout (->
                     alert '負けました…'
@@ -111,7 +112,7 @@ computerPlay = (board) ->
                 setTimeout (->
                     behaveNext()
                 ), responseInterval
-        else if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE)
+        else if expected.value is (if userStone is base.BLACK then base.MAX_SCORE else -base.MAX_SCORE)
             bgm.stop()
             setTimeout (->
                 alert '負けました…'
@@ -119,9 +120,9 @@ computerPlay = (board) ->
             ), responseInterval
         else
             $('#unexpected-modal').modal 'show'
-            wEvaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
+            wEvaluate expected.history[0...currentIndex].concat(board), base. opponentOf(userStone), ((result) ->
                 expected = result
-                if expected.value is (if userStone is BLACK then MAX_SCORE else -MAX_SCORE) and expected.history[expected.history.length - 1].numOf(opponentOf userStone) == 0
+                if expected.value is (if userStone is base.BLACK then base.MAX_SCORE else -base.MAX_SCORE) and expected.history[expected.history.length - 1].numOf(base. opponentOf userStone) == 0
                     bgm.stop()
                     setTimeout (->
                         alert '負けました…'
@@ -135,18 +136,18 @@ computerPlay = (board) ->
                 expected =
                     value: NaN
                     history: expected.history[0...currentIndex].concat(board)
-                computerStone = opponentOf userStone
+                computerStone = base. opponentOf userStone
                 candidates = board.candidates computerStone
                 nodes = []
                 for b in candidates
-                    parity = if userStone is BLACK then 0 else 1
+                    parity = if userStone is base.BLACK then 0 else 1
                     nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
                 nodes.sort (a, b) -> - compare a, b, computerStone
                 expected.history.push nodes[0]
                 openAndCloseModal 'upset-modal', behaveNext
             )
     else
-        wEvaluate expected.history[0...currentIndex].concat(board), opponentOf(userStone), ((result) ->
+        wEvaluate expected.history[0...currentIndex].concat(board), base. opponentOf(userStone), ((result) ->
             expected = result
             behaveNext()
         ),
@@ -154,11 +155,11 @@ computerPlay = (board) ->
             expected =
                 value: NaN
                 history: expected.history[0...currentIndex].concat(board)
-            computerStone = opponentOf userStone
+            computerStone = base. opponentOf userStone
             candidates = board.candidates computerStone
             nodes = []
             for b in candidates
-                parity = if userStone is BLACK then 0 else 1
+                parity = if userStone is base.BLACK then 0 else 1
                 nodes.push b if expected.history.filter((e, i) -> (i % 2) == parity).every((e) -> not b.isEqualTo e)
             nodes.sort (a, b) -> - compare a, b, computerStone
             expected.history.push nodes[0]
@@ -194,14 +195,14 @@ if touchDevice
         $board.on 'touchstart', '.intersection:not(.black):not(.white)', ->
             $board.off 'touchstart', '.intersection:not(.black):not(.white)'
 
-            $(this).addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
+            $(this).addClass "#{if userStone is base.BLACK then 'black' else 'white'} half-opacity"
 
             $board.on 'touchmove', (e) ->
                 event = e.originalEvent
                 $target = $(document.elementFromPoint event.touches[0].clientX, event.touches[0].clientY)
                 if $target.is '.intersection:not(.black):not(.white)'
                     $target.parent().children('.half-opacity').removeClass 'black white half-opacity'
-                    $target.addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
+                    $target.addClass "#{if userStone is base.BLACK then 'black' else 'white'} half-opacity"
 
             $board.on 'touchend touchcancel', (e) ->
                 $board.off 'touchmove touchend touchcancel'
@@ -210,7 +211,7 @@ if touchDevice
                 $target = $(document.elementFromPoint event.changedTouches[0].clientX, event.changedTouches[0].clientY)
                 if $target.is '.intersection.half-opacity'
                     index = $target.prevAll().length
-                    userPlayAndResponse.call this, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]
+                    userPlayAndResponse.call this, [index % base.BOARD_SIZE, Math.floor(index / base.BOARD_SIZE)]
 
         $('#pass, #resign').removeAttr 'disabled'
     cancelWaiting = ->
@@ -221,13 +222,13 @@ else
         $board.on 'mousedown', '.intersection:not(.black):not(.white)', ->
             $board.off 'mousedown', '.intersection:not(.black):not(.white)'
 
-            $(this).addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
+            $(this).addClass "#{if userStone is base.BLACK then 'black' else 'white'} half-opacity"
 
             $board.on 'mouseleave', '.intersection.half-opacity', ->
                 $(this).removeClass 'black white half-opacity'
 
             $board.on 'mouseenter', '.intersection:not(.black):not(.white)', ->
-                $(this).addClass "#{if userStone is BLACK then 'black' else 'white'} half-opacity"
+                $(this).addClass "#{if userStone is base.BLACK then 'black' else 'white'} half-opacity"
 
             $board.on 'mouseup', '.intersection.half-opacity', ->
                 $board.off 'mouseleave', '.intersection.half-opacity'
@@ -235,7 +236,7 @@ else
                 $board.off 'mouseup', '.intersection.half-opacity'
 
                 index = $(this).prevAll().length
-                userPlayAndResponse.call this, [index % BOARD_SIZE, Math.floor(index / BOARD_SIZE)]
+                userPlayAndResponse.call this, [index % base.BOARD_SIZE, Math.floor(index / base.BOARD_SIZE)]
 
         $('#pass, #resign').removeAttr 'disabled'
     cancelWaiting = ->
@@ -247,7 +248,7 @@ else
 $('#start-stop').on 'click', ->
     showOnBoard null
 
-    board = new OnBoard.random()
+    board = new OnBoard.random base
     expected =
         value: NaN
         history: [board]
@@ -258,12 +259,12 @@ $('#start-stop').on 'click', ->
 $('#play-white, #play-black').on 'click', ->
     $('#start-stop').attr 'disabled', 'disabled'
     userStone = switch @id
-        when 'play-white' then WHITE
-        when 'play-black' then BLACK
+        when 'play-white' then base.WHITE
+        when 'play-black' then base.BLACK
         else null
     bgm.play()
     openAndCloseModal 'start-modal', ->
-        if userStone is BLACK
+        if userStone is base.BLACK
             waitForUserPlay()
         else
             computerPlay expected.history[currentIndex]

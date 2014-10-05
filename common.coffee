@@ -55,10 +55,10 @@ showOnBoard = (board, effect = false, callback = ->) ->
     [blacks, whites] = board.deployment()
     ataris = board.atari()
     deferredes = []
-    for x in [0...BOARD_SIZE]
-        for y in [0...BOARD_SIZE]
+    for x in [0...board.base.BOARD_SIZE]
+        for y in [0...board.base.BOARD_SIZE]
             p = [x, y]
-            $intersection = $(".intersection:nth-child(#{1 + p[0] + p[1] * BOARD_SIZE})")
+            $intersection = $(".intersection:nth-child(#{1 + p[0] + p[1] * board.base.BOARD_SIZE})")
             place = (blackOrWhite, beat) ->
                 if effect and ((not $intersection.hasClass blackOrWhite) or ($intersection.hasClass 'half-opacity'))
                     deferred = $.Deferred()

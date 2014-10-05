@@ -6,49 +6,7 @@
 # (C) 2014 ICHIKAWA, Yuji (New 3 Rs)
 
 if exports?
-    { BLACK, WHITE, EMPTY, MAX_SCORE, BOARD_SIZE, MAX_SCORE, opponentOf, boardsToString, compare } = require './go-common.coffee'
-
-positionToBit = (position) ->
-    ###
-    positionに相当するbitboardを返す。
-    bitboardのフォーマットは四路の場合、
-    ....F....F....F....
-    でFはフレーム(枠)
-    ###
-    1 << (position[0] + position[1] * BIT_BOARD_SIZE)
-
-# 初期化
-BIT_BOARD_SIZE = BOARD_SIZE + 1
-throw "overflow #{BIT_BOARD_SIZE * BOARD_SIZE}" if BIT_BOARD_SIZE * BOARD_SIZE > 32
-
-_BITS = (->
-    result = []
-    for x in [0...BOARD_SIZE]
-        for y in [0...BOARD_SIZE]
-            result.push positionToBit [x, y]
-    result
-    )()
-###
-_BITSは位置を示すビットパターンすべての配列。
-###
-
-ON_BOARD = (->
-    result = 0
-    for b in _BITS
-        result |= b
-    result
-    )()
-###
-ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
-###
-
-UPPER_BOARD = 0
-LOWER_BOARD = 0
-(->
-    for x in [0...BOARD_SIZE]
-        UPPER_BOARD |= positionToBit [x, 0]
-        LOWER_BOARD |= positionToBit [x, BOARD_SIZE - 1]
-)()
+    { BoardBase, boardsToString } = require './go-common.coffee'
 
 countBits = (x) ->
     ### 32bit整数の1の数を返す ###
@@ -59,111 +17,147 @@ countBits = (x) ->
     x += (x >>> 16)
     x & 0x0000003F
 
-positionsToBits = (positions) ->
-    ### positions配列の位置に1を立てたビットボードを返す。 ###
-    bits = 0
-    for e in positions
-        bits |= positionToBit e
-    bits
+class BitBoardBase extends BoardBase
+    constructor: (BOARD_SIZE) ->
+        super BOARD_SIZE
+        @BIT_BOARD_SIZE = @BOARD_SIZE + 1
+        throw "32bit overflow" if @BIT_BOARD_SIZE * @BOARD_SIZE > 32
+        @BITS = []
+        for x in [0...@BOARD_SIZE]
+            for y in [0...@BOARD_SIZE]
+                @BITS.push @positionToBit [x, y]
+        ###
+        @BITSは位置を示すビットパターンすべての配列。
+        ###
+        @ON_BOARD = 0
+        for b in @BITS
+            @ON_BOARD |= b
+        ###
+        @ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
+        ###
+        @BOARD_TOP = 0
+        @BOARD_BOTTOM = 0
+        for x in [0...@BOARD_SIZE]
+            @BOARD_TOP |= @positionToBit [x, 0]
+            @BOARD_BOTTOM |= @positionToBit [x, @BOARD_SIZE - 1]
 
-bitsToPositions = (bitBoard) ->
-    ### ビットボード上の1の位置の配列を返す。 ###
-    positions = []
-    for x in [0...BOARD_SIZE]
-        for y in [0...BOARD_SIZE]
-            position = [x, y]
-            positions.push position if bitBoard & positionToBit position
-    positions
+    positionToBit: (position) ->
+        ###
+        positionに相当するbitboardを返す。
+        bitboardのフォーマットは四路の場合、
+        ....F....F....F....
+        でFはフレーム(枠)
+        ###
+        1 << (position[0] + position[1] * @BIT_BOARD_SIZE)
 
-adjacent = (bitBoard) ->
-    ### 呼吸点を返す。 ###
-    expanded = bitBoard << BIT_BOARD_SIZE
-    expanded |= bitBoard << 1
-    expanded |= bitBoard >>> 1
-    expanded |= bitBoard >>> BIT_BOARD_SIZE
-    expanded & (~ bitBoard) & ON_BOARD
 
-stringOf = (bitBoard, seed) ->
-    ### seedを含む連を返す。 ###
-    return 0 unless bitBoard & seed
+    positionsToBits: (positions) ->
+        ### positions配列の位置に1を立てたビットボードを返す。 ###
+        bits = 0
+        for e in positions
+            bits |= @positionToBit e
+        bits
 
-    loop
-        expanded = (seed | (seed << BIT_BOARD_SIZE) | (seed << 1) | (seed >>> 1) | (seed >>> BIT_BOARD_SIZE)) & bitBoard
-        if expanded == seed
-            return expanded
-        seed = expanded
+    bitsToPositions: (bitBoard) ->
+        ### ビットボード上の1の位置の配列を返す。 ###
+        positions = []
+        for x in [0...@BOARD_SIZE]
+            for y in [0...@BOARD_SIZE]
+                position = [x, y]
+                positions.push position if bitBoard & @positionToBit position
+        positions
 
-interiorOf = (region) ->
-    ### 領域の内部を返す ###
-    regionAndFrame = region | ~ON_BOARD
-    region & ((region << BIT_BOARD_SIZE) | UPPER_BOARD) & (regionAndFrame << 1) & (regionAndFrame >>> 1) & ((region >>> BIT_BOARD_SIZE) | LOWER_BOARD)
+    adjacent: (bitBoard) ->
+        ### 呼吸点を返す。 ###
+        expanded = bitBoard << @BIT_BOARD_SIZE
+        expanded |= bitBoard << 1
+        expanded |= bitBoard >>> 1
+        expanded |= bitBoard >>> @BIT_BOARD_SIZE
+        expanded & (~ bitBoard) & @ON_BOARD
 
-borderOf = (region) ->
-    region & ~ interiorOf region
+    stringOf: (bitBoard, seed) ->
+        ### seedを含む連を返す。 ###
+        return 0 unless bitBoard & seed
 
-captured = (objective, subjective) ->
-    ### subjectiveで囲まれたobjectiveの部分を返す。 ###
-    liberty = adjacent(objective) & ~ subjective
-    breaths = objective & adjacent liberty
-    objective & (~ stringOf objective, breaths)
+        loop
+            expanded = (seed | (seed << @BIT_BOARD_SIZE) | (seed << 1) | (seed >>> 1) | (seed >>> @BIT_BOARD_SIZE)) & bitBoard
+            if expanded == seed
+                return expanded
+            seed = expanded
 
-decomposeToStrings = (bitBoard) ->
-    ### 盤上の石をストリングに分解する。###
-    result = []
-    checked = 0
-    for bit in _BITS when bitBoard & ~ checked & bit
-        string = stringOf bitBoard, bit
-        result.push string
-        checked |= string
-    result
+    interiorOf: (region) ->
+        ### 領域の内部を返す ###
+        regionAndFrame = region | ~@ON_BOARD
+        region &
+        ((region << @BIT_BOARD_SIZE) | @BOARD_TOP) &
+        (regionAndFrame << 1) & (regionAndFrame >>> 1) &
+        ((region >>> @BIT_BOARD_SIZE) | @BOARD_BOTTOM)
 
-bitsToString = (bitBoard) ->
-    ### bitBoardを文字列にする ###
-    str = ''
-    for y in [0...BOARD_SIZE]
-        for x in [0...BOARD_SIZE]
-            str += if bitBoard & positionToBit [x, y] then 'O' else '.'
-        str += '\n' unless y == BOARD_SIZE - 1
-    str
+    borderOf: (region) ->
+        region & ~ @interiorOf region
+
+    captured: (objective, subjective) ->
+        ### subjectiveで囲まれたobjectiveの部分を返す。 ###
+        liberty = @adjacent(objective) & ~ subjective
+        breaths = objective & @adjacent liberty
+        objective & (~ @stringOf objective, breaths)
+
+    decomposeToStrings: (bitBoard) ->
+        ### 盤上の石をストリングに分解する。###
+        result = []
+        checked = 0
+        for bit in @BITS when bitBoard & ~ checked & bit
+            string = @stringOf bitBoard, bit
+            result.push string
+            checked |= string
+        result
+
+    bitsToString: (bitBoard) ->
+        ### bitBoardを文字列にする ###
+        str = ''
+        for y in [0...@BOARD_SIZE]
+            for x in [0...@BOARD_SIZE]
+                str += if bitBoard & @positionToBit [x, y] then 'O' else '.'
+            str += '\n' unless y == @BOARD_SIZE - 1
+        str
 
 class OnBoard
     ### 盤上の状態を表すクラス ###
 
-    @fromString: (str) ->
+    @fromString: (str, base) ->
         ### 盤上の状態を表すX(黒)とO(白)と空点(スペース)と改行で文字列からインスタンスを生成する。 ###
         blacks = []
         whites = []
         lines = str.replace(/(\r?\n)*$/, '').split /\r?\n/
-        throw 'bad format' if lines.length isnt BOARD_SIZE
 
         for line, y in lines
-            throw 'bad format' if line.length isnt BOARD_SIZE
-            for x in [0...BOARD_SIZE]
+            for x in [0...line.length]
                 switch line.charAt x
                     when 'X' then blacks.push [x, y]
                     when 'O' then whites.push [x, y]
                     when ' ' then null ## pass
                     else throw 'bad format'
 
-        new OnBoard blacks, whites
+        new OnBoard base ? new BitBoardBase(lines.length), blacks, whites
 
-    @random: ->
+    @random: (base, boardSize = null) ->
         ### ランダムな配置の碁盤を返す。 ###
+        base ?= new BitBoardBase boardSize
         loop
             blacks = 0
             whites = 0
-            for bitPos in _BITS
+            for bitPos in base.BITS
                 switch Math.floor Math.random() * 3
                     when 1 then blacks |= bitPos
                     when 2 then whites |= bitPos
-            result = new OnBoard(blacks, whites)
+            result = new OnBoard base, blacks, whites
             return result if result.isLegal()
 
-    constructor: (blacks, whites) ->
+    constructor: (@base, blacks, whites) ->
         ### blacks, whitesは黒石/白石のある場所の座標の配列。 ###
         if blacks instanceof Array and whites instanceof Array
-            @black = positionsToBits blacks
-            @white = positionsToBits whites
+            @black = @base.positionsToBits blacks
+            @white = @base.positionsToBits whites
         else if typeof blacks is 'number' and typeof whites is 'number'
             @black = blacks
             @white = whites
@@ -175,7 +169,7 @@ class OnBoard
 
     isEmptyAt: (position) ->
         ### 座標が空点かどうか。 ###
-        @_isEmptyAt positionToBit position
+        @_isEmptyAt @base.positionToBit position
 
     _isEmptyAt: (bitPos) ->
         ### 座標が空点かどうか。 ###
@@ -191,7 +185,7 @@ class OnBoard
 
     isLegal: ->
         ### 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) ###
-        captured(@black, @white) == 0 and captured(@white, @black) == 0
+        @base.captured(@black, @white) == 0 and @base.captured(@white, @black) == 0
 
     isEqualTo: (board) ->
         ### 盤上が同じかどうか。 ###
@@ -203,22 +197,22 @@ class OnBoard
 
     stateAt: (position) ->
         ### 座標の状態を返す。 ###
-        @_stateAt positionToBit position
+        @_stateAt @base.positionToBit position
 
     _stateAt: (bitPos) ->
         if @black & bitPos
-            BLACK
+            @base.BLACK
         else if @white & bitPos
-            WHITE
+            @base.WHITE
         else
-            EMPTY
+            @base.EMPTY
 
     numOf: (stone) ->
         ### 盤上の石または空点の数を返す。 ###
         countBits switch stone
-            when EMPTY then @_empties()
-            when BLACK then @black
-            when WHITE then @white
+            when @base.BLACK then @black
+            when @base.WHITE then @white
+            when @base.EMPTY then @_empties()
             else
                 throw 'numOf'
                 0
@@ -228,7 +222,7 @@ class OnBoard
         現在の配置を返す。
         コンストラクタの逆関数
         ###
-        [bitsToPositions(@black), bitsToPositions(@white)]
+        [@base.bitsToPositions(@black), @base.bitsToPositions(@white)]
 
     score: ->
         ###
@@ -242,17 +236,17 @@ class OnBoard
         石を座標にセットする。
         stateはBLACK, WHITEのいずれか。(本当はEMPTYもOK)
         ###
-        @_add stone, positionToBit position
+        @_add stone, @base.positionToBit position
 
     _add: (stone, bitPos) ->
         switch stone
-            when BLACK
+            when @base.BLACK
                 @black |= bitPos
                 @white &= ~bitPos
-            when WHITE
+            when @base.WHITE
                 @white |= bitPos
                 @black &= ~bitPos
-            when EMPTY
+            when @base.EMPTY
                 @black &= ~bitPos
                 @white &= ~bitPos
             else
@@ -261,7 +255,7 @@ class OnBoard
 
     delete: (position) ->
         ### 座標の石をただ取る。 ###
-        @_delete positionToBit position
+        @_delete @base.positionToBit position
 
     _delete: (bitPos) ->
         @black &= ~bitPos
@@ -273,7 +267,7 @@ class OnBoard
         合法かつ自分の眼ではない座標がない場合、生きている石の目を埋める。
         ###
         result = []
-        for bitPos in _BITS
+        for bitPos in @base.BITS
             continue if @_whoseEyeAt(bitPos, true) is stone
             board = @copy()
             result.push board if board._place stone, bitPos
@@ -282,7 +276,7 @@ class OnBoard
         closures = @closureAndRegionsOf stone
         enclosedRegion = @enclosedRegionOf stone
         for c in closures
-            eyes = decomposeToStrings c & enclosedRegion
+            eyes = @base.decomposeToStrings c & enclosedRegion
             if eyes.length > 2
                 # ここではeyesのそれぞれは1bitのはず。
                 for e in eyes
@@ -291,61 +285,61 @@ class OnBoard
         result
 
     stringAt: (position) ->
-        @stringOf positionToBit position
+        @stringOf @base.positionToBit position
 
     stringOf: (bitPos) ->
         board = switch @_stateAt bitPos
-            when BLACK then @black
-            when WHITE then @white
+            when @base.BLACK then @black
+            when @base.WHITE then @white
             else @_empties()
 
-        stringOf board, bitPos
+        @base.stringOf board, bitPos
 
     stringAndLibertyAt: (position) ->
         ###
         座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
         接続した石の集団を連(ストリング)と呼ぶ。
         ###
-        s = @stringAt(position)
+        s = @stringAt position
         [s, @_libertyOf s]
 
     _libertyOf: (string) ->
         opponent = if @black & string then @white else @black
-        adjacent(string) & ~ opponent
+        @base.adjacent(string) & ~ opponent
 
     numOfLibertiesOf: (string) ->
         countBits @_libertyOf string
 
     _empties: ->
-        ON_BOARD & ~ (@black | @white)
+        @base.ON_BOARD & ~ (@black | @white)
 
     emptyStrings: ->
         ### 盤上の空点のストリングを返す。 ###
-        decomposeToStrings @_empties()
+        @base.decomposeToStrings @_empties()
 
     numOfLiberties: (stone) ->
         switch stone
-            when BLACK
+            when @base.BLACK
                 self = @black
                 opponent = @white
-            when WHITE
+            when @base.WHITE
                 self = @white
                 opponent = @black
-        lib = adjacent(self) & ~ opponent
+        lib = @base.adjacent(self) & ~ opponent
         countBits lib
 
     strings: ->
         ### 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 ###
-        [@stringsOf(BLACK), @stringsOf(WHITE)]
+        [@stringsOf(@base.BLACK), @stringsOf(@base.WHITE)]
 
     stringsOf: (stone) ->
-        decomposeToStrings switch stone
-            when BLACK then @black
-            when WHITE then @white
+        @base.decomposeToStrings switch stone
+            when @base.BLACK then @black
+            when @base.WHITE then @white
 
     isTouchedBetween: (a, b) ->
         ### ストリングa, bが接触しているかどうか。 ###
-        (adjacent(a) | b) != 0
+        (@base.adjacent(a) | b) != 0
 
     stringsToContacts: (strings) ->
         ### string(接続した石の集合)の配列からcontact(接続もしくは接触した石の集合)を算出して返す。 ###
@@ -364,7 +358,7 @@ class OnBoard
         unique result
 
     whoseEyeAt: (position, genuine = false) ->
-        @_whoseEyeAt positionToBit(position), genuine
+        @_whoseEyeAt @base.positionToBit(position), genuine
 
     _whoseEyeAt: (bitPos, genuine = false, checkings = 0, bEnclosed = null, wEnclosed = null) ->
         ###
@@ -375,17 +369,17 @@ class OnBoard
         ###
         return null if not @_isEmptyAt bitPos
 
-        bEnclosed ?= @enclosedRegionOf BLACK
+        bEnclosed ?= @enclosedRegionOf @base.BLACK
         if bEnclosed & bitPos
-            stone = BLACK
+            stone = @base.BLACK
             bitBoard = @black
-            region = stringOf bEnclosed, bitPos
+            region = @base.stringOf bEnclosed, bitPos
         else
-            wEnclosed ?= @enclosedRegionOf WHITE
+            wEnclosed ?= @enclosedRegionOf @base.WHITE
             if wEnclosed & bitPos
-                stone = WHITE
+                stone = @base.WHITE
                 bitBoard = @white
-                region = stringOf wEnclosed, bitPos
+                region = @base.stringOf wEnclosed, bitPos
             else
                 return null
 
@@ -394,12 +388,12 @@ class OnBoard
         # アルゴリズム
         # 眼を作っている石群が1つなら完全な眼。
         # 眼を作っている石群の先に眼が１つでもあれば、眼。
-        gds = decomposeToStrings stringOf bitBoard, adjacent region
+        gds = @base.decomposeToStrings @base.stringOf bitBoard, @base.adjacent region
         if gds.length == 1 or # 眼を作っている石群が1つ
             (gds.every (gd) =>
-                liberty = adjacent(gd) & ~region
+                liberty = @base.adjacent(gd) & ~region
                 return true if liberty & checkings
-                return true for b in _BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) is stone
+                return true for b in @base.BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) is stone
                 false)
             stone
         else
@@ -408,44 +402,44 @@ class OnBoard
     eyesOf: (stone) ->
         result = []
         bEnclosed = @enclosedRegionOf stone
-        regions = decomposeToStrings bEnclosed
+        regions = @base.decomposeToStrings bEnclosed
         bitBoard = switch stone
-                when BLACK then @black
-                when WHITE then @white
+                when @base.BLACK then @black
+                when @base.WHITE then @white
         for r in regions
-            strings = decomposeToStrings stringOf bitBoard, adjacent r
+            strings = @base.decomposeToStrings @base.stringOf bitBoard, @base.adjacent r
             empties = r &  @_empties()
-            if strings.every((s) -> (empties & adjacent s) is empties)
+            if strings.every((s) => (empties & @base.adjacent s) is empties)
                 result.push r
         result
 
     eyes: ->
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
-        blacks = @eyesOf(BLACK)
-        whites = @eyesOf(WHITE)
+        blacks = @eyesOf @base.BLACK
+        whites = @eyesOf @base.WHITE
         [blacks.filter((b) -> whites.every (w) -> (w & b) == 0), whites.filter((w) -> blacks.every (b) -> (b & w) == 0)]
 
     enclosedRegionOf: (stone) ->
         switch stone
-            when BLACK
+            when @base.BLACK
                 self = @black
                 opponent = @white
-            when WHITE
+            when @base.WHITE
                 self = @white
                 opponent = @black
-        regions = ~self & ON_BOARD
-        interiors = interiorOf regions
-        regions & ~stringOf regions, interiors & ~opponent
+        regions = ~self & @base.ON_BOARD
+        interiors = @base.interiorOf regions
+        regions & ~@base.stringOf regions, interiors & ~opponent
 
     closureAndRegionsOf: (stone) ->
         region = @enclosedRegionOf stone
-        neighoring = stringOf (switch stone
-            when BLACK then @black
-            when WHITE then @white), adjacent region
-        decomposeToStrings neighoring | region
+        neighoring = @base.stringOf (switch stone
+            when @base.BLACK then @black
+            when @base.WHITE then @white), @base.adjacent region
+        @base.decomposeToStrings neighoring | region
 
     atari: ->
-        bitsToPositions @_atari()
+        @base.bitsToPositions @_atari()
 
     _atari: ->
         result = 0
@@ -456,16 +450,16 @@ class OnBoard
     # 操作メソッド
 
     copy: ->
-        new OnBoard(@black, @white)
+        new OnBoard(@base, @black, @white)
 
     captureBy: (stone) ->
         ### 相手の石を取り上げて、取り上げた石のビットボードを返す。 ###
         switch stone
-            when BLACK
-                captives = captured @white, @black
+            when @base.BLACK
+                captives = @base.captured @white, @black
                 @white &= ~captives
-            when WHITE
-                captives = captured @black, @white
+            when @base.WHITE
+                captives = @base.captured @black, @white
                 @black &= ~captives
         captives
 
@@ -477,7 +471,7 @@ class OnBoard
         循環手か否かは未チェック。
         ###
         return true unless position? # パス
-        @_place stone, positionToBit position
+        @_place stone, @base.positionToBit position
 
     _place: (stone, bitPos) ->
         return false unless @_isEmptyAt bitPos
@@ -493,18 +487,19 @@ class OnBoard
 
     toString: ->
         str = ''
-        for y in [0...BOARD_SIZE]
-            for x in [0...BOARD_SIZE]
+        for y in [0...@base.BOARD_SIZE]
+            for x in [0...@base.BOARD_SIZE]
                 str += switch @stateAt [x, y]
-                    when BLACK then 'X'
-                    when WHITE then 'O'
+                    when @base.BLACK then 'X'
+                    when @base.WHITE then 'O'
                     else ' '
-            str += '\n' unless y == BOARD_SIZE - 1
+            str += '\n' unless y == @base.BOARD_SIZE - 1
         str
 
 
 root = exports ? if window? then window else {}
 root.OnBoard = OnBoard
+root.BitBoardBase = BitBoardBase
 if exports?
-    for e in ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString', 'interiorOf']
+    for e in ['countBits']
         root[e] = eval e if exports?

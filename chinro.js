@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BLACK, BOARD_SIZE, EMPTY, EvaluationResult, MAX_SCORE, WHITE, adjacenciesAt, boardOnScreen, boardsToString, cancelMessage, chase, chaseShicho, chaser, checkTarget, e, editBoard, escape, escaper, evaluatedResult, longestFail, longestSuccess, openAndCloseModal, opponentOf, playSequence, responseInterval, root, scheduleMessage, showOnBoard, startSolve, stopEditing, target, wEvaluate, _i, _len, _ref;
+  var BoardBase, EvaluationResult, boardOnScreen, boardsToString, cancelMessage, chase, chaseShicho, chaser, checkTarget, e, editBoard, escape, escaper, evaluatedResult, longestFail, longestSuccess, openAndCloseModal, playSequence, responseInterval, root, scheduleMessage, showOnBoard, startSolve, stopEditing, target, wEvaluate, _i, _len, _ref;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -19,57 +19,60 @@
     });
   };
 
-  BOARD_SIZE = 4;
-
-  MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2;
-
-  EMPTY = 0;
-
-  BLACK = 1;
-
-  WHITE = 2;
-
   boardsToString = function(history) {
     return history.map(function(e, i) {
       return "#" + i + "\n" + (e.toString());
     }).join('\n');
   };
 
-  opponentOf = function(stone) {
-
-    /* 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 */
-    switch (stone) {
-      case BLACK:
-        return WHITE;
-      case WHITE:
-        return BLACK;
-      default:
-        throw 'error';
+  BoardBase = (function() {
+    function BoardBase(BOARD_SIZE) {
+      this.BOARD_SIZE = BOARD_SIZE;
+      this.BLACK = 0;
+      this.WHITE = 1;
+      this.EMPTY = 2;
+      this.MAX_SCORE = this.BOARD_SIZE * this.BOARD_SIZE - 2;
     }
-  };
 
-  adjacenciesAt = function(position) {
+    BoardBase.prototype.opponentOf = function(stone) {
 
-    /* プライベート */
-
-    /* 隣接する点の座標の配列を返す。 */
-    var e, result, x, y, _i, _len, _ref;
-    result = [];
-    _ref = [[0, -1], [-1, 0], [1, 0], [0, 1]];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      e = _ref[_i];
-      x = position[0] + e[0];
-      y = position[1] + e[1];
-      if ((0 <= x && x < BOARD_SIZE) && (0 <= y && y < BOARD_SIZE)) {
-        result.push([x, y]);
+      /* 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 */
+      switch (stone) {
+        case this.BLACK:
+          return this.WHITE;
+        case this.WHITE:
+          return this.BLACK;
+        default:
+          throw 'error';
       }
-    }
-    return result;
-  };
+    };
+
+    BoardBase.prototype.adjacenciesAt = function(position) {
+
+      /* プライベート */
+
+      /* 隣接する点の座標の配列を返す。 */
+      var e, result, x, y, _i, _len, _ref;
+      result = [];
+      _ref = [[0, -1], [-1, 0], [1, 0], [0, 1]];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        e = _ref[_i];
+        x = position[0] + e[0];
+        y = position[1] + e[1];
+        if ((0 <= x && x < this.BOARD_SIZE) && (0 <= y && y < this.BOARD_SIZE)) {
+          result.push([x, y]);
+        }
+      }
+      return result;
+    };
+
+    return BoardBase;
+
+  })();
 
   root = typeof exports !== "undefined" && exports !== null ? exports : typeof window !== "undefined" && window !== null ? window : {};
 
-  _ref = ['BLACK', 'WHITE', 'EMPTY', 'BOARD_SIZE', 'MAX_SCORE', 'opponentOf', 'adjacenciesAt', 'boardsToString'];
+  _ref = ['BoardBase', 'boardsToString'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     e = _ref[_i];
     root[e] = eval(e);
@@ -265,7 +268,7 @@
   };
 
   showOnBoard = function(board, effect, callback) {
-    var $intersection, ataris, blacks, deferred, deferredes, p, place, whites, x, y, _j, _k, _ref1;
+    var $intersection, ataris, blacks, deferred, deferredes, p, place, whites, x, y, _j, _k, _ref1, _ref2, _ref3;
     if (effect == null) {
       effect = false;
     }
@@ -285,10 +288,10 @@
     _ref1 = board.deployment(), blacks = _ref1[0], whites = _ref1[1];
     ataris = board.atari();
     deferredes = [];
-    for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
-      for (y = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_k : --_k) {
+    for (x = _j = 0, _ref2 = board.base.BOARD_SIZE; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; x = 0 <= _ref2 ? ++_j : --_j) {
+      for (y = _k = 0, _ref3 = board.base.BOARD_SIZE; 0 <= _ref3 ? _k < _ref3 : _k > _ref3; y = 0 <= _ref3 ? ++_k : --_k) {
         p = [x, y];
-        $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * BOARD_SIZE) + ")");
+        $intersection = $(".intersection:nth-child(" + (1 + p[0] + p[1] * board.base.BOARD_SIZE) + ")");
         place = function(blackOrWhite, beat) {
           var deferred;
           if (effect && ((!$intersection.hasClass(blackOrWhite)) || ($intersection.hasClass('half-opacity')))) {

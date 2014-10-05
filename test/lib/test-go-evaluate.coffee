@@ -1,10 +1,11 @@
 assert = require 'assert'
-{ BLACK, WHITE, MAX_SCORE, boardsToString } = require "../../go-common.coffee"
+{ BoardBase, boardsToString } = require "../../go-common.coffee"
 { compare, evaluate } = require '../../go-evaluate.coffee'
 
 testEvaluate = (kernel) ->
     ->
         { OnBoard } = require "../../#{kernel}.coffee"
+        base = new BoardBase 4
         describe.skip 'compare', ->
             it 'should return positive', ->
                 board1 = OnBoard.fromString '''
@@ -19,7 +20,7 @@ testEvaluate = (kernel) ->
                     OOX 
                      XXX
                     '''
-                assert.equal compare(board1, board2, BLACK) > 0, true
+                assert.equal compare(board1, board2, base.BLACK) > 0, true
             it 'should return positive', ->
                 board1 = OnBoard.fromString '''
                     XXXX
@@ -33,7 +34,7 @@ testEvaluate = (kernel) ->
                     OO  
                     O OO
                     '''
-                assert.equal compare(board1, board2, WHITE) > 0, true
+                assert.equal compare(board1, board2, base.WHITE) > 0, true
 
         describe "evaluate", ->
             it "両方活きの終局。0を返す", ->
@@ -43,7 +44,7 @@ testEvaluate = (kernel) ->
                     XXOO
                      XO 
                     """
-                assert.equal evaluate([board], BLACK).value, 0
+                assert.equal evaluate([board], base.BLACK).value, 0
             it "両方アタリで黒番。MAX_SCOREを返す", ->
                 board = OnBoard.fromString """
                     XXOO
@@ -51,7 +52,7 @@ testEvaluate = (kernel) ->
                     XXOO
                     XXOO
                     """
-                assert.equal evaluate([board], BLACK).value, MAX_SCORE
+                assert.equal evaluate([board], base.BLACK).value, base.MAX_SCORE
             it "両方アタリで白番。-MAX_SCOREを返す", ->
                 board = OnBoard.fromString """
                     XXOO
@@ -59,7 +60,7 @@ testEvaluate = (kernel) ->
                     XXOO
                     XXOO
                     """
-                assert.equal evaluate([board], WHITE).value, -MAX_SCORE
+                assert.equal evaluate([board], base.WHITE).value, -base.MAX_SCORE
             it "コウで黒番。MAX_SCOREを返す", ->
                 board = OnBoard.fromString """
                     XXOO
@@ -67,7 +68,7 @@ testEvaluate = (kernel) ->
                     XXOO
                     XO O
                     """
-                assert.equal evaluate([board], BLACK).value, MAX_SCORE
+                assert.equal evaluate([board], base.BLACK).value, base.MAX_SCORE
             it "セキ。1を返す", ->
                 board = OnBoard.fromString """
                     XXOO
@@ -75,16 +76,7 @@ testEvaluate = (kernel) ->
                     XXOO
                     XX O
                     """
-                assert.equal evaluate([board], BLACK).value, 1
-            it "黒全滅", ->
-                board = OnBoard.fromString """
-                    XXXX
-                     OOO
-                    OOX 
-                    XXXX
-                    """
-                result = evaluate [board], BLACK
-                assert.equal result.value, -MAX_SCORE
+                assert.equal evaluate([board], base.BLACK).value, 1
             it "should return 5", ->
                 board = OnBoard.fromString """
                     XXXX
@@ -92,7 +84,7 @@ testEvaluate = (kernel) ->
                     OOX 
                       XX
                     """
-                result = evaluate [board], BLACK
+                result = evaluate [board], base.BLACK
                 assert.equal result.value, 5
             it "should return -MAX_SCORE", ->
                 board = OnBoard.fromString """
@@ -101,8 +93,8 @@ testEvaluate = (kernel) ->
                     OOOO
                     OOOO
                     """
-                result = evaluate [board], WHITE
-                assert.equal result.value, -MAX_SCORE
+                result = evaluate [board], base.WHITE
+                assert.equal result.value, -base.MAX_SCORE
             it "should return -5", ->
                 board = OnBoard.fromString """
                     O XO
@@ -110,7 +102,7 @@ testEvaluate = (kernel) ->
                     OOOO
                     OO O
                     """
-                assert.equal evaluate([board], BLACK).value, -5
+                assert.equal evaluate([board], base.BLACK).value, -5
             it "白先でも黒勝ち", -> # 15 depth 165065ms
                 board = OnBoard.fromString """
                      XOO
@@ -118,7 +110,7 @@ testEvaluate = (kernel) ->
                     XXOO
                        O
                     """
-                assert.equal evaluate([board], WHITE).value - board.score() > 0, true
+                assert.equal evaluate([board], base.WHITE).value - board.score() > 0, true
             it "セキ", ->
                 board = OnBoard.fromString """
                     X XX
@@ -126,7 +118,7 @@ testEvaluate = (kernel) ->
                     OXOX
                     OOO 
                     """
-                result = evaluate [board], WHITE
+                result = evaluate [board], base.WHITE
                 assert.equal result.value, 2
             it "メモ化の際のバグ確認", ->
                 board0 = OnBoard.fromString """
@@ -141,8 +133,8 @@ testEvaluate = (kernel) ->
                      XO 
                      OOO
                     """
-                result = evaluate [board0], BLACK
-                result = evaluate result.history[0..1].concat(board1), WHITE
+                result = evaluate [board0], base.BLACK
+                result = evaluate result.history[0..1].concat(board1), base.WHITE
                 assert.equal result.history[2].isEqualTo(board1), true
             it "1. should return ", ->
                 board = OnBoard.fromString """
@@ -151,7 +143,7 @@ testEvaluate = (kernel) ->
                         
                       X 
                     """
-                assert.equal evaluate([board], WHITE).value, MAX_SCORE
+                assert.equal evaluate([board], base.WHITE).value, base.MAX_SCORE
             it "2. should return ", ->
                 board = OnBoard.fromString '''
                      XOX
@@ -159,7 +151,7 @@ testEvaluate = (kernel) ->
                     X  O
                       OO
                     '''
-                result = evaluate [board], BLACK
+                result = evaluate [board], base.BLACK
                 assert.equal result.value, 4
             it "4. should return ", ->
                 board = OnBoard.fromString '''
@@ -168,8 +160,8 @@ testEvaluate = (kernel) ->
                      XO 
                     XO O
                     '''
-                result = evaluate [board], BLACK
-                assert.equal result.value, MAX_SCORE
+                result = evaluate [board], base.BLACK
+                assert.equal result.value, base.MAX_SCORE
             it "5. should return ", ->
                 board = OnBoard.fromString '''
                     X O 
@@ -177,7 +169,7 @@ testEvaluate = (kernel) ->
                      X  
                     OXXO
                     '''
-                assert.equal evaluate([board], BLACK).value, MAX_SCORE
+                assert.equal evaluate([board], base.BLACK).value, base.MAX_SCORE
             it "終局 ", ->
                 board = OnBoard.fromString '''
                     OOOO
@@ -185,7 +177,7 @@ testEvaluate = (kernel) ->
                     OOO 
                       O 
                     '''
-                assert.equal evaluate([board, board], WHITE).value, -MAX_SCORE
+                assert.equal evaluate([board, board], base.WHITE).value, -base.MAX_SCORE
         describe '黒猫のヨンロ', ->
             it "1", ->
                 board = OnBoard.fromString """
@@ -194,7 +186,7 @@ testEvaluate = (kernel) ->
                     OXXO
                       XO
                     """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+                assert.equal evaluate([board], base.BLACK).value - board.score() > 0, true
             it "2", ->
                 board = OnBoard.fromString """
                     XXXX
@@ -202,7 +194,7 @@ testEvaluate = (kernel) ->
                     OX O
                     OOOO
                     """
-                result = evaluate([board], BLACK)
+                result = evaluate([board], base.BLACK)
                 assert.equal result.value - board.score() > 0, true
             it "3", ->
                 board = OnBoard.fromString """
@@ -211,7 +203,7 @@ testEvaluate = (kernel) ->
                     O X 
                     OO O
                     """
-                result = evaluate([board], BLACK)
+                result = evaluate([board], base.BLACK)
                 assert.equal result.value - board.score() > 0, true
             it "4", ->
                 board = OnBoard.fromString """
@@ -220,7 +212,7 @@ testEvaluate = (kernel) ->
                        O
                     OO O
                     """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+                assert.equal evaluate([board], base.BLACK).value - board.score() > 0, true
             it "5", ->
                 board = OnBoard.fromString """
                     X XO
@@ -228,7 +220,7 @@ testEvaluate = (kernel) ->
                     OOXO
                       OO
                     """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+                assert.equal evaluate([board], base.BLACK).value - board.score() > 0, true
             it "6", ->
                 board = OnBoard.fromString """
                      XOO
@@ -236,11 +228,20 @@ testEvaluate = (kernel) ->
                     XXOO
                        O
                     """
-                assert.equal evaluate([board], BLACK).value - board.score() > 0, true
+                assert.equal evaluate([board], base.BLACK).value - board.score() > 0, true
             it "7", ->
                 board = OnBoard.fromString " XX \n XO \n XO \n OO "
-                assert.equal evaluate([board], BLACK).value, 1
-        describe.only "長手数問題", ->
+                assert.equal evaluate([board], base.BLACK).value, 1
+        describe.skip "長手数問題", ->
+            it "黒全滅", ->
+                board = OnBoard.fromString """
+                    XXXX
+                     OOO
+                    OOX 
+                    XXXX
+                    """
+                result = evaluate [board], base.BLACK
+                assert.equal result.value, -base.MAX_SCORE
             it "3. should return ", -> # 2014/10/02 187747ms
                 board = OnBoard.fromString '''
                       X 
@@ -248,26 +249,26 @@ testEvaluate = (kernel) ->
                     OXO 
                      O  
                     '''
-                result = evaluate [board], BLACK
+                result = evaluate [board], base.BLACK
                 assert.equal result.value, 2
             it "6. should return ", -> #解けない
                 board = OnBoard.fromString '  X \n XO \n XO \n O  '
-                assert.equal evaluate([board], BLACK).value, 0
+                assert.equal evaluate([board], base.BLACK).value, 0
             it "7. should return ", ->
                 board = OnBoard.fromString ' X  \n XO \n XO \n  O '
-                assert.equal evaluate([board], BLACK).value, 0
+                assert.equal evaluate([board], base.BLACK).value, 0
             it "8. should return ", ->
                 board = OnBoard.fromString ' X  \n XO \n XO \n O  '
-                assert.equal evaluate([board], BLACK).value, 0
+                assert.equal evaluate([board], base.BLACK).value, 0
             it "9. should return ", ->
                 board = OnBoard.fromString '    \n XO \n XO \n    '
-                assert.equal evaluate([board], BLACK).value, 0
+                assert.equal evaluate([board], base.BLACK).value, 0
             it "10. should return ", -> # 100手で読めず。
                 board = OnBoard.fromString '    \n X  \n  O \n    '
-                assert.equal evaluate([board], BLACK).value, 0
+                assert.equal evaluate([board], base.BLACK).value, 0
             it "11. should return ", ->
                 board = new OnBoard [], []
-                assert.equal evaluate([board], BLACK).value, MAX_SCORE
+                assert.equal evaluate([board], base.BLACK).value, base.MAX_SCORE
 
 root = exports ? window
 root.testEvaluate = testEvaluate

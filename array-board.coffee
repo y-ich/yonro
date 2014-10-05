@@ -8,7 +8,7 @@
 # 座標(position)の原点は[0, 0]
 
 if exports?
-    { BLACK, WHITE, EMPTY, MAX_SCORE, BOARD_SIZE, MAX_SCORE, opponentOf, adjacenciesAt, boardsToString } = require './go-common.coffee'
+    { boardsToString } = require './go-common.coffee'
 
 class OnBoard
     ### 盤上の状態を表すクラス ###

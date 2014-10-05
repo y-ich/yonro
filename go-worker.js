@@ -6,7 +6,9 @@
  */
 
 (function() {
-  var BIT_BOARD_SIZE, BLACK, BOARD_SIZE, DEBUG, EMPTY, EvaluationResult, LOWER_BOARD, MAX_SCORE, ON_BOARD, OnBoard, UPPER_BOARD, WHITE, adjacenciesAt, adjacent, bitsToPositions, bitsToString, boardsToString, borderOf, cache, captured, check, compare, countBits, decomposeToStrings, e, evalUntilDepth, evaluate, interiorOf, onlySuicide, opponentOf, positionToBit, positionsToBits, root, stringOf, _BITS, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
+  var BitBoardBase, BoardBase, DEBUG, EvaluationResult, OnBoard, boardsToString, cache, check, compare, countBits, e, evalUntilDepth, evaluate, onlySuicide, root, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -19,57 +21,60 @@
     });
   };
 
-  BOARD_SIZE = 4;
-
-  MAX_SCORE = BOARD_SIZE * BOARD_SIZE - 2;
-
-  EMPTY = 0;
-
-  BLACK = 1;
-
-  WHITE = 2;
-
   boardsToString = function(history) {
     return history.map(function(e, i) {
       return "#" + i + "\n" + (e.toString());
     }).join('\n');
   };
 
-  opponentOf = function(stone) {
-
-    /* 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 */
-    switch (stone) {
-      case BLACK:
-        return WHITE;
-      case WHITE:
-        return BLACK;
-      default:
-        throw 'error';
+  BoardBase = (function() {
+    function BoardBase(BOARD_SIZE) {
+      this.BOARD_SIZE = BOARD_SIZE;
+      this.BLACK = 0;
+      this.WHITE = 1;
+      this.EMPTY = 2;
+      this.MAX_SCORE = this.BOARD_SIZE * this.BOARD_SIZE - 2;
     }
-  };
 
-  adjacenciesAt = function(position) {
+    BoardBase.prototype.opponentOf = function(stone) {
 
-    /* プライベート */
-
-    /* 隣接する点の座標の配列を返す。 */
-    var e, result, x, y, _i, _len, _ref;
-    result = [];
-    _ref = [[0, -1], [-1, 0], [1, 0], [0, 1]];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      e = _ref[_i];
-      x = position[0] + e[0];
-      y = position[1] + e[1];
-      if ((0 <= x && x < BOARD_SIZE) && (0 <= y && y < BOARD_SIZE)) {
-        result.push([x, y]);
+      /* 黒(BLACK)なら白(WHITE)、白(WHITE)なら黒(BLACK)を返す。 */
+      switch (stone) {
+        case this.BLACK:
+          return this.WHITE;
+        case this.WHITE:
+          return this.BLACK;
+        default:
+          throw 'error';
       }
-    }
-    return result;
-  };
+    };
+
+    BoardBase.prototype.adjacenciesAt = function(position) {
+
+      /* プライベート */
+
+      /* 隣接する点の座標の配列を返す。 */
+      var e, result, x, y, _i, _len, _ref;
+      result = [];
+      _ref = [[0, -1], [-1, 0], [1, 0], [0, 1]];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        e = _ref[_i];
+        x = position[0] + e[0];
+        y = position[1] + e[1];
+        if ((0 <= x && x < this.BOARD_SIZE) && (0 <= y && y < this.BOARD_SIZE)) {
+          result.push([x, y]);
+        }
+      }
+      return result;
+    };
+
+    return BoardBase;
+
+  })();
 
   root = typeof exports !== "undefined" && exports !== null ? exports : typeof window !== "undefined" && window !== null ? window : {};
 
-  _ref = ['BLACK', 'WHITE', 'EMPTY', 'BOARD_SIZE', 'MAX_SCORE', 'opponentOf', 'adjacenciesAt', 'boardsToString'];
+  _ref = ['BoardBase', 'boardsToString'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     e = _ref[_i];
     root[e] = eval(e);
@@ -82,70 +87,8 @@
    */
 
   if (typeof exports !== "undefined" && exports !== null) {
-    _ref1 = require('./go-common.coffee'), BLACK = _ref1.BLACK, WHITE = _ref1.WHITE, EMPTY = _ref1.EMPTY, MAX_SCORE = _ref1.MAX_SCORE, BOARD_SIZE = _ref1.BOARD_SIZE, MAX_SCORE = _ref1.MAX_SCORE, opponentOf = _ref1.opponentOf, boardsToString = _ref1.boardsToString, compare = _ref1.compare;
+    _ref1 = require('./go-common.coffee'), BoardBase = _ref1.BoardBase, boardsToString = _ref1.boardsToString;
   }
-
-  positionToBit = function(position) {
-
-    /*
-    positionに相当するbitboardを返す。
-    bitboardのフォーマットは四路の場合、
-    ....F....F....F....
-    でFはフレーム(枠)
-     */
-    return 1 << (position[0] + position[1] * BIT_BOARD_SIZE);
-  };
-
-  BIT_BOARD_SIZE = BOARD_SIZE + 1;
-
-  if (BIT_BOARD_SIZE * BOARD_SIZE > 32) {
-    throw "overflow " + (BIT_BOARD_SIZE * BOARD_SIZE);
-  }
-
-  _BITS = (function() {
-    var result, x, y, _j, _k;
-    result = [];
-    for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
-      for (y = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_k : --_k) {
-        result.push(positionToBit([x, y]));
-      }
-    }
-    return result;
-  })();
-
-
-  /*
-  _BITSは位置を示すビットパターンすべての配列。
-   */
-
-  ON_BOARD = (function() {
-    var b, result, _j, _len1;
-    result = 0;
-    for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
-      b = _BITS[_j];
-      result |= b;
-    }
-    return result;
-  })();
-
-
-  /*
-  ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
-   */
-
-  UPPER_BOARD = 0;
-
-  LOWER_BOARD = 0;
-
-  (function() {
-    var x, _j, _results;
-    _results = [];
-    for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
-      UPPER_BOARD |= positionToBit([x, 0]);
-      _results.push(LOWER_BOARD |= positionToBit([x, BOARD_SIZE - 1]));
-    }
-    return _results;
-  })();
 
   countBits = function(x) {
 
@@ -158,135 +101,183 @@
     return x & 0x0000003F;
   };
 
-  positionsToBits = function(positions) {
+  BitBoardBase = (function(_super) {
+    __extends(BitBoardBase, _super);
 
-    /* positions配列の位置に1を立てたビットボードを返す。 */
-    var bits, _j, _len1;
-    bits = 0;
-    for (_j = 0, _len1 = positions.length; _j < _len1; _j++) {
-      e = positions[_j];
-      bits |= positionToBit(e);
-    }
-    return bits;
-  };
-
-  bitsToPositions = function(bitBoard) {
-
-    /* ビットボード上の1の位置の配列を返す。 */
-    var position, positions, x, y, _j, _k;
-    positions = [];
-    for (x = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_j : --_j) {
-      for (y = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_k : --_k) {
-        position = [x, y];
-        if (bitBoard & positionToBit(position)) {
-          positions.push(position);
+    function BitBoardBase(BOARD_SIZE) {
+      var b, x, y, _j, _k, _l, _len1, _m, _ref2, _ref3, _ref4, _ref5;
+      BitBoardBase.__super__.constructor.call(this, BOARD_SIZE);
+      this.BIT_BOARD_SIZE = this.BOARD_SIZE + 1;
+      if (this.BIT_BOARD_SIZE * this.BOARD_SIZE > 32) {
+        throw "32bit overflow";
+      }
+      this.BITS = [];
+      for (x = _j = 0, _ref2 = this.BOARD_SIZE; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; x = 0 <= _ref2 ? ++_j : --_j) {
+        for (y = _k = 0, _ref3 = this.BOARD_SIZE; 0 <= _ref3 ? _k < _ref3 : _k > _ref3; y = 0 <= _ref3 ? ++_k : --_k) {
+          this.BITS.push(this.positionToBit([x, y]));
         }
       }
-    }
-    return positions;
-  };
 
-  adjacent = function(bitBoard) {
-
-    /* 呼吸点を返す。 */
-    var expanded;
-    expanded = bitBoard << BIT_BOARD_SIZE;
-    expanded |= bitBoard << 1;
-    expanded |= bitBoard >>> 1;
-    expanded |= bitBoard >>> BIT_BOARD_SIZE;
-    return expanded & (~bitBoard) & ON_BOARD;
-  };
-
-  stringOf = function(bitBoard, seed) {
-
-    /* seedを含む連を返す。 */
-    var expanded;
-    if (!(bitBoard & seed)) {
-      return 0;
-    }
-    while (true) {
-      expanded = (seed | (seed << BIT_BOARD_SIZE) | (seed << 1) | (seed >>> 1) | (seed >>> BIT_BOARD_SIZE)) & bitBoard;
-      if (expanded === seed) {
-        return expanded;
+      /*
+      @BITSは位置を示すビットパターンすべての配列。
+       */
+      this.ON_BOARD = 0;
+      _ref4 = this.BITS;
+      for (_l = 0, _len1 = _ref4.length; _l < _len1; _l++) {
+        b = _ref4[_l];
+        this.ON_BOARD |= b;
       }
-      seed = expanded;
-    }
-  };
 
-  interiorOf = function(region) {
-
-    /* 領域の内部を返す */
-    var regionAndFrame;
-    regionAndFrame = region | ~ON_BOARD;
-    return region & ((region << BIT_BOARD_SIZE) | UPPER_BOARD) & (regionAndFrame << 1) & (regionAndFrame >>> 1) & ((region >>> BIT_BOARD_SIZE) | LOWER_BOARD);
-  };
-
-  borderOf = function(region) {
-    return region & ~interiorOf(region);
-  };
-
-  captured = function(objective, subjective) {
-
-    /* subjectiveで囲まれたobjectiveの部分を返す。 */
-    var breaths, liberty;
-    liberty = adjacent(objective) & ~subjective;
-    breaths = objective & adjacent(liberty);
-    return objective & (~stringOf(objective, breaths));
-  };
-
-  decomposeToStrings = function(bitBoard) {
-
-    /* 盤上の石をストリングに分解する。 */
-    var bit, checked, result, string, _j, _len1;
-    result = [];
-    checked = 0;
-    for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
-      bit = _BITS[_j];
-      if (!(bitBoard & ~checked & bit)) {
-        continue;
-      }
-      string = stringOf(bitBoard, bit);
-      result.push(string);
-      checked |= string;
-    }
-    return result;
-  };
-
-  bitsToString = function(bitBoard) {
-
-    /* bitBoardを文字列にする */
-    var str, x, y, _j, _k;
-    str = '';
-    for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
-      for (x = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_k : --_k) {
-        str += bitBoard & positionToBit([x, y]) ? 'O' : '.';
-      }
-      if (y !== BOARD_SIZE - 1) {
-        str += '\n';
+      /*
+      @ON_BOARDは盤上を取り出す(フレームを落とす)ためのマスク
+       */
+      this.BOARD_TOP = 0;
+      this.BOARD_BOTTOM = 0;
+      for (x = _m = 0, _ref5 = this.BOARD_SIZE; 0 <= _ref5 ? _m < _ref5 : _m > _ref5; x = 0 <= _ref5 ? ++_m : --_m) {
+        this.BOARD_TOP |= this.positionToBit([x, 0]);
+        this.BOARD_BOTTOM |= this.positionToBit([x, this.BOARD_SIZE - 1]);
       }
     }
-    return str;
-  };
+
+    BitBoardBase.prototype.positionToBit = function(position) {
+
+      /*
+      positionに相当するbitboardを返す。
+      bitboardのフォーマットは四路の場合、
+      ....F....F....F....
+      でFはフレーム(枠)
+       */
+      return 1 << (position[0] + position[1] * this.BIT_BOARD_SIZE);
+    };
+
+    BitBoardBase.prototype.positionsToBits = function(positions) {
+
+      /* positions配列の位置に1を立てたビットボードを返す。 */
+      var bits, _j, _len1;
+      bits = 0;
+      for (_j = 0, _len1 = positions.length; _j < _len1; _j++) {
+        e = positions[_j];
+        bits |= this.positionToBit(e);
+      }
+      return bits;
+    };
+
+    BitBoardBase.prototype.bitsToPositions = function(bitBoard) {
+
+      /* ビットボード上の1の位置の配列を返す。 */
+      var position, positions, x, y, _j, _k, _ref2, _ref3;
+      positions = [];
+      for (x = _j = 0, _ref2 = this.BOARD_SIZE; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; x = 0 <= _ref2 ? ++_j : --_j) {
+        for (y = _k = 0, _ref3 = this.BOARD_SIZE; 0 <= _ref3 ? _k < _ref3 : _k > _ref3; y = 0 <= _ref3 ? ++_k : --_k) {
+          position = [x, y];
+          if (bitBoard & this.positionToBit(position)) {
+            positions.push(position);
+          }
+        }
+      }
+      return positions;
+    };
+
+    BitBoardBase.prototype.adjacent = function(bitBoard) {
+
+      /* 呼吸点を返す。 */
+      var expanded;
+      expanded = bitBoard << this.BIT_BOARD_SIZE;
+      expanded |= bitBoard << 1;
+      expanded |= bitBoard >>> 1;
+      expanded |= bitBoard >>> this.BIT_BOARD_SIZE;
+      return expanded & (~bitBoard) & this.ON_BOARD;
+    };
+
+    BitBoardBase.prototype.stringOf = function(bitBoard, seed) {
+
+      /* seedを含む連を返す。 */
+      var expanded;
+      if (!(bitBoard & seed)) {
+        return 0;
+      }
+      while (true) {
+        expanded = (seed | (seed << this.BIT_BOARD_SIZE) | (seed << 1) | (seed >>> 1) | (seed >>> this.BIT_BOARD_SIZE)) & bitBoard;
+        if (expanded === seed) {
+          return expanded;
+        }
+        seed = expanded;
+      }
+    };
+
+    BitBoardBase.prototype.interiorOf = function(region) {
+
+      /* 領域の内部を返す */
+      var regionAndFrame;
+      regionAndFrame = region | ~this.ON_BOARD;
+      return region & ((region << this.BIT_BOARD_SIZE) | this.BOARD_TOP) & (regionAndFrame << 1) & (regionAndFrame >>> 1) & ((region >>> this.BIT_BOARD_SIZE) | this.BOARD_BOTTOM);
+    };
+
+    BitBoardBase.prototype.borderOf = function(region) {
+      return region & ~this.interiorOf(region);
+    };
+
+    BitBoardBase.prototype.captured = function(objective, subjective) {
+
+      /* subjectiveで囲まれたobjectiveの部分を返す。 */
+      var breaths, liberty;
+      liberty = this.adjacent(objective) & ~subjective;
+      breaths = objective & this.adjacent(liberty);
+      return objective & (~this.stringOf(objective, breaths));
+    };
+
+    BitBoardBase.prototype.decomposeToStrings = function(bitBoard) {
+
+      /* 盤上の石をストリングに分解する。 */
+      var bit, checked, result, string, _j, _len1, _ref2;
+      result = [];
+      checked = 0;
+      _ref2 = this.BITS;
+      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+        bit = _ref2[_j];
+        if (!(bitBoard & ~checked & bit)) {
+          continue;
+        }
+        string = this.stringOf(bitBoard, bit);
+        result.push(string);
+        checked |= string;
+      }
+      return result;
+    };
+
+    BitBoardBase.prototype.bitsToString = function(bitBoard) {
+
+      /* bitBoardを文字列にする */
+      var str, x, y, _j, _k, _ref2, _ref3;
+      str = '';
+      for (y = _j = 0, _ref2 = this.BOARD_SIZE; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; y = 0 <= _ref2 ? ++_j : --_j) {
+        for (x = _k = 0, _ref3 = this.BOARD_SIZE; 0 <= _ref3 ? _k < _ref3 : _k > _ref3; x = 0 <= _ref3 ? ++_k : --_k) {
+          str += bitBoard & this.positionToBit([x, y]) ? 'O' : '.';
+        }
+        if (y !== this.BOARD_SIZE - 1) {
+          str += '\n';
+        }
+      }
+      return str;
+    };
+
+    return BitBoardBase;
+
+  })(BoardBase);
 
   OnBoard = (function() {
 
     /* 盤上の状態を表すクラス */
-    OnBoard.fromString = function(str) {
+    OnBoard.fromString = function(str, base) {
 
       /* 盤上の状態を表すX(黒)とO(白)と空点(スペース)と改行で文字列からインスタンスを生成する。 */
-      var blacks, line, lines, whites, x, y, _j, _k, _len1;
+      var blacks, line, lines, whites, x, y, _j, _k, _len1, _ref2;
       blacks = [];
       whites = [];
       lines = str.replace(/(\r?\n)*$/, '').split(/\r?\n/);
-      if (lines.length !== BOARD_SIZE) {
-        throw 'bad format';
-      }
       for (y = _j = 0, _len1 = lines.length; _j < _len1; y = ++_j) {
         line = lines[y];
-        if (line.length !== BOARD_SIZE) {
-          throw 'bad format';
-        }
-        for (x = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_k : --_k) {
+        for (x = _k = 0, _ref2 = line.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; x = 0 <= _ref2 ? ++_k : --_k) {
           switch (line.charAt(x)) {
             case 'X':
               blacks.push([x, y]);
@@ -302,18 +293,25 @@
           }
         }
       }
-      return new OnBoard(blacks, whites);
+      return new OnBoard(base != null ? base : new BitBoardBase(lines.length), blacks, whites);
     };
 
-    OnBoard.random = function() {
+    OnBoard.random = function(base, boardSize) {
+      var bitPos, blacks, result, whites, _j, _len1, _ref2;
+      if (boardSize == null) {
+        boardSize = null;
+      }
 
       /* ランダムな配置の碁盤を返す。 */
-      var bitPos, blacks, result, whites, _j, _len1;
+      if (base == null) {
+        base = new BitBoardBase(boardSize);
+      }
       while (true) {
         blacks = 0;
         whites = 0;
-        for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
-          bitPos = _BITS[_j];
+        _ref2 = base.BITS;
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          bitPos = _ref2[_j];
           switch (Math.floor(Math.random() * 3)) {
             case 1:
               blacks |= bitPos;
@@ -322,19 +320,20 @@
               whites |= bitPos;
           }
         }
-        result = new OnBoard(blacks, whites);
+        result = new OnBoard(base, blacks, whites);
         if (result.isLegal()) {
           return result;
         }
       }
     };
 
-    function OnBoard(blacks, whites) {
+    function OnBoard(base, blacks, whites) {
+      this.base = base;
 
       /* blacks, whitesは黒石/白石のある場所の座標の配列。 */
       if (blacks instanceof Array && whites instanceof Array) {
-        this.black = positionsToBits(blacks);
-        this.white = positionsToBits(whites);
+        this.black = this.base.positionsToBits(blacks);
+        this.white = this.base.positionsToBits(whites);
       } else if (typeof blacks === 'number' && typeof whites === 'number') {
         this.black = blacks;
         this.white = whites;
@@ -347,7 +346,7 @@
     OnBoard.prototype.isEmptyAt = function(position) {
 
       /* 座標が空点かどうか。 */
-      return this._isEmptyAt(positionToBit(position));
+      return this._isEmptyAt(this.base.positionToBit(position));
     };
 
     OnBoard.prototype._isEmptyAt = function(bitPos) {
@@ -370,7 +369,7 @@
     OnBoard.prototype.isLegal = function() {
 
       /* 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) */
-      return captured(this.black, this.white) === 0 && captured(this.white, this.black) === 0;
+      return this.base.captured(this.black, this.white) === 0 && this.base.captured(this.white, this.black) === 0;
     };
 
     OnBoard.prototype.isEqualTo = function(board) {
@@ -385,16 +384,16 @@
     OnBoard.prototype.stateAt = function(position) {
 
       /* 座標の状態を返す。 */
-      return this._stateAt(positionToBit(position));
+      return this._stateAt(this.base.positionToBit(position));
     };
 
     OnBoard.prototype._stateAt = function(bitPos) {
       if (this.black & bitPos) {
-        return BLACK;
+        return this.base.BLACK;
       } else if (this.white & bitPos) {
-        return WHITE;
+        return this.base.WHITE;
       } else {
-        return EMPTY;
+        return this.base.EMPTY;
       }
     };
 
@@ -403,12 +402,12 @@
       /* 盤上の石または空点の数を返す。 */
       return countBits((function() {
         switch (stone) {
-          case EMPTY:
-            return this._empties();
-          case BLACK:
+          case this.base.BLACK:
             return this.black;
-          case WHITE:
+          case this.base.WHITE:
             return this.white;
+          case this.base.EMPTY:
+            return this._empties();
           default:
             throw 'numOf';
             return 0;
@@ -422,7 +421,7 @@
       現在の配置を返す。
       コンストラクタの逆関数
        */
-      return [bitsToPositions(this.black), bitsToPositions(this.white)];
+      return [this.base.bitsToPositions(this.black), this.base.bitsToPositions(this.white)];
     };
 
     OnBoard.prototype.score = function() {
@@ -440,20 +439,20 @@
       石を座標にセットする。
       stateはBLACK, WHITEのいずれか。(本当はEMPTYもOK)
        */
-      return this._add(stone, positionToBit(position));
+      return this._add(stone, this.base.positionToBit(position));
     };
 
     OnBoard.prototype._add = function(stone, bitPos) {
       switch (stone) {
-        case BLACK:
+        case this.base.BLACK:
           this.black |= bitPos;
           this.white &= ~bitPos;
           break;
-        case WHITE:
+        case this.base.WHITE:
           this.white |= bitPos;
           this.black &= ~bitPos;
           break;
-        case EMPTY:
+        case this.base.EMPTY:
           this.black &= ~bitPos;
           this.white &= ~bitPos;
           break;
@@ -465,7 +464,7 @@
     OnBoard.prototype["delete"] = function(position) {
 
       /* 座標の石をただ取る。 */
-      return this._delete(positionToBit(position));
+      return this._delete(this.base.positionToBit(position));
     };
 
     OnBoard.prototype._delete = function(bitPos) {
@@ -479,10 +478,11 @@
       stoneの手番で、合法かつ自分の眼ではない座標に打った局面を返す。
       合法かつ自分の眼ではない座標がない場合、生きている石の目を埋める。
        */
-      var bitPos, board, c, closures, enclosedRegion, eyes, result, _j, _k, _l, _len1, _len2, _len3;
+      var bitPos, board, c, closures, enclosedRegion, eyes, result, _j, _k, _l, _len1, _len2, _len3, _ref2;
       result = [];
-      for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
-        bitPos = _BITS[_j];
+      _ref2 = this.base.BITS;
+      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+        bitPos = _ref2[_j];
         if (this._whoseEyeAt(bitPos, true) === stone) {
           continue;
         }
@@ -498,7 +498,7 @@
       enclosedRegion = this.enclosedRegionOf(stone);
       for (_k = 0, _len2 = closures.length; _k < _len2; _k++) {
         c = closures[_k];
-        eyes = decomposeToStrings(c & enclosedRegion);
+        eyes = this.base.decomposeToStrings(c & enclosedRegion);
         if (eyes.length > 2) {
           for (_l = 0, _len3 = eyes.length; _l < _len3; _l++) {
             e = eyes[_l];
@@ -513,22 +513,22 @@
     };
 
     OnBoard.prototype.stringAt = function(position) {
-      return this.stringOf(positionToBit(position));
+      return this.stringOf(this.base.positionToBit(position));
     };
 
     OnBoard.prototype.stringOf = function(bitPos) {
       var board;
       board = (function() {
         switch (this._stateAt(bitPos)) {
-          case BLACK:
+          case this.base.BLACK:
             return this.black;
-          case WHITE:
+          case this.base.WHITE:
             return this.white;
           default:
             return this._empties();
         }
       }).call(this);
-      return stringOf(board, bitPos);
+      return this.base.stringOf(board, bitPos);
     };
 
     OnBoard.prototype.stringAndLibertyAt = function(position) {
@@ -545,7 +545,7 @@
     OnBoard.prototype._libertyOf = function(string) {
       var opponent;
       opponent = this.black & string ? this.white : this.black;
-      return adjacent(string) & ~opponent;
+      return this.base.adjacent(string) & ~opponent;
     };
 
     OnBoard.prototype.numOfLibertiesOf = function(string) {
@@ -553,42 +553,42 @@
     };
 
     OnBoard.prototype._empties = function() {
-      return ON_BOARD & ~(this.black | this.white);
+      return this.base.ON_BOARD & ~(this.black | this.white);
     };
 
     OnBoard.prototype.emptyStrings = function() {
 
       /* 盤上の空点のストリングを返す。 */
-      return decomposeToStrings(this._empties());
+      return this.base.decomposeToStrings(this._empties());
     };
 
     OnBoard.prototype.numOfLiberties = function(stone) {
       var lib, opponent, self;
       switch (stone) {
-        case BLACK:
+        case this.base.BLACK:
           self = this.black;
           opponent = this.white;
           break;
-        case WHITE:
+        case this.base.WHITE:
           self = this.white;
           opponent = this.black;
       }
-      lib = adjacent(self) & ~opponent;
+      lib = this.base.adjacent(self) & ~opponent;
       return countBits(lib);
     };
 
     OnBoard.prototype.strings = function() {
 
       /* 盤上のストリングを返す。1つ目の要素が黒のストリング、2つ目の要素が白のストリング。 */
-      return [this.stringsOf(BLACK), this.stringsOf(WHITE)];
+      return [this.stringsOf(this.base.BLACK), this.stringsOf(this.base.WHITE)];
     };
 
     OnBoard.prototype.stringsOf = function(stone) {
-      return decomposeToStrings((function() {
+      return this.base.decomposeToStrings((function() {
         switch (stone) {
-          case BLACK:
+          case this.base.BLACK:
             return this.black;
-          case WHITE:
+          case this.base.WHITE:
             return this.white;
         }
       }).call(this));
@@ -597,7 +597,7 @@
     OnBoard.prototype.isTouchedBetween = function(a, b) {
 
       /* ストリングa, bが接触しているかどうか。 */
-      return (adjacent(a) | b) !== 0;
+      return (this.base.adjacent(a) | b) !== 0;
     };
 
     OnBoard.prototype.stringsToContacts = function(strings) {
@@ -634,7 +634,7 @@
       if (genuine == null) {
         genuine = false;
       }
-      return this._whoseEyeAt(positionToBit(position), genuine);
+      return this._whoseEyeAt(this.base.positionToBit(position), genuine);
     };
 
     OnBoard.prototype._whoseEyeAt = function(bitPos, genuine, checkings, bEnclosed, wEnclosed) {
@@ -662,20 +662,20 @@
         return null;
       }
       if (bEnclosed == null) {
-        bEnclosed = this.enclosedRegionOf(BLACK);
+        bEnclosed = this.enclosedRegionOf(this.base.BLACK);
       }
       if (bEnclosed & bitPos) {
-        stone = BLACK;
+        stone = this.base.BLACK;
         bitBoard = this.black;
-        region = stringOf(bEnclosed, bitPos);
+        region = this.base.stringOf(bEnclosed, bitPos);
       } else {
         if (wEnclosed == null) {
-          wEnclosed = this.enclosedRegionOf(WHITE);
+          wEnclosed = this.enclosedRegionOf(this.base.WHITE);
         }
         if (wEnclosed & bitPos) {
-          stone = WHITE;
+          stone = this.base.WHITE;
           bitBoard = this.white;
-          region = stringOf(wEnclosed, bitPos);
+          region = this.base.stringOf(wEnclosed, bitPos);
         } else {
           return null;
         }
@@ -683,16 +683,17 @@
       if (genuine && countBits(region) > 1) {
         return null;
       }
-      gds = decomposeToStrings(stringOf(bitBoard, adjacent(region)));
+      gds = this.base.decomposeToStrings(this.base.stringOf(bitBoard, this.base.adjacent(region)));
       if (gds.length === 1 || (gds.every((function(_this) {
         return function(gd) {
-          var b, liberty, _j, _len1;
-          liberty = adjacent(gd) & ~region;
+          var b, liberty, _j, _len1, _ref2;
+          liberty = _this.base.adjacent(gd) & ~region;
           if (liberty & checkings) {
             return true;
           }
-          for (_j = 0, _len1 = _BITS.length; _j < _len1; _j++) {
-            b = _BITS[_j];
+          _ref2 = _this.base.BITS;
+          for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+            b = _ref2[_j];
             if ((b & liberty) && _this._whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) === stone) {
               return true;
             }
@@ -710,22 +711,24 @@
       var bEnclosed, bitBoard, empties, r, regions, result, strings, _j, _len1;
       result = [];
       bEnclosed = this.enclosedRegionOf(stone);
-      regions = decomposeToStrings(bEnclosed);
+      regions = this.base.decomposeToStrings(bEnclosed);
       bitBoard = (function() {
         switch (stone) {
-          case BLACK:
+          case this.base.BLACK:
             return this.black;
-          case WHITE:
+          case this.base.WHITE:
             return this.white;
         }
       }).call(this);
       for (_j = 0, _len1 = regions.length; _j < _len1; _j++) {
         r = regions[_j];
-        strings = decomposeToStrings(stringOf(bitBoard, adjacent(r)));
+        strings = this.base.decomposeToStrings(this.base.stringOf(bitBoard, this.base.adjacent(r)));
         empties = r & this._empties();
-        if (strings.every(function(s) {
-          return (empties & adjacent(s)) === empties;
-        })) {
+        if (strings.every((function(_this) {
+          return function(s) {
+            return (empties & _this.base.adjacent(s)) === empties;
+          };
+        })(this))) {
           result.push(r);
         }
       }
@@ -736,8 +739,8 @@
 
       /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
       var blacks, whites;
-      blacks = this.eyesOf(BLACK);
-      whites = this.eyesOf(WHITE);
+      blacks = this.eyesOf(this.base.BLACK);
+      whites = this.eyesOf(this.base.WHITE);
       return [
         blacks.filter(function(b) {
           return whites.every(function(w) {
@@ -754,35 +757,35 @@
     OnBoard.prototype.enclosedRegionOf = function(stone) {
       var interiors, opponent, regions, self;
       switch (stone) {
-        case BLACK:
+        case this.base.BLACK:
           self = this.black;
           opponent = this.white;
           break;
-        case WHITE:
+        case this.base.WHITE:
           self = this.white;
           opponent = this.black;
       }
-      regions = ~self & ON_BOARD;
-      interiors = interiorOf(regions);
-      return regions & ~stringOf(regions, interiors & ~opponent);
+      regions = ~self & this.base.ON_BOARD;
+      interiors = this.base.interiorOf(regions);
+      return regions & ~this.base.stringOf(regions, interiors & ~opponent);
     };
 
     OnBoard.prototype.closureAndRegionsOf = function(stone) {
       var neighoring, region;
       region = this.enclosedRegionOf(stone);
-      neighoring = stringOf(((function() {
+      neighoring = this.base.stringOf(((function() {
         switch (stone) {
-          case BLACK:
+          case this.base.BLACK:
             return this.black;
-          case WHITE:
+          case this.base.WHITE:
             return this.white;
         }
-      }).call(this)), adjacent(region));
-      return decomposeToStrings(neighoring | region);
+      }).call(this)), this.base.adjacent(region));
+      return this.base.decomposeToStrings(neighoring | region);
     };
 
     OnBoard.prototype.atari = function() {
-      return bitsToPositions(this._atari());
+      return this.base.bitsToPositions(this._atari());
     };
 
     OnBoard.prototype._atari = function() {
@@ -799,7 +802,7 @@
     };
 
     OnBoard.prototype.copy = function() {
-      return new OnBoard(this.black, this.white);
+      return new OnBoard(this.base, this.black, this.white);
     };
 
     OnBoard.prototype.captureBy = function(stone) {
@@ -807,12 +810,12 @@
       /* 相手の石を取り上げて、取り上げた石のビットボードを返す。 */
       var captives;
       switch (stone) {
-        case BLACK:
-          captives = captured(this.white, this.black);
+        case this.base.BLACK:
+          captives = this.base.captured(this.white, this.black);
           this.white &= ~captives;
           break;
-        case WHITE:
-          captives = captured(this.black, this.white);
+        case this.base.WHITE:
+          captives = this.base.captured(this.black, this.white);
           this.black &= ~captives;
       }
       return captives;
@@ -829,7 +832,7 @@
       if (position == null) {
         return true;
       }
-      return this._place(stone, positionToBit(position));
+      return this._place(stone, this.base.positionToBit(position));
     };
 
     OnBoard.prototype._place = function(stone, bitPos) {
@@ -847,22 +850,22 @@
     };
 
     OnBoard.prototype.toString = function() {
-      var str, x, y, _j, _k;
+      var str, x, y, _j, _k, _ref2, _ref3;
       str = '';
-      for (y = _j = 0; 0 <= BOARD_SIZE ? _j < BOARD_SIZE : _j > BOARD_SIZE; y = 0 <= BOARD_SIZE ? ++_j : --_j) {
-        for (x = _k = 0; 0 <= BOARD_SIZE ? _k < BOARD_SIZE : _k > BOARD_SIZE; x = 0 <= BOARD_SIZE ? ++_k : --_k) {
+      for (y = _j = 0, _ref2 = this.base.BOARD_SIZE; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; y = 0 <= _ref2 ? ++_j : --_j) {
+        for (x = _k = 0, _ref3 = this.base.BOARD_SIZE; 0 <= _ref3 ? _k < _ref3 : _k > _ref3; x = 0 <= _ref3 ? ++_k : --_k) {
           str += (function() {
             switch (this.stateAt([x, y])) {
-              case BLACK:
+              case this.base.BLACK:
                 return 'X';
-              case WHITE:
+              case this.base.WHITE:
                 return 'O';
               default:
                 return ' ';
             }
           }).call(this);
         }
-        if (y !== BOARD_SIZE - 1) {
+        if (y !== this.base.BOARD_SIZE - 1) {
           str += '\n';
         }
       }
@@ -877,8 +880,10 @@
 
   root.OnBoard = OnBoard;
 
+  root.BitBoardBase = BitBoardBase;
+
   if (typeof exports !== "undefined" && exports !== null) {
-    _ref2 = ['countBits', 'positionToBit', 'positionsToBits', 'bitsToPositions', 'adjacent', 'stringOf', 'captured', 'decomposeToStrings', 'boardsToString', 'compare', 'bitsToString', 'interiorOf'];
+    _ref2 = ['countBits'];
     for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
       e = _ref2[_j];
       if (typeof exports !== "undefined" && exports !== null) {
@@ -894,14 +899,14 @@
    */
 
   if (typeof exports !== "undefined" && exports !== null) {
-    _ref3 = require('./go-common.coffee'), BLACK = _ref3.BLACK, WHITE = _ref3.WHITE, EMPTY = _ref3.EMPTY, MAX_SCORE = _ref3.MAX_SCORE, opponentOf = _ref3.opponentOf, boardsToString = _ref3.boardsToString;
-    bitsToString = require('./bit-board.coffee').bitsToString;
+    boardsToString = require('./go-common.coffee').boardsToString;
+    BitBoardBase = require('./bit-board.coffee').BitBoardBase;
   }
 
   DEBUG = false;
 
   check = function(board, next) {
-    return ((next == null) || next === BLACK) && board.isEqualTo(' XXX\nOXOX\nOXOX\nOOO ');
+    return ((next == null) || next === board.base.BLACK) && board.isEqualTo(' XXX\nOXOX\nOXOX\nOOO ');
   };
 
   cache = {
@@ -915,9 +920,9 @@
       var array;
       array = (function() {
         switch (next) {
-          case BLACK:
+          case board.base.BLACK:
             return this.black;
-          case WHITE:
+          case board.base.WHITE:
             return this.white;
         }
       }).call(this);
@@ -930,9 +935,9 @@
       var array, index, _k, _len2;
       array = (function() {
         switch (next) {
-          case BLACK:
+          case board.base.BLACK:
             return this.black;
-          case WHITE:
+          case board.base.WHITE:
             return this.white;
         }
       }).call(this);
@@ -949,11 +954,14 @@
   };
 
   evaluate = function(history, next) {
-    var depth, result, trueEnd, _k, _ref4;
+    var depth, result, trueEnd, _k, _ref3;
     cache.clear();
     result = evalUntilDepth(history, next, 0);
     trueEnd = !isNaN(result.value);
-    for (depth = _k = _ref4 = (trueEnd ? 30 : 2); _k <= 30; depth = _k += 1) {
+    if (DEBUG) {
+      console.log("trueEnd: " + trueEnd);
+    }
+    for (depth = _k = 2, _ref3 = (trueEnd ? 5 : 1); _k <= 30; depth = _k += _ref3) {
       if (DEBUG) {
         console.log("depth: " + depth);
       }
@@ -981,19 +989,19 @@
     4. 自分の連(string)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
     5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
      */
-    var aBlack, aWhite, bBlack, bWhite, dame, diff, opponent, score, strings, _ref4, _ref5;
-    opponent = opponentOf(stone);
+    var aBlack, aWhite, bBlack, bWhite, dame, diff, opponent, score, strings, _ref3, _ref4;
+    opponent = a.base.opponentOf(stone);
 
     /*
     candidates = - a.candidates(opponent).length + b.candidates(opponent).length
     if candidates != 0
         return candidates
      */
-    _ref4 = a.strings(), aBlack = _ref4[0], aWhite = _ref4[1];
-    _ref5 = b.strings(), bBlack = _ref5[0], bWhite = _ref5[1];
+    _ref3 = a.strings(), aBlack = _ref3[0], aWhite = _ref3[1];
+    _ref4 = b.strings(), bBlack = _ref4[0], bWhite = _ref4[1];
     switch (stone) {
-      case BLACK:
-        dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE));
+      case a.base.BLACK:
+        dame = (a.numOfLiberties(a.base.BLACK) - a.numOfLiberties(a.base.WHITE)) - (b.numOfLiberties(b.base.BLACK) - b.numOfLiberties(b.base.WHITE));
         if (dame !== 0) {
           return dame;
         }
@@ -1009,8 +1017,8 @@
         }
         score = a.score() - b.score();
         return score;
-      case WHITE:
-        dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK));
+      case a.base.WHITE:
+        dame = (a.numOfLiberties(a.base.WHITE) - a.numOfLiberties(a.base.BLACK)) - (b.numOfLiberties(b.base.WHITE) - b.numOfLiberties(b.base.BLACK));
         if (dame !== 0) {
           return dame;
         }
@@ -1030,13 +1038,13 @@
   };
 
   onlySuicide = function(nodes, next, board) {
-    var blacks, strings, suicides, whites, _ref4;
-    _ref4 = board.strings(), blacks = _ref4[0], whites = _ref4[1];
+    var blacks, strings, suicides, whites, _ref3;
+    _ref3 = board.strings(), blacks = _ref3[0], whites = _ref3[1];
     strings = (function() {
       switch (next) {
-        case BLACK:
+        case board.base.BLACK:
           return blacks;
-        case WHITE:
+        case board.base.WHITE:
           return whites;
       }
     })();
@@ -1099,20 +1107,20 @@
       eyeBoard = eyes[0].reduce((function(x, y) {
         return x | y;
       }), 0);
-      if ((empty & eyeBoard) === empty || (board.numOf(WHITE) === 0 && (eyes[0].length >= 2 || board.numOf(EMPTY) > 6))) {
-        return new EvaluationResult(MAX_SCORE, history);
+      if ((empty & eyeBoard) === empty || (board.numOf(board.base.WHITE) === 0 && (eyes[0].length >= 2 || board.numOf(board.base.EMPTY) > 6))) {
+        return new EvaluationResult(board.base.MAX_SCORE, history);
       }
       eyeBoard = eyes[1].reduce((function(x, y) {
         return x | y;
       }), 0);
-      if ((empty & eyeBoard) === empty || (board.numOf(BLACK) === 0 && (eyes[1].length >= 2 || board.numOf(EMPTY) > 6))) {
-        return new EvaluationResult(-MAX_SCORE, history);
+      if ((empty & eyeBoard) === empty || (board.numOf(board.base.BLACK) === 0 && (eyes[1].length >= 2 || board.numOf(board.base.EMPTY) > 6))) {
+        return new EvaluationResult(-board.base.MAX_SCORE, history);
       }
     }
     if (depth <= 0) {
       return new EvaluationResult(NaN, history);
     }
-    opponent = opponentOf(next);
+    opponent = board.base.opponentOf(next);
     candidates = board.candidates(next);
     parity = history.length % 2;
     nodes = candidates.filter(function(b) {
@@ -1136,7 +1144,7 @@
     nan = null;
     updated = false;
     switch (next) {
-      case BLACK:
+      case board.base.BLACK:
         for (i = _k = 0, _len2 = nodes.length; _k < _len2; i = ++_k) {
           b = nodes[i];
           result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
@@ -1156,7 +1164,7 @@
             return beta;
           }
         }
-        if ((nan != null) && alpha.value < MAX_SCORE) {
+        if ((nan != null) && alpha.value < board.base.MAX_SCORE) {
           return nan;
         }
         if (notPossibleToIterate && history.every(function(e, i) {
@@ -1169,7 +1177,7 @@
         } else {
           return alpha;
         }
-      case WHITE:
+      case board.base.WHITE:
         for (i = _l = 0, _len3 = nodes.length; _l < _len3; i = ++_l) {
           b = nodes[i];
           result = evalUntilDepth(history.concat(b), opponent, (b === board ? depth : depth - 1), trueEnd, alpha, beta);
@@ -1189,7 +1197,7 @@
             return alpha;
           }
         }
-        if ((nan != null) && beta.value > -MAX_SCORE) {
+        if ((nan != null) && beta.value > -board.base.MAX_SCORE) {
           return nan;
         }
         if (notPossibleToIterate && history.every(function(e, i) {
@@ -1207,21 +1215,21 @@
 
   root = typeof exports !== "undefined" && exports !== null ? exports : typeof window !== "undefined" && window !== null ? window : {};
 
-  _ref4 = ['compare', 'evaluate'];
-  for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
-    e = _ref4[_k];
+  _ref3 = ['compare', 'evaluate'];
+  for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
+    e = _ref3[_k];
     root[e] = eval(e);
   }
 
   self.onmessage = function(event) {
-    var error, history, result, _ref5, _ref6;
+    var error, history, result, _ref4, _ref5;
     try {
       history = event.data.history.map(function(e) {
         return OnBoard.fromString(e);
       });
-      if ((_ref5 = history[history.length - 2]) != null ? _ref5.isEqualTo(history[history.length - 1]) : void 0) {
+      if ((_ref4 = history[history.length - 2]) != null ? _ref4.isEqualTo(history[history.length - 1]) : void 0) {
         history[history.length - 2] = history[history.length - 1];
-        if ((_ref6 = history[history.length - 3]) != null ? _ref6.isEqualTo(history[history.length - 1]) : void 0) {
+        if ((_ref5 = history[history.length - 3]) != null ? _ref5.isEqualTo(history[history.length - 1]) : void 0) {
           history[history.length - 3] = history[history.length - 1];
         }
       }

@@ -7,7 +7,7 @@ comparePosition = (a, b) ->
     dx = a[0] - b[0]
     if dx != 0 then dx else a[1] - b[1]
 
-describe 'array-board', ->
+describe.skip 'array-board', ->
     describe "OnBoard", ->
         describe "constructors", ->
             it "should return OnBoard instance", ->

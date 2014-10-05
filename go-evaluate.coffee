@@ -6,12 +6,12 @@
 # (C) 2013 ICHIKAWA, Yuji (New 3 Rs)
 
 if exports?
-    { BLACK, WHITE, EMPTY, MAX_SCORE, opponentOf, boardsToString } = require './go-common.coffee'
-    { bitsToString } = require './bit-board.coffee'
+    { boardsToString } = require './go-common.coffee'
+    { BitBoardBase } = require './bit-board.coffee'
 DEBUG = false
 
 check = (board, next) ->
-    (not next? or next is BLACK) and board.isEqualTo '''
+    (not next? or next is board.base.BLACK) and board.isEqualTo '''
              XXX
             OXOX
             OXOX
@@ -26,16 +26,16 @@ cache =
         @white = []
     add: (next, board, result) ->
         array = switch next
-            when BLACK then @black
-            when WHITE then @white
+            when board.base.BLACK then @black
+            when board.base.WHITE then @white
         array.push
             board: board
             result: result
         return
     query: (next, board) ->
         array = switch next
-            when BLACK then @black
-            when WHITE then @white
+            when board.base.BLACK then @black
+            when board.base.WHITE then @white
         for e in array when e.board.isEqualTo board
             index = e.result.history.indexOf e.board
             return new EvaluationResult e.result.value, e.result.history.slice index + 1
@@ -47,7 +47,8 @@ evaluate = (history, next) ->
     cache.clear()
     result = evalUntilDepth history, next, 0
     trueEnd = not isNaN result.value
-    for depth in [(if trueEnd then 30 else 2)..30] by 1
+    console.log "trueEnd: #{trueEnd}" if DEBUG
+    for depth in [2..30] by (if trueEnd then 5 else 1)
         console.log "depth: #{depth}" if DEBUG
         result = evalUntilDepth history, next, depth, trueEnd
         console.log result.toString() if DEBUG
@@ -68,7 +69,7 @@ compare = (a, b, stone) ->
     5. 自分のつながり(contact)の数に差があればそれにマイナスを掛けた値を返す。(つながる手を優先する)
     ###
 
-    opponent = opponentOf stone
+    opponent = a.base.opponentOf stone
     ###
     candidates = - a.candidates(opponent).length + b.candidates(opponent).length
     if candidates != 0
@@ -77,8 +78,8 @@ compare = (a, b, stone) ->
     [aBlack, aWhite] = a.strings()
     [bBlack, bWhite] = b.strings()
     switch stone
-        when BLACK
-            dame = (a.numOfLiberties(BLACK) - a.numOfLiberties(WHITE)) - (b.numOfLiberties(BLACK) - b.numOfLiberties(WHITE))
+        when a.base.BLACK
+            dame = (a.numOfLiberties(a.base.BLACK) - a.numOfLiberties(a.base.WHITE)) - (b.numOfLiberties(b.base.BLACK) - b.numOfLiberties(b.base.WHITE))
             return dame if dame != 0
             strings = bBlack.length - aBlack.length
             return strings if strings != 0
@@ -88,8 +89,8 @@ compare = (a, b, stone) ->
             return diff if diff != 0
             score = a.score() - b.score()
             return score
-        when WHITE
-            dame = (a.numOfLiberties(WHITE) - a.numOfLiberties(BLACK)) - (b.numOfLiberties(WHITE) - b.numOfLiberties(BLACK))
+        when a.base.WHITE
+            dame = (a.numOfLiberties(a.base.WHITE) - a.numOfLiberties(a.base.BLACK)) - (b.numOfLiberties(b.base.WHITE) - b.numOfLiberties(b.base.BLACK))
             return dame if dame != 0
             strings = bWhite.length - aWhite.length
             return strings if strings != 0
@@ -103,8 +104,8 @@ compare = (a, b, stone) ->
 onlySuicide = (nodes, next, board) ->
     [blacks, whites] = board.strings()
     strings = switch next
-        when BLACK then blacks
-        when WHITE then whites
+        when board.base.BLACK then blacks
+        when board.base.WHITE then whites
 
     suicides = nodes.filter (b) ->
         strings.some (e) -> board.numOfLibertiesOf(e) > 1 and b.numOfLibertiesOf(b.stringOf e) == 1
@@ -139,16 +140,16 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
         empty = board._empties()
         eyes = board.eyes()
         eyeBoard = eyes[0].reduce ((x, y) -> x | y), 0
-        if (empty & eyeBoard) is empty or (board.numOf(WHITE) == 0 and (eyes[0].length >= 2 or board.numOf(EMPTY) > 6)) # 6は最大の中手
+        if (empty & eyeBoard) is empty or (board.numOf(board.base.WHITE) == 0 and (eyes[0].length >= 2 or board.numOf(board.base.EMPTY) > 6)) # 6は最大の中手
             # 空点がすべて黒の眼ならMAX_SCORE。白を全部取って1つでも眼があればMAX_SCORE
-            return new EvaluationResult MAX_SCORE, history
+            return new EvaluationResult board.base.MAX_SCORE, history
         eyeBoard = eyes[1].reduce ((x, y) -> x | y), 0
-        if (empty & eyeBoard) is empty or (board.numOf(BLACK) == 0 and (eyes[1].length >= 2 or board.numOf(EMPTY) > 6))
-            return new EvaluationResult -MAX_SCORE, history
+        if (empty & eyeBoard) is empty or (board.numOf(board.base.BLACK) == 0 and (eyes[1].length >= 2 or board.numOf(board.base.EMPTY) > 6))
+            return new EvaluationResult -board.base.MAX_SCORE, history
     if depth <= 0
         return new EvaluationResult NaN, history
 
-    opponent = opponentOf next
+    opponent = board.base.opponentOf next
     candidates = board.candidates next
     parity = history.length % 2
     nodes = candidates.filter (b) ->
@@ -165,7 +166,7 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
     nan = null
     updated = false
     switch next
-        when BLACK
+        when board.base.BLACK
             for b, i in nodes
                 # 純碁ルールでセキを探索すると長手数になる。ダメを詰めて取られた後得をしないことを確認するため。
                 # ダメを詰めて取られた後の結果の発見法的判定条件が必要。
@@ -179,11 +180,11 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
                 else if isNaN result.value
                     nan ?= result
                 return beta if alpha.value >= beta.value
-            if nan? and alpha.value < MAX_SCORE
+            if nan? and alpha.value < board.base.MAX_SCORE
                 return nan
             cache.add next, board, alpha if notPossibleToIterate and history.every (e, i) -> e == alpha.history[i]
             return if alpha.value == -Infinity then nan else alpha
-        when WHITE
+        when board.base.WHITE
             for b, i in nodes
                 result = evalUntilDepth history.concat(b), opponent, (if b is board then depth else depth - 1), trueEnd, alpha, beta
                 if flag
@@ -195,7 +196,7 @@ evalUntilDepth = (history, next, depth, trueEnd = false, alpha = new EvaluationR
                 else if isNaN result.value
                     nan ?= result
                 return alpha if alpha.value >= beta.value
-            if nan? and beta.value > -MAX_SCORE
+            if nan? and beta.value > -board.base.MAX_SCORE
                 return nan
             cache.add next, board, beta if notPossibleToIterate and history.every (e, i) -> e == beta.history[i]
             return if beta.value == Infinity then nan else beta
