@@ -738,19 +738,35 @@
     OnBoard.prototype.eyes = function() {
 
       /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
-      var blacks, whites;
+      var b, blacks, w, whites;
       blacks = this.eyesOf(this.base.BLACK);
       whites = this.eyesOf(this.base.WHITE);
       return [
-        blacks.filter(function(b) {
-          return whites.every(function(w) {
-            return (w & b) === 0;
-          });
-        }), whites.filter(function(w) {
-          return blacks.every(function(b) {
-            return (b & w) === 0;
-          });
-        })
+        (function() {
+          var _j, _len1, _results;
+          _results = [];
+          for (_j = 0, _len1 = blacks.length; _j < _len1; _j++) {
+            b = blacks[_j];
+            if (whites.every(function(w) {
+              return (w & b) === 0;
+            })) {
+              _results.push(b);
+            }
+          }
+          return _results;
+        })(), (function() {
+          var _j, _len1, _results;
+          _results = [];
+          for (_j = 0, _len1 = whites.length; _j < _len1; _j++) {
+            w = whites[_j];
+            if (blacks.every(function(b) {
+              return (w & b) === 0;
+            })) {
+              _results.push(w);
+            }
+          }
+          return _results;
+        })()
       ];
     };
 
