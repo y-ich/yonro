@@ -417,7 +417,7 @@ class OnBoard
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         blacks = @eyesOf @base.BLACK
         whites = @eyesOf @base.WHITE
-        [blacks.filter((b) -> whites.every (w) -> (w & b) == 0), whites.filter((w) -> blacks.every (b) -> (b & w) == 0)]
+        [(b for b in blacks when whites.every (w) -> (w & b) == 0), (w for w in whites when blacks.every (b) -> (w & b) == 0)]
 
     enclosedRegionOf: (stone) ->
         switch stone

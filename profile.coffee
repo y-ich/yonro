@@ -8,10 +8,10 @@ require('nodetime').profile
 { OnBoard } = require "./bit-board.coffee"
 
 board = OnBoard.fromString """
-     XOO
-    XO O
-    XXOO
-       O
+    O X 
+    XX  
+        
+      X 
     """
 evaluate [board], board.base.WHITE
 

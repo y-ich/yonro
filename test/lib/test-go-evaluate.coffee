@@ -103,7 +103,7 @@ testEvaluate = (kernel) ->
                     OO O
                     """
                 assert.equal evaluate([board], base.BLACK).value, -5
-            it "白先でも黒勝ち", -> # 15 depth 165065ms
+            it "白先でも黒勝ち", ->
                 board = OnBoard.fromString """
                      XOO
                     XO O
