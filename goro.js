@@ -301,8 +301,11 @@
       return new OnBoard(base != null ? base : new BitBoardBase(lines.length), blacks, whites);
     };
 
-    OnBoard.random = function(base, boardSize) {
+    OnBoard.random = function(base, density, boardSize) {
       var bitPos, blacks, result, whites, _j, _len1, _ref2;
+      if (density == null) {
+        density = 1 / 2;
+      }
       if (boardSize == null) {
         boardSize = null;
       }
@@ -317,11 +320,11 @@
         _ref2 = base.BITS;
         for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
           bitPos = _ref2[_j];
-          switch (Math.floor(Math.random() * 3)) {
-            case 1:
+          switch (Math.floor(Math.random() / density * 2)) {
+            case 0:
               blacks |= bitPos;
               break;
-            case 2:
+            case 1:
               whites |= bitPos;
           }
         }

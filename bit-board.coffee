@@ -140,16 +140,16 @@ class OnBoard
 
         new OnBoard base ? new BitBoardBase(lines.length), blacks, whites
 
-    @random: (base, boardSize = null) ->
+    @random: (base, density = 1/2, boardSize = null) ->
         ### ランダムな配置の碁盤を返す。 ###
         base ?= new BitBoardBase boardSize
         loop
             blacks = 0
             whites = 0
             for bitPos in base.BITS
-                switch Math.floor Math.random() * 3
-                    when 1 then blacks |= bitPos
-                    when 2 then whites |= bitPos
+                switch Math.floor Math.random() / density * 2
+                    when 0 then blacks |= bitPos
+                    when 1 then whites |= bitPos
             result = new OnBoard base, blacks, whites
             return result if result.isLegal()
 
