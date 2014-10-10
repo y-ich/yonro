@@ -9,9 +9,12 @@
 
 Array::isEqualTo = (array) ->
     ###　配列の要素すべてが等しいか否かを返す。 ###
-    return false if @length != array.length
-    @every (e, i) ->
-        e == array[i]
+    if @length != array.length
+        return false
+    for e, i in this
+        if e isnt array[i]
+            return false
+    return true
 
 boardsToString = (history) ->
     history.map((e, i) -> "##{i}\n#{e.toString()}").join '\n'

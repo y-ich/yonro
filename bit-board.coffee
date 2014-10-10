@@ -165,15 +165,30 @@ class OnBoard
             @black = 0
             @white = 0
 
+    # 汎用メソッド
+
+    toString: ->
+        str = ''
+        for y in [0...@base.BOARD_SIZE]
+            for x in [0...@base.BOARD_SIZE]
+                str += switch @stateAt [x, y]
+                    when @base.BLACK then 'X'
+                    when @base.WHITE then 'O'
+                    else ' '
+            str += '\n' unless y == @base.BOARD_SIZE - 1
+        str
+
+    isEqualTo: (board) ->
+        ### 盤上が同じかどうか。 ###
+        if typeof board is 'string'
+            board = OnBoard.fromString board
+        @black == board.black and @white == board.white
+
     # 状態テストメソッド
 
     isEmptyAt: (position) ->
         ### 座標が空点かどうか。 ###
         @_isEmptyAt @base.positionToBit position
-
-    _isEmptyAt: (bitPos) ->
-        ### 座標が空点かどうか。 ###
-        not ((@black | @white) & bitPos)
 
     isLegalAt: (stone, position) ->
         ###
@@ -187,25 +202,11 @@ class OnBoard
         ### 盤上の状態が合法がどうか。(ダメ詰まりの石が存在しないこと) ###
         @base.captured(@black, @white) == 0 and @base.captured(@white, @black) == 0
 
-    isEqualTo: (board) ->
-        ### 盤上が同じかどうか。 ###
-        if typeof board is 'string'
-            board = OnBoard.fromString board
-        @black == board.black and @white == board.white
-
     # 状態アクセスメソッド
 
     stateAt: (position) ->
         ### 座標の状態を返す。 ###
         @_stateAt @base.positionToBit position
-
-    _stateAt: (bitPos) ->
-        if @black & bitPos
-            @base.BLACK
-        else if @white & bitPos
-            @base.WHITE
-        else
-            @base.EMPTY
 
     numOf: (stone) ->
         ### 盤上の石または空点の数を返す。 ###
@@ -238,28 +239,9 @@ class OnBoard
         ###
         @_add stone, @base.positionToBit position
 
-    _add: (stone, bitPos) ->
-        switch stone
-            when @base.BLACK
-                @black |= bitPos
-                @white &= ~bitPos
-            when @base.WHITE
-                @white |= bitPos
-                @black &= ~bitPos
-            when @base.EMPTY
-                @black &= ~bitPos
-                @white &= ~bitPos
-            else
-                throw 'add: unknown stone type'
-        return
-
     delete: (position) ->
         ### 座標の石をただ取る。 ###
         @_delete @base.positionToBit position
-
-    _delete: (bitPos) ->
-        @black &= ~bitPos
-        @white &= ~bitPos
 
     candidates: (stone) ->
         ###
@@ -287,14 +269,6 @@ class OnBoard
     stringAt: (position) ->
         @stringOf @base.positionToBit position
 
-    stringOf: (bitPos) ->
-        board = switch @_stateAt bitPos
-            when @base.BLACK then @black
-            when @base.WHITE then @white
-            else @_empties()
-
-        @base.stringOf board, bitPos
-
     stringAndLibertyAt: (position) ->
         ###
         座標の石と接続した同一石の座標の配列とその石の集合のダメの座標の配列を返す。
@@ -302,10 +276,6 @@ class OnBoard
         ###
         s = @stringAt position
         [s, @_libertyOf s]
-
-    _libertyOf: (string) ->
-        opponent = if @black & string then @white else @black
-        @base.adjacent(string) & ~ opponent
 
     numOfLibertiesOf: (string) ->
         countBits @_libertyOf string
@@ -360,45 +330,6 @@ class OnBoard
     whoseEyeAt: (position, genuine = false) ->
         @_whoseEyeAt @base.positionToBit(position), genuine
 
-    _whoseEyeAt: (bitPos, genuine = false, checkings = 0, bEnclosed = null, wEnclosed = null) ->
-        ###
-        座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
-        眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
-        checkingsは再帰用引数
-        石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
-        ###
-        return null if not @_isEmptyAt bitPos
-
-        bEnclosed ?= @enclosedRegionOf @base.BLACK
-        if bEnclosed & bitPos
-            stone = @base.BLACK
-            bitBoard = @black
-            region = @base.stringOf bEnclosed, bitPos
-        else
-            wEnclosed ?= @enclosedRegionOf @base.WHITE
-            if wEnclosed & bitPos
-                stone = @base.WHITE
-                bitBoard = @white
-                region = @base.stringOf wEnclosed, bitPos
-            else
-                return null
-
-        return null if genuine and countBits(region) > 1
-
-        # アルゴリズム
-        # 眼を作っている石群が1つなら完全な眼。
-        # 眼を作っている石群の先に眼が１つでもあれば、眼。
-        gds = @base.decomposeToStrings @base.stringOf bitBoard, @base.adjacent region
-        if gds.length == 1 or # 眼を作っている石群が1つ
-            (gds.every (gd) =>
-                liberty = @base.adjacent(gd) & ~region
-                return true if liberty & checkings
-                return true for b in @base.BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) is stone
-                false)
-            stone
-        else
-            null
-
     eyesOf: (stone) ->
         result = []
         bEnclosed = @enclosedRegionOf stone
@@ -409,7 +340,17 @@ class OnBoard
         for r in regions
             strings = @base.decomposeToStrings @base.stringOf bitBoard, @base.adjacent r
             empties = r &  @_empties()
+
+            ###
             if strings.every((s) => (empties & @base.adjacent s) is empties)
+                result.push r
+            ###
+            every = true
+            for s in strings
+                if (empties & @base.adjacent s) isnt empties
+                    every = false
+                    break
+            if every
                 result.push r
         result
 
@@ -417,7 +358,32 @@ class OnBoard
         ### 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 ###
         blacks = @eyesOf @base.BLACK
         whites = @eyesOf @base.WHITE
-        [(b for b in blacks when whites.every (w) -> (w & b) == 0), (w for w in whites when blacks.every (b) -> (w & b) == 0)]
+
+        # [(b for b in blacks when whites.every (w) -> (w & b) == 0), (w for w in whites when blacks.every (b) -> (w & b) == 0)]
+        # 以下のチューンで2m30が2m17
+        blackOnly = []
+        for b in blacks
+            every = true
+            for w in whites
+                if w & b
+                   every = false
+                   break
+            if every
+                blackOnly.push b
+
+        whiteOnly = []
+        for w in whites
+            every = true
+            for b in blacks
+                if w & b
+                   every = false
+                   break
+            if every
+                whiteOnly.push w
+        [blackOnly, whiteOnly]
+
+    atari: ->
+        @base.bitsToPositions @_atari()
 
     enclosedRegionOf: (stone) ->
         switch stone
@@ -437,9 +403,6 @@ class OnBoard
             when @base.BLACK then @black
             when @base.WHITE then @white), @base.adjacent region
         @base.decomposeToStrings neighoring | region
-
-    atari: ->
-        @base.bitsToPositions @_atari()
 
     _atari: ->
         result = 0
@@ -473,6 +436,37 @@ class OnBoard
         return true unless position? # パス
         @_place stone, @base.positionToBit position
 
+    _stateAt: (bitPos) ->
+        if @black & bitPos
+            @base.BLACK
+        else if @white & bitPos
+            @base.WHITE
+        else
+            @base.EMPTY
+
+    _add: (stone, bitPos) ->
+        switch stone
+            when @base.BLACK
+                @black |= bitPos
+                @white &= ~bitPos
+            when @base.WHITE
+                @white |= bitPos
+                @black &= ~bitPos
+            when @base.EMPTY
+                @black &= ~bitPos
+                @white &= ~bitPos
+            else
+                throw 'add: unknown stone type'
+        return
+
+    _delete: (bitPos) ->
+        @black &= ~bitPos
+        @white &= ~bitPos
+
+    _isEmptyAt: (bitPos) ->
+        ### 座標が空点かどうか。 ###
+        not ((@black | @white) & bitPos)
+
     _place: (stone, bitPos) ->
         return false unless @_isEmptyAt bitPos
         @_add stone, bitPos
@@ -483,18 +477,78 @@ class OnBoard
             @_delete bitPos
             false
 
-    # 汎用メソッド
+    stringOf: (bitPos) ->
+        board = switch @_stateAt bitPos
+            when @base.BLACK then @black
+            when @base.WHITE then @white
+            else @_empties()
 
-    toString: ->
-        str = ''
-        for y in [0...@base.BOARD_SIZE]
-            for x in [0...@base.BOARD_SIZE]
-                str += switch @stateAt [x, y]
-                    when @base.BLACK then 'X'
-                    when @base.WHITE then 'O'
-                    else ' '
-            str += '\n' unless y == @base.BOARD_SIZE - 1
-        str
+        @base.stringOf board, bitPos
+
+    _libertyOf: (string) ->
+        opponent = if @black & string then @white else @black
+        @base.adjacent(string) & ~ opponent
+
+    _whoseEyeAt: (bitPos, genuine = false, checkings = 0, bEnclosed = null, wEnclosed = null) ->
+        ###
+        座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
+        眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
+        checkingsは再帰用引数
+        石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
+        ###
+        return null if not @_isEmptyAt bitPos
+
+        bEnclosed ?= @enclosedRegionOf @base.BLACK
+        if bEnclosed & bitPos
+            stone = @base.BLACK
+            bitBoard = @black
+            region = @base.stringOf bEnclosed, bitPos
+        else
+            wEnclosed ?= @enclosedRegionOf @base.WHITE
+            if wEnclosed & bitPos
+                stone = @base.WHITE
+                bitBoard = @white
+                region = @base.stringOf wEnclosed, bitPos
+            else
+                return null
+
+        return null if genuine and countBits(region) > 1
+
+        # アルゴリズム
+        # 眼を作っている石群が1つなら完全な眼。
+        # 眼を作っている石群の先に眼が１つでもあれば、眼。
+        gds = @base.decomposeToStrings @base.stringOf bitBoard, @base.adjacent region
+
+        ###
+        if gds.length == 1 or # 眼を作っている石群が1つ
+            (gds.every (gd) =>
+                liberty = @base.adjacent(gd) & ~region
+                return true if liberty & checkings
+                return true for b in @base.BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) is stone
+                false)
+            stone
+        else
+            null
+        # 以下のチューンで2m17が2m15
+        ###
+        if gds.length == 1 # 眼を作っている石群が1つ
+            stone
+        else
+            every = true
+            for gd in gds
+                liberty = @base.adjacent(gd) & ~region
+                if liberty & checkings
+                    continue
+                cont = false
+                for b in @base.BITS
+                    if (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) is stone
+                        cont = true
+                        break
+                if cont
+                    continue
+                every = false
+                break
+            if every then stone else null
 
 
 root = exports ? if window? then window else {}

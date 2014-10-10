@@ -11,12 +11,17 @@
   Array.prototype.isEqualTo = function(array) {
 
     /*　配列の要素すべてが等しいか否かを返す。 */
+    var e, i, _i, _len;
     if (this.length !== array.length) {
       return false;
     }
-    return this.every(function(e, i) {
-      return e === array[i];
-    });
+    for (i = _i = 0, _len = this.length; _i < _len; i = ++_i) {
+      e = this[i];
+      if (e !== array[i]) {
+        return false;
+      }
+    }
+    return true;
   };
 
   boardsToString = function(history) {

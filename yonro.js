@@ -13,12 +13,17 @@
   Array.prototype.isEqualTo = function(array) {
 
     /*　配列の要素すべてが等しいか否かを返す。 */
+    var e, i, _i, _len;
     if (this.length !== array.length) {
       return false;
     }
-    return this.every(function(e, i) {
-      return e === array[i];
-    });
+    for (i = _i = 0, _len = this.length; _i < _len; i = ++_i) {
+      e = this[i];
+      if (e !== array[i]) {
+        return false;
+      }
+    }
+    return true;
   };
 
   boardsToString = function(history) {
@@ -343,16 +348,42 @@
       }
     }
 
+    OnBoard.prototype.toString = function() {
+      var str, x, y, _j, _k, _ref2, _ref3;
+      str = '';
+      for (y = _j = 0, _ref2 = this.base.BOARD_SIZE; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; y = 0 <= _ref2 ? ++_j : --_j) {
+        for (x = _k = 0, _ref3 = this.base.BOARD_SIZE; 0 <= _ref3 ? _k < _ref3 : _k > _ref3; x = 0 <= _ref3 ? ++_k : --_k) {
+          str += (function() {
+            switch (this.stateAt([x, y])) {
+              case this.base.BLACK:
+                return 'X';
+              case this.base.WHITE:
+                return 'O';
+              default:
+                return ' ';
+            }
+          }).call(this);
+        }
+        if (y !== this.base.BOARD_SIZE - 1) {
+          str += '\n';
+        }
+      }
+      return str;
+    };
+
+    OnBoard.prototype.isEqualTo = function(board) {
+
+      /* 盤上が同じかどうか。 */
+      if (typeof board === 'string') {
+        board = OnBoard.fromString(board);
+      }
+      return this.black === board.black && this.white === board.white;
+    };
+
     OnBoard.prototype.isEmptyAt = function(position) {
 
       /* 座標が空点かどうか。 */
       return this._isEmptyAt(this.base.positionToBit(position));
-    };
-
-    OnBoard.prototype._isEmptyAt = function(bitPos) {
-
-      /* 座標が空点かどうか。 */
-      return !((this.black | this.white) & bitPos);
     };
 
     OnBoard.prototype.isLegalAt = function(stone, position) {
@@ -372,29 +403,10 @@
       return this.base.captured(this.black, this.white) === 0 && this.base.captured(this.white, this.black) === 0;
     };
 
-    OnBoard.prototype.isEqualTo = function(board) {
-
-      /* 盤上が同じかどうか。 */
-      if (typeof board === 'string') {
-        board = OnBoard.fromString(board);
-      }
-      return this.black === board.black && this.white === board.white;
-    };
-
     OnBoard.prototype.stateAt = function(position) {
 
       /* 座標の状態を返す。 */
       return this._stateAt(this.base.positionToBit(position));
-    };
-
-    OnBoard.prototype._stateAt = function(bitPos) {
-      if (this.black & bitPos) {
-        return this.base.BLACK;
-      } else if (this.white & bitPos) {
-        return this.base.WHITE;
-      } else {
-        return this.base.EMPTY;
-      }
     };
 
     OnBoard.prototype.numOf = function(stone) {
@@ -442,34 +454,10 @@
       return this._add(stone, this.base.positionToBit(position));
     };
 
-    OnBoard.prototype._add = function(stone, bitPos) {
-      switch (stone) {
-        case this.base.BLACK:
-          this.black |= bitPos;
-          this.white &= ~bitPos;
-          break;
-        case this.base.WHITE:
-          this.white |= bitPos;
-          this.black &= ~bitPos;
-          break;
-        case this.base.EMPTY:
-          this.black &= ~bitPos;
-          this.white &= ~bitPos;
-          break;
-        default:
-          throw 'add: unknown stone type';
-      }
-    };
-
     OnBoard.prototype["delete"] = function(position) {
 
       /* 座標の石をただ取る。 */
       return this._delete(this.base.positionToBit(position));
-    };
-
-    OnBoard.prototype._delete = function(bitPos) {
-      this.black &= ~bitPos;
-      return this.white &= ~bitPos;
     };
 
     OnBoard.prototype.candidates = function(stone) {
@@ -516,21 +504,6 @@
       return this.stringOf(this.base.positionToBit(position));
     };
 
-    OnBoard.prototype.stringOf = function(bitPos) {
-      var board;
-      board = (function() {
-        switch (this._stateAt(bitPos)) {
-          case this.base.BLACK:
-            return this.black;
-          case this.base.WHITE:
-            return this.white;
-          default:
-            return this._empties();
-        }
-      }).call(this);
-      return this.base.stringOf(board, bitPos);
-    };
-
     OnBoard.prototype.stringAndLibertyAt = function(position) {
 
       /*
@@ -540,12 +513,6 @@
       var s;
       s = this.stringAt(position);
       return [s, this._libertyOf(s)];
-    };
-
-    OnBoard.prototype._libertyOf = function(string) {
-      var opponent;
-      opponent = this.black & string ? this.white : this.black;
-      return this.base.adjacent(string) & ~opponent;
     };
 
     OnBoard.prototype.numOfLibertiesOf = function(string) {
@@ -637,78 +604,8 @@
       return this._whoseEyeAt(this.base.positionToBit(position), genuine);
     };
 
-    OnBoard.prototype._whoseEyeAt = function(bitPos, genuine, checkings, bEnclosed, wEnclosed) {
-      var bitBoard, gds, region, stone;
-      if (genuine == null) {
-        genuine = false;
-      }
-      if (checkings == null) {
-        checkings = 0;
-      }
-      if (bEnclosed == null) {
-        bEnclosed = null;
-      }
-      if (wEnclosed == null) {
-        wEnclosed = null;
-      }
-
-      /*
-      座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
-      眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
-      checkingsは再帰用引数
-      石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
-       */
-      if (!this._isEmptyAt(bitPos)) {
-        return null;
-      }
-      if (bEnclosed == null) {
-        bEnclosed = this.enclosedRegionOf(this.base.BLACK);
-      }
-      if (bEnclosed & bitPos) {
-        stone = this.base.BLACK;
-        bitBoard = this.black;
-        region = this.base.stringOf(bEnclosed, bitPos);
-      } else {
-        if (wEnclosed == null) {
-          wEnclosed = this.enclosedRegionOf(this.base.WHITE);
-        }
-        if (wEnclosed & bitPos) {
-          stone = this.base.WHITE;
-          bitBoard = this.white;
-          region = this.base.stringOf(wEnclosed, bitPos);
-        } else {
-          return null;
-        }
-      }
-      if (genuine && countBits(region) > 1) {
-        return null;
-      }
-      gds = this.base.decomposeToStrings(this.base.stringOf(bitBoard, this.base.adjacent(region)));
-      if (gds.length === 1 || (gds.every((function(_this) {
-        return function(gd) {
-          var b, liberty, _j, _len1, _ref2;
-          liberty = _this.base.adjacent(gd) & ~region;
-          if (liberty & checkings) {
-            return true;
-          }
-          _ref2 = _this.base.BITS;
-          for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-            b = _ref2[_j];
-            if ((b & liberty) && _this._whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) === stone) {
-              return true;
-            }
-          }
-          return false;
-        };
-      })(this)))) {
-        return stone;
-      } else {
-        return null;
-      }
-    };
-
     OnBoard.prototype.eyesOf = function(stone) {
-      var bEnclosed, bitBoard, empties, r, regions, result, strings, _j, _len1;
+      var bEnclosed, bitBoard, empties, every, r, regions, result, s, strings, _j, _k, _len1, _len2;
       result = [];
       bEnclosed = this.enclosedRegionOf(stone);
       regions = this.base.decomposeToStrings(bEnclosed);
@@ -724,11 +621,20 @@
         r = regions[_j];
         strings = this.base.decomposeToStrings(this.base.stringOf(bitBoard, this.base.adjacent(r)));
         empties = r & this._empties();
-        if (strings.every((function(_this) {
-          return function(s) {
-            return (empties & _this.base.adjacent(s)) === empties;
-          };
-        })(this))) {
+
+        /*
+        if strings.every((s) => (empties & @base.adjacent s) is empties)
+            result.push r
+         */
+        every = true;
+        for (_k = 0, _len2 = strings.length; _k < _len2; _k++) {
+          s = strings[_k];
+          if ((empties & this.base.adjacent(s)) !== empties) {
+            every = false;
+            break;
+          }
+        }
+        if (every) {
           result.push(r);
         }
       }
@@ -738,36 +644,44 @@
     OnBoard.prototype.eyes = function() {
 
       /* 眼の座標を返す。１つ目は黒の眼、２つ目は白の眼。 */
-      var b, blacks, w, whites;
+      var b, blackOnly, blacks, every, w, whiteOnly, whites, _j, _k, _l, _len1, _len2, _len3, _len4, _m;
       blacks = this.eyesOf(this.base.BLACK);
       whites = this.eyesOf(this.base.WHITE);
-      return [
-        (function() {
-          var _j, _len1, _results;
-          _results = [];
-          for (_j = 0, _len1 = blacks.length; _j < _len1; _j++) {
-            b = blacks[_j];
-            if (whites.every(function(w) {
-              return (w & b) === 0;
-            })) {
-              _results.push(b);
-            }
+      blackOnly = [];
+      for (_j = 0, _len1 = blacks.length; _j < _len1; _j++) {
+        b = blacks[_j];
+        every = true;
+        for (_k = 0, _len2 = whites.length; _k < _len2; _k++) {
+          w = whites[_k];
+          if (w & b) {
+            every = false;
+            break;
           }
-          return _results;
-        })(), (function() {
-          var _j, _len1, _results;
-          _results = [];
-          for (_j = 0, _len1 = whites.length; _j < _len1; _j++) {
-            w = whites[_j];
-            if (blacks.every(function(b) {
-              return (w & b) === 0;
-            })) {
-              _results.push(w);
-            }
+        }
+        if (every) {
+          blackOnly.push(b);
+        }
+      }
+      whiteOnly = [];
+      for (_l = 0, _len3 = whites.length; _l < _len3; _l++) {
+        w = whites[_l];
+        every = true;
+        for (_m = 0, _len4 = blacks.length; _m < _len4; _m++) {
+          b = blacks[_m];
+          if (w & b) {
+            every = false;
+            break;
           }
-          return _results;
-        })()
-      ];
+        }
+        if (every) {
+          whiteOnly.push(w);
+        }
+      }
+      return [blackOnly, whiteOnly];
+    };
+
+    OnBoard.prototype.atari = function() {
+      return this.base.bitsToPositions(this._atari());
     };
 
     OnBoard.prototype.enclosedRegionOf = function(stone) {
@@ -798,10 +712,6 @@
         }
       }).call(this)), this.base.adjacent(region));
       return this.base.decomposeToStrings(neighoring | region);
-    };
-
-    OnBoard.prototype.atari = function() {
-      return this.base.bitsToPositions(this._atari());
     };
 
     OnBoard.prototype._atari = function() {
@@ -851,6 +761,46 @@
       return this._place(stone, this.base.positionToBit(position));
     };
 
+    OnBoard.prototype._stateAt = function(bitPos) {
+      if (this.black & bitPos) {
+        return this.base.BLACK;
+      } else if (this.white & bitPos) {
+        return this.base.WHITE;
+      } else {
+        return this.base.EMPTY;
+      }
+    };
+
+    OnBoard.prototype._add = function(stone, bitPos) {
+      switch (stone) {
+        case this.base.BLACK:
+          this.black |= bitPos;
+          this.white &= ~bitPos;
+          break;
+        case this.base.WHITE:
+          this.white |= bitPos;
+          this.black &= ~bitPos;
+          break;
+        case this.base.EMPTY:
+          this.black &= ~bitPos;
+          this.white &= ~bitPos;
+          break;
+        default:
+          throw 'add: unknown stone type';
+      }
+    };
+
+    OnBoard.prototype._delete = function(bitPos) {
+      this.black &= ~bitPos;
+      return this.white &= ~bitPos;
+    };
+
+    OnBoard.prototype._isEmptyAt = function(bitPos) {
+
+      /* 座標が空点かどうか。 */
+      return !((this.black | this.white) & bitPos);
+    };
+
     OnBoard.prototype._place = function(stone, bitPos) {
       if (!this._isEmptyAt(bitPos)) {
         return false;
@@ -865,27 +815,118 @@
       }
     };
 
-    OnBoard.prototype.toString = function() {
-      var str, x, y, _j, _k, _ref2, _ref3;
-      str = '';
-      for (y = _j = 0, _ref2 = this.base.BOARD_SIZE; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; y = 0 <= _ref2 ? ++_j : --_j) {
-        for (x = _k = 0, _ref3 = this.base.BOARD_SIZE; 0 <= _ref3 ? _k < _ref3 : _k > _ref3; x = 0 <= _ref3 ? ++_k : --_k) {
-          str += (function() {
-            switch (this.stateAt([x, y])) {
-              case this.base.BLACK:
-                return 'X';
-              case this.base.WHITE:
-                return 'O';
-              default:
-                return ' ';
-            }
-          }).call(this);
+    OnBoard.prototype.stringOf = function(bitPos) {
+      var board;
+      board = (function() {
+        switch (this._stateAt(bitPos)) {
+          case this.base.BLACK:
+            return this.black;
+          case this.base.WHITE:
+            return this.white;
+          default:
+            return this._empties();
         }
-        if (y !== this.base.BOARD_SIZE - 1) {
-          str += '\n';
+      }).call(this);
+      return this.base.stringOf(board, bitPos);
+    };
+
+    OnBoard.prototype._libertyOf = function(string) {
+      var opponent;
+      opponent = this.black & string ? this.white : this.black;
+      return this.base.adjacent(string) & ~opponent;
+    };
+
+    OnBoard.prototype._whoseEyeAt = function(bitPos, genuine, checkings, bEnclosed, wEnclosed) {
+      var b, bitBoard, cont, every, gd, gds, liberty, region, stone, _j, _k, _len1, _len2, _ref2;
+      if (genuine == null) {
+        genuine = false;
+      }
+      if (checkings == null) {
+        checkings = 0;
+      }
+      if (bEnclosed == null) {
+        bEnclosed = null;
+      }
+      if (wEnclosed == null) {
+        wEnclosed = null;
+      }
+
+      /*
+      座標が眼かどうか調べ、眼ならばどちらの眼かを返し、眼でないならnullを返す。
+      眼の定義は、その座標が同一石で囲まれていて、囲んでいる石がその座標以外のダメを詰められないこと。
+      checkingsは再帰用引数
+      石をかこっている時、2目以上の空点の時、眼と判定しないので改良が必要。
+       */
+      if (!this._isEmptyAt(bitPos)) {
+        return null;
+      }
+      if (bEnclosed == null) {
+        bEnclosed = this.enclosedRegionOf(this.base.BLACK);
+      }
+      if (bEnclosed & bitPos) {
+        stone = this.base.BLACK;
+        bitBoard = this.black;
+        region = this.base.stringOf(bEnclosed, bitPos);
+      } else {
+        if (wEnclosed == null) {
+          wEnclosed = this.enclosedRegionOf(this.base.WHITE);
+        }
+        if (wEnclosed & bitPos) {
+          stone = this.base.WHITE;
+          bitBoard = this.white;
+          region = this.base.stringOf(wEnclosed, bitPos);
+        } else {
+          return null;
         }
       }
-      return str;
+      if (genuine && countBits(region) > 1) {
+        return null;
+      }
+      gds = this.base.decomposeToStrings(this.base.stringOf(bitBoard, this.base.adjacent(region)));
+
+      /*
+      if gds.length == 1 or # 眼を作っている石群が1つ
+          (gds.every (gd) =>
+              liberty = @base.adjacent(gd) & ~region
+              return true if liberty & checkings
+              return true for b in @base.BITS when (b & liberty) and @_whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) is stone
+              false)
+          stone
+      else
+          null
+       * 以下のチューンで2m17が2m15
+       */
+      if (gds.length === 1) {
+        return stone;
+      } else {
+        every = true;
+        for (_j = 0, _len1 = gds.length; _j < _len1; _j++) {
+          gd = gds[_j];
+          liberty = this.base.adjacent(gd) & ~region;
+          if (liberty & checkings) {
+            continue;
+          }
+          cont = false;
+          _ref2 = this.base.BITS;
+          for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+            b = _ref2[_k];
+            if ((b & liberty) && this._whoseEyeAt(b, genuine, checkings | bitPos, bEnclosed, wEnclosed) === stone) {
+              cont = true;
+              break;
+            }
+          }
+          if (cont) {
+            continue;
+          }
+          every = false;
+          break;
+        }
+        if (every) {
+          return stone;
+        } else {
+          return null;
+        }
+      }
     };
 
     return OnBoard;
