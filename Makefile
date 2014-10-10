@@ -1,4 +1,5 @@
 YONRO = go-worker.js yonro.js
+YONRO = go-worker.js goro.js
 SOLVER = go-worker.js yonro.js
 CHINRO = chinro.js
 
@@ -12,6 +13,9 @@ go-worker.js: go-common.coffee bit-board.coffee go-evaluate.coffee go-worker.cof
 	cat $^ | coffee --compile --stdio > $@
 
 yonro.js: go-common.coffee bit-board.coffee go-evaluate.coffee common.coffee yonro.coffee
+	cat $^ | coffee --compile --stdio > $@
+
+goro.js: go-common.coffee bit-board.coffee go-evaluate.coffee common.coffee goro.coffee
 	cat $^ | coffee --compile --stdio > $@
 
 solver.js: go-common.coffee common.coffee solver.coffee

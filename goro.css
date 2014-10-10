@@ -1,0 +1,338 @@
+@-webkit-keyframes shake {
+  0% {
+    left: 0px;
+  }
+  10% {
+    left: 10px;
+  }
+  20% {
+    left: -10px;
+  }
+  30% {
+    left: 5px;
+  }
+  40% {
+    left: 5px;
+  }
+  50% {
+    left: 3px;
+  }
+  60% {
+    left: -3px;
+  }
+  70% {
+    left: 2px;
+  }
+  80% {
+    left: -2px;
+  }
+  90% {
+    left: 1px;
+  }
+  100% {
+    left: 1px;
+  }
+}
+@keyframes shake {
+  0% {
+    left: 0px;
+  }
+  10% {
+    left: 10px;
+  }
+  20% {
+    left: -10px;
+  }
+  30% {
+    left: 5px;
+  }
+  40% {
+    left: 5px;
+  }
+  50% {
+    left: 3px;
+  }
+  60% {
+    left: -3px;
+  }
+  70% {
+    left: 2px;
+  }
+  80% {
+    left: -2px;
+  }
+  90% {
+    left: 1px;
+  }
+  100% {
+    left: 1px;
+  }
+}
+@-webkit-keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes beat {
+  0% {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+  }
+  50% {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@keyframes beat {
+  0% {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+  }
+  50% {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+/* modifying bootstrap */
+.modal {
+  width: 270px;
+  margin-left: -135px;
+}
+.modal h3 {
+  text-align: center;
+}
+.modal-body p {
+  font-size: 12px;
+}
+.modal.fade {
+  -webkit-transition: opacity 0.3s linear, -webkit-transform 0.3s ease-out;
+  -moz-transition: opacity 0.3s linear, -moz-transform 0.3s ease-out;
+  -o-transition: opacity 0.3s linear, -o-transform 0.3s ease-out;
+  transition: opacity 0.3s linear, transform 0.3s ease-out;
+  top: 10%;
+  -webkit-transform: translateY(-25%);
+  -moz-transform: translateY(-25%);
+  -o-transform: translateY(-25%);
+  transform: translateY(0%);
+}
+.modal.fade.in {
+  -webkit-transform: translateY(0%);
+  -moz-transform: translateY(0%);
+  transform: translateY(0%);
+}
+/* end of modifying bootstrap */
+html,
+body {
+  width: 100%;
+}
+body {
+  padding: 0px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-color: pink;
+}
+#header {
+  position: relative;
+  width: 310px;
+  padding: 5px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top;
+}
+div.title {
+  padding: 5px;
+  position: relative;
+  color: white;
+}
+h1 {
+  margin: 0px;
+  font-size: 15px;
+  line-height: 15px;
+  text-align: center;
+}
+.btn-large {
+  font-size: 15px;
+  line-height: 15px;
+}
+.container {
+  position: relative;
+  width: 320px;
+}
+.board-bg {
+  background-image: url('images/ban5.png');
+  background-size: contain;
+  width: 320px;
+  height: 320px;
+}
+.board {
+  position: relative;
+  left: 20px;
+  top: 20px;
+  width: 280px;
+  height: 280px;
+}
+.intersection {
+  position: relative;
+  float: left;
+  width: 56px;
+  height: 56px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  -webkit-transform: translateY(0%);
+  -moz-transform: translateY(0%);
+  -ms-transform: translateY(0%);
+  -o-transform: translateY(0%);
+  transform: translateY(0%);
+}
+.intersection.shake {
+  -webkit-animation-duration: 0.5s;
+  -moz-animation-duration: 0.5s;
+  -ms-animation-duration: 0.5s;
+  -o-animation-duration: 0.5s;
+  -webkit-animation-iteration-count: 1;
+  -moz-animation-iteration-count: 1;
+  -ms-animation-iteration-count: 1;
+  -o-animation-iteration-count: 1;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-timing-function: linear;
+  -ms-animation-timing-function: linear;
+  -o-animation-timing-function: linear;
+  -webkit-animation-name: shake;
+  -moz-animation-name: shake;
+  -ms-animation-name: shake;
+  -o-animation-name: shake;
+}
+.intersection.beat {
+  -webkit-animation: beat 1s linear infinite;
+  -moz-animation: beat 1s linear infinite;
+  -ms-animation: beat 1s linear infinite;
+  -o-animation: beat 1s linear infinite;
+}
+.intersection.rise {
+  -webkit-transition: -webkit-transform 1s linear;
+  -moz-transition: -moz-transform 1s linear;
+  -o-transition: -o-transform 1s linear;
+  transition: transform 1s linear;
+  -webkit-transform: translateY(-553.77777778px);
+  -moz-transform: translateY(-553.77777778px);
+  -ms-transform: translateY(-553.77777778px);
+  -o-transform: translateY(-553.77777778px);
+  transform: translateY(-553.77777778px);
+}
+.half-opacity {
+  opacity: 0.5;
+}
+.intersection.black,
+.intersection.white {
+  opacity: 0.8;
+}
+.intersection.black:before,
+.intersection.black:after,
+.intersection.white:before,
+.intersection.white:after {
+  position: absolute;
+  content: "";
+  left: 50%;
+  top: 20%;
+  width: 50%;
+  height: 72%;
+  background: red;
+  background: -webkit-gradient(linear, left top, left center, from(#ffffff), to(#ff0000));
+  background: -moz-linear-gradient(top, #ffffff 0%, #ff0000 50%);
+  background: linear-gradient(to bottom, #ffffff 0%, #ff0000 50%);
+  -webkit-border-radius: 35px 35px 0 0;
+  -moz-border-radius: 35px 35px 0 0;
+  border-radius: 35px 35px 0 0;
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
+  border: solid 2px red;
+  border-left: none;
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+  -webkit-transform-origin: 0 96%;
+  -moz-transform-origin: 0 96%;
+  -ms-transform-origin: 0 96%;
+  -o-transform-origin: 0 96%;
+  transform-origin: 0 96%;
+}
+.intersection.black:after,
+.intersection.white:after {
+  left: 0;
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  transform: rotate(45deg);
+  -webkit-transform-origin: 100% 100%;
+  -moz-transform-origin: 100% 100%;
+  -ms-transform-origin: 100% 100%;
+  -o-transform-origin: 100% 100%;
+  transform-origin: 100% 100%;
+}
+.intersection.white:before,
+.intersection.white:after {
+  background: pink;
+  background: -webkit-gradient(linear, left top, left center, from(#ffffff), to(#ffc0cb));
+  background: -moz-linear-gradient(top, #ffffff 0%, #ffc0cb 50%);
+  background: linear-gradient(to bottom, #ffffff 0%, #ffc0cb 50%);
+  border: solid 2px pink;
+  border-left: none;
+}
+#manual {
+  position: absolute;
+  margin: 0px;
+  bottom: 0px;
+  right: 10px;
+  font-size: 10px;
+  background-color: #FFFFFF;
+  opacity: 0.7;
+}
+#evaluating {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  color: red;
+  display: none;
+  font-size: 15px;
+  -webkit-animation: blink 0.5s ease-in-out infinite alternate;
+  -moz-animation: blink 0.5s ease-in-out infinite alternate;
+  -ms-animation: blink 0.5s ease-in-out infinite alternate;
+  -o-animation: blink 0.5s ease-in-out infinite alternate;
+}
+audio {
+  /* iOSだとdisplay: noneでも大きさを持ちレイアウトに影響する */
+  width: 0px;
+  height: 0px;
+}
+#play-black {
+  color: black;
+  background-color: red;
+  background-image: none;
+}
+#play-white {
+  color: white;
+  background-color: pink;
+  background-image: none;
+}

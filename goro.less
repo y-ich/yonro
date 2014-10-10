@@ -1,0 +1,252 @@
+@import "lib/prefixer";
+
+@width: 320px;
+@board-padding: 20px;
+@frame-width: (@width - 2*@board-padding);
+@board-size: 5;
+
+@title-font-size: 15px;
+
+@manual-font-size: 10px;
+
+.shake() {
+	0% { left: 0px; }
+	10% { left: 10px; }
+	20% { left: -10px; }
+	30% { left: 5px; }
+	40% { left: 5px; }
+	50% { left: 3px; }
+	60% { left: -3px; }
+	70% { left: 2px; }
+	80% { left: -2px; }
+	90% { left: 1px; }
+	100% { left: 1px; }
+}
+
+@-webkit-keyframes shake { .shake() }
+@keyframes shake { .shake() }
+
+.blink() {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 1; }
+}
+@-webkit-keyframes blink { .blink() }
+
+.beat() {
+     0% {
+       -webkit-transform: scale(1.1);
+       transform: scale(1.1);
+     }
+     50% {
+       -webkit-transform: scale(0.9);
+       transform: scale(0.9);
+     }
+     100% {
+       -webkit-transform: scale(1);
+       transform: scale(1);
+     }
+}
+
+@-webkit-keyframes beat { .beat() }
+@keyframes beat { .beat() }
+
+
+/* modifying bootstrap */
+.modal {
+	width: (@width * 540 / 640);
+	margin-left: (-@width * 540 / 640 / 2);
+}
+
+.modal h3 {
+	text-align: center;
+}
+
+.modal-body p {
+	font-size: 12px;
+}
+
+.modal.fade {
+  -webkit-transition: opacity .3s linear, -webkit-transform .3s ease-out;
+  -moz-transition: opacity .3s linear, -moz-transform .3s ease-out;
+  -o-transition: opacity .3s linear, -o-transform .3s ease-out;
+  transition: opacity .3s linear, transform .3s ease-out;
+  top: 10%;
+  -webkit-transform: translateY(-25%);
+  -moz-transform: translateY(-25%);
+  -o-transform: translateY(-25%);
+  transform: translateY(0%);
+}
+.modal.fade.in {
+  -webkit-transform: translateY(0%);
+  -moz-transform: translateY(0%);
+  transform: translateY(0%);
+}
+/* end of modifying bootstrap */
+
+html, body {
+	width: 100%;
+}
+
+body {
+	padding: 0px;
+	.user-select(none);
+	background-color: pink;
+}
+
+#header {
+	position: relative;
+	width: (@width - 5*2);
+	padding: 5px;
+	// background-image: url(images/dragon.jpg);
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: top;
+}
+
+div.title {
+	padding: 5px;
+	position: relative;
+	color: white;
+}
+
+h1 {
+	margin: 0px;
+	font-size: @title-font-size;
+	line-height: @title-font-size;
+	text-align: center;
+}
+
+.btn-large {
+	font-size: @title-font-size;
+	line-height: @title-font-size;
+}
+
+.container {
+    position: relative;
+	width: @width;
+}
+
+.board-bg {
+	background-image: url('images/ban5.png');
+	background-size: contain;
+	width: @width;
+	height: @width;
+}
+
+.board {
+    position: relative;
+    left: @board-padding;
+    top: @board-padding;
+	width: @frame-width;
+	height: @frame-width;
+}
+
+.intersection {
+	position: relative;
+	float: left;
+	width: (@frame-width / @board-size);
+	height: (@frame-width / @board-size);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: contain;
+	.transform(translateY(0%));
+}
+
+.intersection.shake {
+    .animation-duration(0.5s);
+    .animation-iteration-count(1);
+    .animation-timing-function(linear);
+    .animation-name(shake);
+}
+
+.intersection.beat {
+    .animation(beat 1s linear infinite);
+}
+
+.intersection.rise {
+    -webkit-transition: -webkit-transform 1s linear;
+    -moz-transition: -moz-transform 1s linear;
+    -o-transition: -o-transform 1s linear;
+    transition: transform 1s linear;
+	.transform(translateY((-(@frame-width / 9 * 16 + @frame-width / @board-size))));
+}
+
+.half-opacity {
+	opacity: 0.5
+}
+
+.intersection.black, .intersection.white {
+    opacity: 0.8;
+}
+
+.intersection.black:before, .intersection.black:after, .intersection.white:before, .intersection.white:after {
+    position: absolute;
+    content: "";
+    left: 50%;
+    top: 20%;
+    width: 50%;
+    height: 72%;
+    background: red;
+    background: -webkit-gradient(linear, left top, left center, from(white), to(red));
+    background: -moz-linear-gradient(top, white 0%, red 50%);
+    background: linear-gradient(to bottom, white 0%, red 50%);
+    //.border-radius(50% 50% 0 0);
+    .border-radius(35px 35px 0 0); // for android 2.3.4
+    border: solid 2px red;
+    border-left: none;
+    .transform(rotate(-45deg));
+    .transform-origin(0 96%);
+}
+
+.intersection.black:after, .intersection.white:after {
+    left: 0;
+    .transform(rotate(45deg));
+    .transform-origin(100% 100%);
+}
+
+.intersection.white:before, .intersection.white:after {
+    background: pink;
+    background: -webkit-gradient(linear, left top, left center, from(white), to(pink));
+    background: -moz-linear-gradient(top, white 0%, pink 50%);
+    background: linear-gradient(to bottom, white 0%, pink 50%);
+    border: solid 2px pink;
+    border-left: none;
+}
+
+#manual {
+	position: absolute;
+	margin: 0px;
+	bottom: 0px;
+	right: 10px;
+	font-size: @manual-font-size;
+	background-color: #FFFFFF;
+	opacity: 0.7;
+}
+
+#evaluating {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+	color: red;
+	display: none;
+	font-size: @title-font-size;
+	.animation(blink 0.5s ease-in-out infinite alternate);
+}
+
+audio {
+	/* iOSだとdisplay: noneでも大きさを持ちレイアウトに影響する */
+	width: 0px;
+	height: 0px;
+}
+
+#play-black {
+    color: black;
+    background-color: red;
+    background-image: none;
+}
+#play-white {
+    color: white;
+    background-color: pink;
+    background-image: none;
+}

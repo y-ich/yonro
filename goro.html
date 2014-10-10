@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=320, user-scalable=no">
     <!-- <meta name="viewport" content="width=640"> <!-- for iOS and Android -->
-    <title>四路のJunGoゲーム</title>
+    <title>五路のJunGoゲーム</title>
     <script src="js/modernizr.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="yonro.css" />
+    <link rel="stylesheet" href="goro.css" />
 </head>
 <body>
     <audio id="bgm" src="audio/tw029.mp3" loop></audio>
     <div id="header">
         <div class="title">
-            <h1>四路のJunGoゲーム(α)</h1>
+            <h1>五路のJunGoゲーム(α)</h1>
             <p id="manual"><a href="manual.html" target="_blank">遊び方</a></p>
         </div>
         <button type="button" id="start-stop" class="btn">スタート</button>
@@ -29,6 +29,15 @@
         <div id="evaluating">考え中</div>
         <div class="board-bg">
             <div id="board" class="board">
+                <div class="intersection"></div>
+                <div class="intersection"></div>
+                <div class="intersection"></div>
+                <div class="intersection"></div>
+                <div class="intersection"></div>
+                <div class="intersection"></div>
+                <div class="intersection"></div>
+                <div class="intersection"></div>
+                <div class="intersection"></div>
                 <div class="intersection"></div>
                 <div class="intersection"></div>
                 <div class="intersection"></div>
@@ -121,7 +130,7 @@
         new NoClickDelay(this);
     });
     </script>
-    <script src="yonro.js"></script>
+    <script src="goro.js"></script>
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
