@@ -64,7 +64,8 @@ class BitBoardBase extends BoardBase
         for x in [0...@BOARD_SIZE]
             for y in [0...@BOARD_SIZE]
                 position = [x, y]
-                positions.push position if bitBoard & @positionToBit position
+                if bitBoard & @positionToBit position
+                    positions.push position
         positions
 
     adjacent: (bitBoard) ->
