@@ -21,7 +21,7 @@ goro.js: go-common.coffee bit-board.coffee go-evaluate.coffee common.coffee goro
 solver.js: go-common.coffee common.coffee solver.coffee
 	cat $^ | coffee --compile --stdio > $@
 
-chinro.js: go-common.coffee go-shicho.coffee common.coffee chinro.coffee
+chinro.js: go-common.coffee array-board.coffee go-shicho.coffee common.coffee chinro.coffee
 	cat $^ | coffee --compile --stdio > $@
 
 clean:

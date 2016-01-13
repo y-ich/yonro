@@ -6,6 +6,7 @@ main for solver.html
 
 evaluatedResult = null
 
+base = new BoardBase 19
 
 boardOnScreen = ->
     blacks = []
@@ -13,10 +14,10 @@ boardOnScreen = ->
     $('.intersection').each (i, e) ->
         $e = $(e)
         if $e.hasClass 'black'
-            blacks.push [i % BOARD_SIZE, Math.floor(i / BOARD_SIZE)]
+            blacks.push [i % base.BOARD_SIZE, Math.floor(i / base.BOARD_SIZE)]
         else if $e.hasClass 'white'
-            whites.push [i % BOARD_SIZE, Math.floor(i / BOARD_SIZE)]
-    new OnBoard blacks, whites
+            whites.push [i % base.BOARD_SIZE, Math.floor(i / base.BOARD_SIZE)]
+    new OnBoard base, blacks, whites
 
 
 editBoard = ->
@@ -102,16 +103,14 @@ $('#solve').on 'click', ->
             $('.intersection').on 'click', ->
                 $('.intersection').off 'click'
                 index = $('.intersection').index this
-                startSolve board, [index % BOARD_SIZE, Math.floor index / BOARD_SIZE]
+                startSolve board, [index % base.BOARD_SIZE, Math.floor index / base.BOARD_SIZE]
 
 $('#sequence').on 'click', ->
     $(this).attr 'disabled', 'disabled'
     playSequence evaluatedResult.history
 
-setBoardSize 19
-
 # 中山典之「ハート」
-showOnBoard new OnBoard [[5,1],[6,1],[12,1],[13,1],[9,5],[1,6],[1,7],[17,8],[17,9],[7,15],[8,15],[9,16],[9,17]]
+showOnBoard new OnBoard base, [[5,1],[6,1],[12,1],[13,1],[9,5],[1,6],[1,7],[17,8],[17,9],[7,15],[8,15],[9,16],[9,17]]
     ,[[5,0],[6,0],[12,0],[13,0],[9,2],[0,5],[8,5],[18,5],[0,6],[18,6],[0,7],[18,7],[0,8],[18,8],[0,9],[18,9],[9,14],[9,15],[8,16],[8,17],[10,17],[9,18]]
 
 ###
