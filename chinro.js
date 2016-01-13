@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var BoardBase, EvaluationResult, OnBoard, base, boardOnScreen, boardsToString, cancelMessage, chase, chaseShicho, chaser, checkTarget, e, editBoard, escape, escaper, evaluatedResult, k, len, longestFail, longestSuccess, openAndCloseModal, playSequence, ref, responseInterval, root, scheduleMessage, showOnBoard, startSolve, stopEditing, target, wEvaluate;
+  var BoardBase, EvaluationResult, OnBoard, base, boardOnScreen, boardsToString, cancelMessage, chase, chaseShicho, chaser, checkTarget, e, editBoard, escape, escaper, evaluatedResult, k, len, longestFail, longestSuccess, n, openAndCloseModal, playSequence, ref, responseInterval, root, scheduleMessage, showOnBoard, startSolve, stopEditing, target, wEvaluate;
 
   Array.prototype.isEqualTo = function(array) {
 
@@ -162,7 +162,7 @@
     };
 
     function OnBoard(base1, blacks, whites) {
-      var i, j, l, len1, len2, m, n, o, ref1, ref2;
+      var i, j, l, len1, len2, m, o, r, ref1, ref2;
       this.base = base1;
 
       /* blacks, whitesは黒石/白石のある場所の座標の配列。 */
@@ -173,12 +173,12 @@
           this.onBoard[i][j] = this.base.EMPTY;
         }
       }
-      for (n = 0, len1 = blacks.length; n < len1; n++) {
-        e = blacks[n];
+      for (o = 0, len1 = blacks.length; o < len1; o++) {
+        e = blacks[o];
         this.onBoard[e[0]][e[1]] = this.base.BLACK;
       }
-      for (o = 0, len2 = whites.length; o < len2; o++) {
-        e = whites[o];
+      for (r = 0, len2 = whites.length; r < len2; r++) {
+        e = whites[r];
         this.onBoard[e[0]][e[1]] = this.base.WHITE;
       }
     }
@@ -512,10 +512,10 @@
         }
       }
       unique = function(array) {
-        var len1, n;
+        var len1, o;
         result = [];
-        for (n = 0, len1 = array.length; n < len1; n++) {
-          e = array[n];
+        for (o = 0, len1 = array.length; o < len1; o++) {
+          e = array[o];
           if (result.indexOf(e) < 0) {
             result.push(e);
           }
@@ -754,13 +754,19 @@
 
   longestSuccess = [];
 
+  n = 0;
+
   escape = function(history) {
     var b, board, candidates, l, len1, len2, m, p, ref1, ref2, result, sl, strings;
+    n += 1;
+    if (n > 1000) {
+      return new EvaluationResult(false, []);
+    }
     board = history[history.length - 1];
     sl = board.stringAndLibertyAt(target);
     strings = board.strings();
     candidates = [];
-    ref1 = strings[chaser - 1];
+    ref1 = strings[chaser];
     for (l = 0, len1 = ref1.length; l < len1; l++) {
       e = ref1[l];
       if (e[1].length === 1) {
@@ -785,10 +791,6 @@
         }
         return result;
       }
-    }
-    result = chase(history.concat(board));
-    if (longestSuccess.length < result.history.length) {
-      longestSuccess = result.history;
     }
     return result;
   };
