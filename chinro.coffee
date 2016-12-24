@@ -8,6 +8,8 @@ evaluatedResult = null
 
 base = new BoardBase 19
 
+solvedProblem = null
+
 boardOnScreen = ->
     blacks = []
     whites = []
@@ -92,6 +94,7 @@ startSolve = (board, target)->
 $('#solve').on 'click', ->
     stopEditing()
     board = boardOnScreen()
+    solvedProblem = boardOnScreen()
     ps = checkTarget board
     if ps.length == 0
         alert 'アタリの石を作ってください'
@@ -108,6 +111,13 @@ $('#solve').on 'click', ->
 $('#sequence').on 'click', ->
     $(this).attr 'disabled', 'disabled'
     playSequence evaluatedResult.history
+
+$('#restore').on 'click', ->
+    if solvedProblem?
+        showOnBoard solvedProblem
+    editBoard()
+    return
+
 
 # 中山典之「ハート」
 showOnBoard new OnBoard base, [[5,1],[6,1],[12,1],[13,1],[9,5],[1,6],[1,7],[17,8],[17,9],[7,15],[8,15],[9,16],[9,17]]
