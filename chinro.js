@@ -762,7 +762,7 @@
   escape = function(history) {
     var b, board, candidates, l, len1, len2, m, p, ref1, ref2, result, sl, strings;
     n += 1;
-    if (n > 1000) {
+    if (n > 100000) {
       return new EvaluationResult(false, []);
     }
     board = history[history.length - 1];
