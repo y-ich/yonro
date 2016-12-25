@@ -12,7 +12,7 @@ if exports?
 
 class OnBoard
     ### 盤上の状態を表すクラス ###
-    @fromString: (str, base) ->
+    @fromString: (str, @base) ->
         ### 盤上の状態を表すX(黒)とO(白)と空点(スペース)と改行で文字列からインスタンスを生成する。 ###
         blacks = []
         whites = []
@@ -25,7 +25,7 @@ class OnBoard
                 switch line.charAt x
                     when 'X' then blacks.push [x, y]
                     when 'O' then whites.push [x, y]
-                    when ' ' then null ## pass
+                    when ' ', '.' then null ## pass
                     else throw 'bad format'
 
         new OnBoard base ? new BoardBase(lines.length), blacks, whites

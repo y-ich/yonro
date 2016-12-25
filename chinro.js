@@ -97,10 +97,11 @@
   OnBoard = (function() {
 
     /* 盤上の状態を表すクラス */
-    OnBoard.fromString = function(str, base) {
+    OnBoard.fromString = function(str, base1) {
+      var blacks, l, len1, line, lines, m, ref1, whites, x, y;
+      this.base = base1;
 
       /* 盤上の状態を表すX(黒)とO(白)と空点(スペース)と改行で文字列からインスタンスを生成する。 */
-      var blacks, l, len1, line, lines, m, ref1, whites, x, y;
       blacks = [];
       whites = [];
       lines = str.replace(/(\r?\n)*$/, '').split(/\r?\n/);
@@ -121,6 +122,7 @@
               whites.push([x, y]);
               break;
             case ' ':
+            case '.':
               null;
               break;
             default:
@@ -128,7 +130,7 @@
           }
         }
       }
-      return new OnBoard(base != null ? base : new BoardBase(lines.length), blacks, whites);
+      return new OnBoard(typeof base !== "undefined" && base !== null ? base : new BoardBase(lines.length), blacks, whites);
     };
 
     OnBoard.random = function(base, boardSize) {
@@ -1155,6 +1157,32 @@
    * 浦壁和彦「鬼ごっこ」
   showOnBoard new OnBoard [[1,9],[2,8],[2,9],[2,10],[5,9],[7,9],[8,2],[8,8],[8,18],[9,1],[9,2],[9,5],[9,7],[9,8],[9,16],[9,17],[10,2],[10,16],[11,9],[12,10],[12,13],[12,14],[12,16],[12,17],[13,9],[13,13],[16,8],[16,9],[16,10],[17,9]]
       ,[[0,7],[0,9],[0,11],[1,6],[1,8],[1,10],[1,12],[2,5],[2,13],[3,4],[3,9],[3,14],[4,3],[4,9],[4,15],[5,2],[5,16],[6,1],[6,9],[6,17],[7,0],[7,8],[7,18],[8,1],[8,7],[9,0],[9,3],[9,4],[9,6],[9,9],[10,1],[10,7],[10,8],[10,9],[10,15],[10,17],[11,0],[11,14],[11,16],[11,18],[12,1],[12,11],[12,15],[12,18],[13,2],[13,14],[13,16],[13,17],[14,3],[14,9],[14,15],[15,4],[15,9],[15,14],[16,5],[16,13],[17,6],[17,8],[17,10],[17,12],[18,7],[18,9],[18,11]]
+   */
+
+
+  /*
+   * Sアルファ
+  showOnBoard OnBoard.fromString """
+  .......O...........
+  ...O...OXOXO...OO..
+  .XX.XXX.X...XX..XX.
+  ........OX....O....
+  ...X...X.OOX.XXX...
+  .O..OO......O....O.
+  ..O................
+  ...................
+  X....XXX........X..
+  ......O.........OXX
+  .O..O..X...OO.X.O.X
+  O..X...O.X.X..XO.OO
+  .......X.OX...OOXXO
+  .XX.XX...XOOXXX...X
+  ...O.....XO.O..O...
+  ...........XO...X..
+  ........O..X.O.....
+  ..XO....O..X.......
+  .........XOO.......
+  """, base
    */
 
   editBoard();

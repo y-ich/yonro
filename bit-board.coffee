@@ -136,7 +136,7 @@ class OnBoard
                 switch line.charAt x
                     when 'X' then blacks.push [x, y]
                     when 'O' then whites.push [x, y]
-                    when ' ' then null ## pass
+                    when ' ', '.' then null ## pass
                     else throw 'bad format'
 
         new OnBoard base ? new BitBoardBase(lines.length), blacks, whites
